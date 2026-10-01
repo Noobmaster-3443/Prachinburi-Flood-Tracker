@@ -214,3 +214,11 @@ NEXT_PUBLIC_ADMIN_PIN=admin8888
   - ระบบบีบอัดรูปภาพหน้างาน Client-Side Canvas Image Compression เพื่อประหยัดแบนด์วิดท์ในพื้นที่ภัยพิบัติ
   - ระบบตรวจสอบและลบรายงานก่อกวน (Admin Moderation Dashboard) และระบบอนุมัติเบอร์โทรฉุกเฉิน
 * **สัญญาอนุญาต (License):** เผยแพร่ภายใต้สัญญาอนุญาต **MIT License** เพื่อสาธารณประโยชน์และการกู้ภัยพิบัติของประชาชน
+
+---
+
+### 🙏 ข้อความจากผู้จัดทำ / Note & Disclaimer
+
+> **🇹🇭 หมายเหตุ:** โครงการนี้จัดทำขึ้นด้วยความตั้งใจเพื่อเป็นประโยชน์ต่อพี่น้องประชาชนชาวปราจีนบุรีและผู้ประสบภัยพิบัติ หากมีข้อผิดพลาด ข้อมูลคลาดเคลื่อน หรือข้อบกพร่องประการใด คณะผู้จัดทำต้องกราบขออภัยมา ณ ที่นี้ด้วยครับ/ค่ะ ท่านสามารถร่วมแจ้งปัญหาหรือเสนอแนะการปรับปรุงเพิ่มเติมผ่านทาง GitHub Issues ได้ตลอดเวลาครับ  
+>  
+> **🇬🇧 Disclaimer:** This project was created with good intentions to assist the residents of Prachinburi Province and disaster relief efforts. If there are any unintentional errors, inaccuracies, or shortcomings, we sincerely apologize. Feedback, issue reports, and contributions are always warmly welcomed via GitHub Issues.
