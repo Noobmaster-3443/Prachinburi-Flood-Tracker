@@ -23,7 +23,7 @@
 ### 📖 เกี่ยวกับโครงการ (About the Project)
 > **"รวมพลังชุมชนคนปราจีนบุรี รู้ทันระดับน้ำ ปลอดภัยทุกเส้นทาง"**
 
-จังหวัดปราจีนบุรีเป็นพื้นที่ลุ่มน้ำสำคัญที่รองรับมวลน้ำจากเทือกเขาใหญ่และอุทยานแห่งชาติทับลาน โดยมีแม่น้ำปราจีนบุรี แควหนุมาน และแควพระปรงไหลผ่าน จึงมักประสบอุทกภัยและน้ำเอ่อล้นตลิ่งในหลายอำเภอเป็นประจำทุกปี (เช่น อำเภอกบินทร์บุรี, อำเภอบ้านสร้าง, อำเภอศรีมหาโพธิ ฯลฯ)
+จังหวัดปราจีนบุรีเป็นพื้นที่ลุ่มน้ำสำคัญที่รองรับมวลน้ำจากทางตอนเหนือ เทือกเขาใหญ่ และอุทยานแห่งชาติทับลาน โดยมีแม่น้ำปราจีนบุรี แควหนุมาน และแควพระปรงไหลผ่าน ซึ่งในสถานการณ์ปัจจุบัน ปัญหาอุทกภัยเกิดจากฝนที่ตกชุกสะสมติดต่อกันหลายวันในพื้นที่ตอนเหนือ ส่งผลให้มีมวลน้ำเหนือก้อนใหญ่ไหลหลากลงมาสมทบอย่างต่อเนื่อง จนเอ่อล้นตลิ่งเข้าท่วมบ้านเรือนและเส้นทางสัญจรในหลายอำเภอ (โดยเฉพาะอำเภอกบินทร์บุรี, อำเภอบ้านสร้าง, อำเภอศรีมหาโพธิ ฯลฯ)
 
 **PrachinFlood** ถูกพัฒนาขึ้นเป็นระบบบริการสาธารณะเพื่อชุมชน (Civic Tech Open-Source) มุ่งเน้นการมีส่วนร่วมของประชาชน (Community Crowdsourcing) ให้ชาวบ้าน จิตอาสา และหน่วยงานกู้ภัยในพื้นที่สามารถ:
 1. **แจ้งข้อมูลระดับน้ำจริงหน้างาน:** ถ่ายรูปและปักหมุดจุดน้ำท่วมได้ทันที โดยไม่ต้องลงทะเบียน
@@ -88,7 +88,7 @@ npm run dev
 ### 📖 About the Project
 > **"Empowering the Prachinburi community with real-time, citizen-driven flood intelligence."**
 
-Prachinburi Province is a crucial watershed basin in eastern Thailand, receiving water flows from the Khao Yai and Thap Lan national parks through the Prachinburi, Hanuman, and Phra Prong rivers. As a result, low-lying districts such as Kabin Buri, Ban Sang, and Si Maha Phot encounter recurrent seasonal flooding and sudden flash floods.
+Prachinburi Province serves as a critical downstream drainage basin in eastern Thailand, receiving water flows from the northern regions, Khao Yai, and Thap Lan national parks via the Prachinburi, Hanuman, and Phra Prong rivers. Under current conditions, persistent and heavy rainfall over multiple consecutive days in upstream northern areas has generated an immense volume of runoff, resulting in severe river overflows and widespread flooding across low-lying districts such as Kabin Buri, Ban Sang, and Si Maha Phot.
 
 **PrachinFlood (Prachinburi Flood Tracker)** was developed as an open-source civic technology platform to bridge the gap between affected citizens, volunteers, and rescue agencies:
 1. **Real-Time Citizen Reporting:** Upload photos and mark flood hotspots without requiring registration.
