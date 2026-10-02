@@ -89,7 +89,6 @@ export async function createReport(
         .from('flood_reports')
         .insert([
           {
-            id: reportId,
             created_at: now,
             latitude: newReport.latitude,
             longitude: newReport.longitude,
@@ -114,7 +113,7 @@ export async function createReport(
 
       if (error) {
         console.error('Error inserting report to Supabase:', error);
-        alert('Supabase Insert Error: ' + error.message + ' (' + error.details + ')');
+        alert('Supabase Insert Error: ' + error.message);
       } else if (data) {
         return data as FloodReport;
       }
