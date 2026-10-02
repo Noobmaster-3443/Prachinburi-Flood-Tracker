@@ -78,24 +78,49 @@ export async function createReport(
     ...newReport,
     id: reportId,
     created_at: now,
-    image_url: finalImageUrl,
+    image_url: finalImageUrl && !finalImageUrl.startsWith('data:') ? finalImageUrl : undefined,
     upvotes: 0,
   };
 
   // Try saving to Supabase
   if (isSupabaseConfigured && supabase) {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('flood_reports')
-        .insert([reportToSave]);
+        .insert([
+          {
+            id: reportId,
+            created_at: now,
+            latitude: newReport.latitude,
+            longitude: newReport.longitude,
+            district: newReport.district,
+            subdistrict: newReport.subdistrict,
+            location_name: newReport.location_name,
+            severity: newReport.severity,
+            water_depth_label: newReport.water_depth_label,
+            water_depth_code: newReport.water_depth_code || 'knee',
+            description: newReport.description || '',
+            image_url: finalImageUrl && !finalImageUrl.startsWith('data:') ? finalImageUrl : null,
+            passable_for_vehicles: newReport.passable_for_vehicles,
+            passable_trucks_only: newReport.passable_trucks_only || false,
+            is_verified: newReport.is_verified || false,
+            reporter_type: newReport.reporter_type || 'citizen',
+            reporter_name: newReport.reporter_name || null,
+            upvotes: 0,
+          }
+        ])
+        .select()
+        .single();
 
       if (error) {
         console.error('Error inserting report to Supabase:', error);
-      } else {
-        return reportToSave;
+        alert('Supabase Insert Error: ' + error.message + ' (' + error.details + ')');
+      } else if (data) {
+        return data as FloodReport;
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Supabase insert exception:', err);
+      alert('Supabase Exception: ' + (err?.message || 'Unknown error'));
     }
   }
 
