@@ -33,7 +33,7 @@ import { getReports, deleteReport, toggleVerifyReport, clearAllReports } from '@
 import { getEmergencyContacts, approveEmergencyContact, deleteEmergencyContact } from '@/lib/contacts-store';
 import { PRACHINBURI_DISTRICTS } from '@/data/prachinburi-locations';
 
-const DEFAULT_PIN = process.env.NEXT_PUBLIC_ADMIN_PIN || 'admin8888';
+const DEFAULT_PIN = process.env.NEXT_PUBLIC_ADMIN_PIN || 'PrachinAdmin#2026!';
 const ADMIN_STORAGE_KEY = 'prachinburi_admin_auth_v1';
 
 export default function AdminPage() {
@@ -225,7 +225,7 @@ export default function AdminPage() {
                 <input
                   type={showPin ? 'text' : 'password'}
                   required
-                  placeholder="กรอกรหัสผ่าน (ค่าเริ่มต้น: admin8888)"
+                  placeholder="กรอกรหัสผ่านผู้ดูแลระบบ"
                   value={pinInput}
                   onChange={(e) => setPinInput(e.target.value)}
                   className="w-full pl-4 pr-10 py-3 bg-slate-100 rounded-xl text-sm border border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
