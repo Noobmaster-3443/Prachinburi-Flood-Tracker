@@ -59,7 +59,13 @@
    * เบอร์หลักโทรออกได้ทันทีใน 1 แตะ: **1784** (สายด่วน ปภ. ช่วยเหลือน้ำท่วม 24 ชม.) และ **1669** (การแพทย์ฉุกเฉิน EMS)
    * ประชาชนสามารถกด **"เสนอเพิ่มเบอร์กู้ภัยในพื้นที่"** ได้ โดยข้อมูลจะต้องผ่านการตรวจสอบและอนุมัติจากแอดมินก่อนขึ้นระบบจริง
 
-5. **🛡️ ระบบควบคุมหลังบ้าน (Admin Moderation Dashboard):**
+5. **📍 หน้าพื้นที่ของฉัน (My Area Breakdown - `/area`):**
+   * ตรวจสอบระดับน้ำเจาะลึกรายอำเภอ (ครอบคลุมทั้ง 7 อำเภอและตำบลทั้งหมดในปราจีนบุรี)
+   * ปุ่ม **"ใกล้ฉัน"** ใช้ GPS ค้นหาอำเภอที่ผู้ใช้อยู่ทันที ไม่ต้องเลื่อนหาเอง
+   * สรุปแถบสถานะความรุนแรงสูงสุด (วิกฤต, ท่วมสูง, ขัง, ปกติ), จำนวนจุดทางขาด/รถผ่านไม่ได้
+   * แสดงแผนที่เฉพาะอำเภอ และรายการรายงานล่าสุดพร้อมรูปถ่าย
+
+6. **🛡️ ระบบควบคุมหลังบ้าน (Admin Moderation Dashboard):**
    * เข้าใช้งานที่ `/admin` พร้อมระบบล็อกอินด้วย Admin Passcode
    * ตรวจสอบและกดลบรายงานก่อกวน/ข้อมูลเท็จได้ทันที
    * กดรับรองรายงาน (Verify Badge ✓) เพื่อยืนยันว่าเจ้าหน้าที่ตรวจสอบแล้ว
@@ -121,7 +127,12 @@ Prachinburi Province serves as a critical downstream drainage basin in eastern T
    * One-tap direct dial for primary hotlines: **1784** (DDPM Disaster Hotline) and **1669** (Emergency Medical Services).
    * Citizen hotline submission form: Community members can submit local rescue contacts, which remain pending until admin approval.
 
-5. **🛡️ Admin Moderation Dashboard (`/admin`):**
+5. **📍 My Area Breakdown (`/area`):**
+   * Filter and examine live flood situations per district (covering all 7 districts).
+   * **Locate Me:** Instant GPS geolocation to automatically select the nearest district.
+   * District-level status badges, critical blockage alerts, localized mini-map, and recent incident logs.
+
+6. **🛡️ Admin Moderation Dashboard (`/admin`):**
    * Passcode protected backoffice.
    * Remove spam, trolling, or inaccurate flood reports immediately.
    * Verify genuine reports with official verification badges.
@@ -137,6 +148,8 @@ PrachinBuri-flood/
 │   ├── app/
 │   │   ├── admin/
 │   │   │   └── page.tsx             # Admin Moderation Dashboard
+│   │   ├── area/
+│   │   │   └── page.tsx             # My Area Breakdown Page
 │   │   ├── globals.css              # Custom markers, Leaflet styles, Tailwind CSS
 │   │   ├── layout.tsx               # Root layout with IBM Plex Sans Thai font
 │   │   └── page.tsx                 # Main application page (Map & Feed)

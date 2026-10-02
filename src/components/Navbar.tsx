@@ -106,6 +106,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </div>
 
+          {/* My Area Button */}
+          <Link
+            href="/area"
+            className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-colors shadow-2xs"
+            title="พื้นที่ของฉัน (เจาะลึก 7 อำเภอ)"
+          >
+            <MapPin className="w-3.5 h-3.5 text-blue-600" />
+            <span className="hidden xs:inline">พื้นที่ของฉัน</span>
+          </Link>
+
           {/* Emergency Hotline Button */}
           <button
             onClick={onOpenEmergencyModal}
