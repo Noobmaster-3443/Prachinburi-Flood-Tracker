@@ -160,6 +160,11 @@ export const ReportFormModal: React.FC<ReportFormModalProps> = ({
       return;
     }
 
+    if (!imagePreview) {
+      setErrorMsg('⚠️ เพื่อป้องกันการแจ้งข้อมูลเท็จหรือรายงานมั่ว กรุณาแนบรูปถ่ายสถานการณ์จริงหน้างาน');
+      return;
+    }
+
     setErrorMsg('');
     setIsSubmitting(true);
 
@@ -433,9 +438,13 @@ export const ReportFormModal: React.FC<ReportFormModalProps> = ({
           {/* 5. Photo Upload with Compression */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="font-semibold text-slate-800 text-xs tracking-wide">
-                5. แนบรูปถ่ายหน้างาน (อุปกรณ์จะบีบอัดให้อัตโนมัติเพื่อประหยัดเน็ต)
+              <label className="font-semibold text-slate-800 text-xs tracking-wide flex items-center gap-1.5">
+                <span>5. แนบรูปถ่ายหน้างานจริง</span>
+                <span className="text-red-500 font-bold">*จำเป็น</span>
               </label>
+              <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                🛡️ ป้องกันข้อมูลเท็จ
+              </span>
             </div>
 
             {imagePreview ? (
