@@ -10,61 +10,42 @@ import {
   RefreshCw, 
   AlertTriangle, 
   Waves, 
-  CheckCircle2, 
   Car, 
   Clock, 
   Compass,
   ChevronRight,
   ShieldCheck,
-  Search
+  CheckCircle2,
+  ExternalLink
 } from 'lucide-react';
 import { PRACHINBURI_DISTRICTS } from '@/data/prachinburi-locations';
-import { getReports, createReport, upvoteReport, deleteReport } from '@/lib/reports-store';
-import { FloodReport, SeverityLevel } from '@/types';
-import { DynamicMap } from '@/components/Map/DynamicMap';
+import { TelemetryStation, HighwayDisasterAlert, SeverityLevel } from '@/types/telemetry';
+import { getAutomatedTelemetryData } from '@/lib/telemetry-service';
+import { DynamicTelemetryMap } from '@/components/Map/DynamicTelemetryMap';
+import { TelemetryDetailDrawer } from '@/components/ReportDrawer/TelemetryDetailDrawer';
 import { EmergencyDrawer } from '@/components/Emergency/EmergencyDrawer';
-import { ReportFormModal } from '@/components/ReportModal/ReportFormModal';
-import { ReportDetailDrawer } from '@/components/ReportDrawer/ReportDetailDrawer';
 
 export default function AreaPage() {
-  const [reports, setReports] = useState<FloodReport[]>([]);
+  const [stations, setStations] = useState<TelemetryStation[]>([]);
+  const [highwayAlerts, setHighwayAlerts] = useState<HighwayDisasterAlert[]>([]);
+  const [gistdaGeoJson, setGistdaGeoJson] = useState<GeoJSON.FeatureCollection | null>(null);
   const [loading, setLoading] = useState(true);
+
   const [selectedDistrictId, setSelectedDistrictId] = useState<string>('all');
-  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
   const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-  const [selectedReport, setSelectedReport] = useState<FloodReport | null>(null);
+  const [selectedStation, setSelectedStation] = useState<TelemetryStation | null>(null);
+  const [selectedHighwayAlert, setSelectedHighwayAlert] = useState<HighwayDisasterAlert | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Handle report upvote
-  const handleUpvote = async (id: string) => {
-    const newCount = await upvoteReport(id);
-    setReports((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, upvotes: newCount } : r))
-    );
-    if (selectedReport && selectedReport.id === id) {
-      setSelectedReport((prev) => (prev ? { ...prev, upvotes: newCount } : null));
-    }
-  };
-
-  // Handle report delete
-  const handleDeleteReport = async (id: string) => {
-    const success = await deleteReport(id);
-    if (success) {
-      setReports((prev) => prev.filter((r) => r.id !== id));
-      setSelectedReport(null);
-      setToastMessage('ลบรายงานเรียบร้อยแล้ว');
-      setTimeout(() => setToastMessage(null), 3000);
-    }
-  };
-
-  // Fetch reports
-  const fetchReportsData = async () => {
+  // Fetch telemetry
+  const fetchTelemetry = async () => {
     setLoading(true);
     try {
-      const data = await getReports();
-      setReports(data);
+      const data = await getAutomatedTelemetryData();
+      setStations(data.stations);
+      setHighwayAlerts(data.highwayAlerts);
+      setGistdaGeoJson(data.gistdaGeoJson);
     } catch (e) {
       console.error(e);
     } finally {
@@ -73,7 +54,7 @@ export default function AreaPage() {
   };
 
   useEffect(() => {
-    fetchReportsData();
+    fetchTelemetry();
   }, []);
 
   // Selected district info
@@ -82,43 +63,44 @@ export default function AreaPage() {
     return PRACHINBURI_DISTRICTS.find((d) => d.id === selectedDistrictId) || null;
   }, [selectedDistrictId]);
 
-  // Filtered reports by district
-  const districtReports = useMemo(() => {
-    if (!selectedDistrict) return reports;
-    return reports.filter((r) => r.district === selectedDistrict.name_th);
-  }, [reports, selectedDistrict]);
+  // District stations & highway alerts
+  const districtStations = useMemo(() => {
+    if (!selectedDistrict) return stations;
+    return stations.filter((s) => s.district === selectedDistrict.name_th);
+  }, [stations, selectedDistrict]);
 
-  // Severity counts & highest severity
+  const districtHighwayAlerts = useMemo(() => {
+    if (!selectedDistrict) return highwayAlerts;
+    return highwayAlerts.filter((h) => h.district === selectedDistrict.name_th);
+  }, [highwayAlerts, selectedDistrict]);
+
+  // Severity stats
   const stats = useMemo(() => {
-    const total = districtReports.length;
-    const red = districtReports.filter((r) => r.severity === 'red').length;
-    const orange = districtReports.filter((r) => r.severity === 'orange').length;
-    const yellow = districtReports.filter((r) => r.severity === 'yellow').length;
-    const green = districtReports.filter((r) => r.severity === 'green').length;
-    const impassable = districtReports.filter((r) => r.passable_for_vehicles === false).length;
+    const total = districtStations.length;
+    const red = districtStations.filter((s) => s.severity === 'red').length;
+    const orange = districtStations.filter((s) => s.severity === 'orange').length;
+    const yellow = districtStations.filter((s) => s.severity === 'yellow').length;
+    const green = districtStations.filter((s) => s.severity === 'green').length;
+    const impassable = districtHighwayAlerts.filter((h) => !h.passable).length;
 
-    let overallSeverity: SeverityLevel | 'normal' = 'normal';
+    let overallSeverity: SeverityLevel = 'green';
     if (red > 0) overallSeverity = 'red';
     else if (orange > 0) overallSeverity = 'orange';
     else if (yellow > 0) overallSeverity = 'yellow';
-    else if (green > 0) overallSeverity = 'green';
 
     return { total, red, orange, yellow, green, impassable, overallSeverity };
-  }, [districtReports]);
+  }, [districtStations, districtHighwayAlerts]);
 
   // GPS Locate Nearest District
   const handleLocateMe = () => {
     if (!navigator.geolocation) {
-      alert('เบราว์เซอร์ของคุณไม่รองรับการระบุตำแหน่ง GPS');
+      alert('เบราว์เซอร์ไม่รองรับ GPS');
       return;
     }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
-        setUserCoords({ lat: latitude, lng: longitude });
-
-        // Find closest Prachinburi district
         let closestDistrict = PRACHINBURI_DISTRICTS[0];
         let minDist = Infinity;
 
@@ -132,30 +114,27 @@ export default function AreaPage() {
 
         setSelectedDistrictId(closestDistrict.id);
         setLocating(false);
-        setToastMessage(`พบตำแหน่งของคุณ: ใกล้เคียง ${closestDistrict.name_th}`);
-        setTimeout(() => setToastMessage(null), 3500);
+        setToastMessage(`พบตำแหน่ง: ใกล้เคียง ${closestDistrict.name_th}`);
+        setTimeout(() => setToastMessage(null), 3000);
       },
       (err) => {
-        console.error(err);
         setLocating(false);
-        alert('ไม่สามารถดึงตำแหน่งได้ กรุณาอนุญาตการเข้าถึง GPS ในเบราว์เซอร์');
+        alert('ไม่สามารถดึงตำแหน่งได้ กรุณาอนุญาตการเข้าถึง GPS');
       },
-      { timeout: 10000 }
+      { timeout: 8000 }
     );
   };
 
-  const getSeverityBadge = (level: SeverityLevel | 'normal') => {
+  const getSeverityBadge = (level: SeverityLevel) => {
     switch (level) {
       case 'red':
-        return { label: 'น้ำท่วมวิกฤต', bg: 'bg-red-500 text-white', border: 'border-red-600', ring: 'ring-red-300' };
+        return { label: 'ระดับน้ำวิกฤต (ล้นตลิ่ง)', bg: 'bg-red-500 text-white', border: 'border-red-600' };
       case 'orange':
-        return { label: 'น้ำท่วมสูง / รถเล็กผ่านไม่ได้', bg: 'bg-orange-500 text-white', border: 'border-orange-600', ring: 'ring-orange-300' };
+        return { label: 'ระดับน้ำเตือนภัย (จ่อล้นตลิ่ง)', bg: 'bg-orange-500 text-white', border: 'border-orange-600' };
       case 'yellow':
-        return { label: 'น้ำท่วมขัง / สัญจรระวัง', bg: 'bg-yellow-400 text-slate-900', border: 'border-yellow-500', ring: 'ring-yellow-200' };
-      case 'green':
-        return { label: 'เฝ้าระวัง / น้ำแห้งแล้ว', bg: 'bg-emerald-500 text-white', border: 'border-emerald-600', ring: 'ring-emerald-200' };
+        return { label: 'เฝ้าระวังระดับน้ำท่า', bg: 'bg-amber-400 text-slate-900', border: 'border-amber-500' };
       default:
-        return { label: 'ยังไม่มีรายงานเหตุ', bg: 'bg-slate-100 text-slate-700', border: 'border-slate-300', ring: 'ring-slate-100' };
+        return { label: 'ระดับน้ำปกติ', bg: 'bg-emerald-500 text-white', border: 'border-emerald-600' };
     }
   };
 
@@ -163,9 +142,9 @@ export default function AreaPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
-      {/* Toast Notification */}
+      {/* Toast */}
       {toastMessage && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs sm:text-sm px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2 animate-fade-in border border-slate-700">
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs sm:text-sm px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2 border border-slate-700">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{toastMessage}</span>
         </div>
@@ -173,7 +152,7 @@ export default function AreaPage() {
 
       {/* Top Header */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
-        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
+        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Link
               href="/"
@@ -183,16 +162,16 @@ export default function AreaPage() {
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div className="flex items-center gap-1.5">
-              <Compass className="w-5 h-5 text-blue-600" />
+              <Waves className="w-5 h-5 text-blue-600" />
               <h1 className="font-bold text-base sm:text-lg text-slate-900 tracking-tight">
-                พื้นที่ของฉัน (รายอำเภอ)
+                สถานการณ์น้ำรายอำเภอ (Open Data)
               </h1>
             </div>
           </div>
 
           <button
             onClick={() => setIsEmergencyOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-xs sm:text-sm font-semibold border border-red-200 transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-xs sm:text-sm font-bold border border-red-200 transition-all shadow-sm"
           >
             <PhoneCall className="w-4 h-4 text-red-500 animate-bounce" />
             <span>สายด่วน 1784</span>
@@ -201,21 +180,26 @@ export default function AreaPage() {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-2xl w-full mx-auto p-4 space-y-4">
+      <main className="flex-1 max-w-3xl w-full mx-auto p-4 space-y-4">
         {/* District Selector & GPS Button */}
         <section className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-          <p className="text-xs sm:text-sm text-slate-600">
-            เลือกอำเภอบ้านหรือที่ทำงาน เพื่อดูสถานการณ์ระดับน้ำ เส้นทางสัญจร และรายงานล่าสุดในพื้นที่
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs sm:text-sm text-slate-600">
+              เลือกอำเภอเพื่อตรวจสอบสถานีโทรมาตรน้ำท่า สสน. และจุดเตือนน้ำท่วมทางหลวง
+            </p>
+            <span className="text-[11px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+              Official Data
+            </span>
+          </div>
 
           <div className="flex gap-2">
             <div className="relative flex-1">
               <select
                 value={selectedDistrictId}
                 onChange={(e) => setSelectedDistrictId(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-800 transition-all outline-none appearance-none"
+                className="w-full bg-slate-50 border border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-800 transition-all outline-none appearance-none"
               >
-                <option value="all">📍 ทั้งหมด (7 อำเภอในปราจีนบุรี)</option>
+                <option value="all">📍 ทุกอำเภอ (7 อำเภอในปราจีนบุรี)</option>
                 {PRACHINBURI_DISTRICTS.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name_th} ({d.subdistricts.length} ตำบล)
@@ -231,7 +215,6 @@ export default function AreaPage() {
               onClick={handleLocateMe}
               disabled={locating}
               className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-xs sm:text-sm font-semibold shadow-md shadow-blue-500/20 transition-all flex-shrink-0"
-              title="ค้นหาอำเภอใกล้ตำแหน่งของคุณ"
             >
               <Navigation className={`w-4 h-4 ${locating ? 'animate-spin' : ''}`} />
               <span className="hidden xs:inline">{locating ? 'กำลังค้นหา...' : 'ใกล้ฉัน'}</span>
@@ -243,14 +226,14 @@ export default function AreaPage() {
         <section className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <span className="text-xs font-medium text-slate-500">สถานการณ์พื้นที่</span>
+              <span className="text-xs font-medium text-slate-500">ภาพรวมลุ่มน้ำ</span>
               <h2 className="text-lg sm:text-xl font-bold text-slate-900 mt-0.5">
                 {selectedDistrict ? selectedDistrict.name_th : 'ทั้งจังหวัดปราจีนบุรี'}
               </h2>
             </div>
 
             <button
-              onClick={fetchReportsData}
+              onClick={fetchTelemetry}
               disabled={loading}
               className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors"
               title="รีเฟรชข้อมูล"
@@ -266,15 +249,13 @@ export default function AreaPage() {
               <div>
                 <div className="text-sm font-bold leading-tight">{badge.label}</div>
                 <div className="text-xs opacity-90">
-                  {stats.total === 0 
-                    ? 'ยังไม่มีการแจ้งเหตุน้ำท่วมในพื้นที่นี้' 
-                    : `มีรายงานจุดน้ำท่วมสะสม ${stats.total} จุด`}
+                  ครอบคลุม {stats.total} สถานีโทรมาตรหลักในพื้นที่
                 </div>
               </div>
             </div>
             {stats.impassable > 0 && (
               <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white/25 backdrop-blur-sm">
-                ⛔ ทางขาด {stats.impassable} จุด
+                ⛔ ทางหลวงท่วมขัง {stats.impassable} จุด
               </span>
             )}
           </div>
@@ -282,37 +263,21 @@ export default function AreaPage() {
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-4 gap-2 pt-1">
             <div className="bg-red-50/70 border border-red-100 p-2.5 rounded-xl text-center">
-              <span className="text-xs font-semibold text-red-600 block">🔴 วิกฤต</span>
+              <span className="text-xs font-semibold text-red-600 block">🔴 ล้นตลิ่ง</span>
               <span className="text-lg font-bold text-red-700">{stats.red}</span>
             </div>
             <div className="bg-orange-50/70 border border-orange-100 p-2.5 rounded-xl text-center">
-              <span className="text-xs font-semibold text-orange-600 block">🟠 สูง</span>
+              <span className="text-xs font-semibold text-orange-600 block">🟠 จ่อล้น</span>
               <span className="text-lg font-bold text-orange-700">{stats.orange}</span>
             </div>
             <div className="bg-yellow-50/70 border border-yellow-100 p-2.5 rounded-xl text-center">
-              <span className="text-xs font-semibold text-yellow-700 block">🟡 ขัง</span>
+              <span className="text-xs font-semibold text-yellow-700 block">🟡 เฝ้าระวัง</span>
               <span className="text-lg font-bold text-yellow-800">{stats.yellow}</span>
             </div>
             <div className="bg-emerald-50/70 border border-emerald-100 p-2.5 rounded-xl text-center">
-              <span className="text-xs font-semibold text-emerald-600 block">🟢 เฝ้าระวัง</span>
+              <span className="text-xs font-semibold text-emerald-600 block">🟢 ปกติ</span>
               <span className="text-lg font-bold text-emerald-700">{stats.green}</span>
             </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            <button
-              onClick={() => setIsReportModalOpen(true)}
-              className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-md shadow-blue-500/20 transition-all text-center"
-            >
-              + แจ้งระดับน้ำพื้นที่นี้
-            </button>
-            <Link
-              href="/"
-              className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm border border-slate-200 transition-all text-center"
-            >
-              ดูแผนที่รวมทั้งหมด
-            </Link>
           </div>
         </section>
 
@@ -321,89 +286,101 @@ export default function AreaPage() {
           <div className="flex items-center justify-between px-1">
             <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-blue-600" />
-              แผนที่จุดน้ำท่วม ({districtReports.length} จุด)
+              แผนที่สถานีโทรมาตร & จุดเตือนทางหลวง ({districtStations.length} สถานี)
             </span>
-            <span className="text-[11px] text-slate-500">คลิกที่หมุดเพื่อดูรูปและข้อมูล</span>
+            <span className="text-[11px] text-slate-500">แตะที่สถานีเพื่ออ่านข้อมูลแบบละเอียด</span>
           </div>
 
-          <div className="h-64 sm:h-72 w-full rounded-xl overflow-hidden border border-slate-200 relative">
-            <DynamicMap
-              reports={districtReports}
-              selectedReport={selectedReport}
-              onSelectReport={setSelectedReport}
+          <div className="h-64 sm:h-80 w-full rounded-xl overflow-hidden border border-slate-200 relative">
+            <DynamicTelemetryMap
+              stations={districtStations}
+              highwayAlerts={districtHighwayAlerts}
+              gistdaGeoJson={gistdaGeoJson}
+              selectedStation={selectedStation}
+              selectedHighwayAlert={selectedHighwayAlert}
+              onSelectStation={setSelectedStation}
+              onSelectHighwayAlert={setSelectedHighwayAlert}
               selectedDistrict={selectedDistrict ? selectedDistrict.name_th : 'all'}
             />
           </div>
         </section>
 
-        {/* Recent Reports in this Area */}
+        {/* Station List in Selected District */}
         <section className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <h3 className="font-bold text-sm text-slate-800 flex items-center gap-1.5">
               <Clock className="w-4 h-4 text-blue-600" />
-              รายงานล่าสุดในพื้นที่ ({districtReports.length})
+              รายการสถานีโทรมาตรและจุดเตือนทางหลวงในพื้นที่ ({districtStations.length + districtHighwayAlerts.length})
             </h3>
-            <span className="text-xs text-slate-500">เรียงตามเวลาล่าสุด</span>
+            <span className="text-xs text-blue-700 font-semibold">ThaiWater / DOH</span>
           </div>
 
-          {districtReports.length === 0 ? (
-            <div className="py-8 text-center text-slate-500 space-y-2">
-              <p className="text-sm">ยังไม่มีรายงานสถานการณ์น้ำท่วมในพื้นที่นี้</p>
-              <button
-                onClick={() => setIsReportModalOpen(true)}
-                className="text-xs text-blue-600 font-semibold underline hover:text-blue-700"
+          <div className="divide-y divide-slate-100">
+            {/* Highway alerts first */}
+            {districtHighwayAlerts.map((alert) => (
+              <div
+                key={alert.id}
+                onClick={() => setSelectedHighwayAlert(alert)}
+                className="py-3 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-50 px-2 rounded-xl transition-colors"
               >
-                คุณอยู่ในพื้นที่นี้ใช่หรือไม่? ช่วยกันแจ้งระดับน้ำได้เลย
-              </button>
-            </div>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {districtReports.map((report) => (
-                <div
-                  key={report.id}
-                  onClick={() => setSelectedReport(report)}
-                  className="py-3 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-50 px-2 rounded-xl transition-colors"
-                >
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
-                        report.severity === 'red' ? 'bg-red-500' :
-                        report.severity === 'orange' ? 'bg-orange-500' :
-                        report.severity === 'yellow' ? 'bg-yellow-400' : 'bg-emerald-500'
-                      }`} />
-                      <h4 className="text-sm font-semibold text-slate-900 truncate">
-                        {report.location_name}
-                      </h4>
-                      {report.is_verified && (
-                        <ShieldCheck className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
-                      )}
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
-                      <span>ต.{report.subdistrict} อ.{report.district}</span>
-                      <span>•</span>
-                      <span className={report.passable_for_vehicles ? 'text-emerald-600' : 'text-red-600 font-medium'}>
-                        {report.passable_for_vehicles ? '✓ รถเล็กผ่านได้' : '⛔ รถเล็กผ่านไม่ได้'}
-                      </span>
-                    </div>
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                      {alert.route_number}
+                    </span>
+                    <h4 className="text-sm font-bold text-slate-900 truncate">
+                      {alert.road_name}
+                    </h4>
                   </div>
-
-                  {report.image_url && (
-                    <img
-                      src={report.image_url}
-                      alt="รูปภาพน้ำท่วม"
-                      className="w-12 h-12 rounded-lg object-cover border border-slate-200 flex-shrink-0"
-                    />
-                  )}
-
-                  <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  <div className="text-xs text-slate-500">
+                    อ.{alert.district} • {alert.km_range} • ระดับน้ำท่วมผิวทาง <b>{alert.water_height_cm} ซม.</b>
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                  !alert.passable ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'
+                }`}>
+                  {!alert.passable ? 'รถเล็กผ่านไม่ได้' : 'ระวังน้ำท่วมทาง'}
+                </span>
+                <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              </div>
+            ))}
+
+            {/* Stations */}
+            {districtStations.map((sta) => (
+              <div
+                key={sta.id}
+                onClick={() => setSelectedStation(sta)}
+                className="py-3 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-50 px-2 rounded-xl transition-colors"
+              >
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-900 border border-blue-200">
+                      {sta.station_code}
+                    </span>
+                    <h4 className="text-sm font-semibold text-slate-900 truncate">
+                      {sta.name_th}
+                    </h4>
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    ต.{sta.subdistrict} อ.{sta.district} • {sta.river_name || sta.basin_name}
+                    {sta.water_level_m_msl && ` • ระดับน้ำ ${sta.water_level_m_msl} ม.รทก.`}
+                  </div>
+                </div>
+                <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                  sta.severity === 'red' ? 'bg-red-100 text-red-700' :
+                  sta.severity === 'orange' ? 'bg-orange-100 text-orange-700' :
+                  sta.severity === 'yellow' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-700'
+                }`}>
+                  {sta.severity_label}
+                </span>
+                <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              </div>
+            ))}
+          </div>
         </section>
 
-        {/* Subdistrict Tag Cloud (If district selected) */}
+        {/* Subdistrict Tag Cloud */}
         {selectedDistrict && (
           <section className="bg-slate-100/70 p-4 rounded-2xl border border-slate-200 space-y-2">
             <span className="text-xs font-semibold text-slate-600 block">
@@ -424,37 +401,25 @@ export default function AreaPage() {
 
         {/* Disclaimer footer */}
         <p className="text-[11px] leading-relaxed text-slate-400 text-center px-4 py-2">
-          * ข้อมูลระดับน้ำประมวลผลจากการรายงานของประชาชนในพื้นที่เพื่อการเฝ้าระวังและการสัญจร โปรดระมัดระวังและปฏิบัติตามคำเตือนของหน่วยงานกู้ภัยในพื้นที่
+          * ข้อมูลโทรมาตรและสภาพเส้นทางเชื่อมต่อโดยตรงจาก Open Data ของ สสน. (ThaiWater), กรมชลประทาน, GISTDA และกรมทางหลวง เพื่อการบริหารจัดการน้ำและการเตือนภัยล่วงหน้า
         </p>
       </main>
 
-      {/* Drawers & Modals */}
+      {/* Drawers */}
       <EmergencyDrawer
         isOpen={isEmergencyOpen}
         onClose={() => setIsEmergencyOpen(false)}
       />
 
-      <ReportFormModal
-        isOpen={isReportModalOpen}
-        onClose={() => setIsReportModalOpen(false)}
-        onSubmit={async (reportData, imageBlob) => {
-          const newReport = await createReport(reportData);
-          setReports((prev) => [newReport, ...prev]);
-          setIsReportModalOpen(false);
-          setToastMessage('บันทึกและเผยแพร่รายงานน้ำท่วมเรียบร้อยแล้ว');
-          setTimeout(() => setToastMessage(null), 3500);
+      <TelemetryDetailDrawer
+        station={selectedStation}
+        highwayAlert={selectedHighwayAlert}
+        onClose={() => {
+          setSelectedStation(null);
+          setSelectedHighwayAlert(null);
         }}
+        onOpenEmergency={() => setIsEmergencyOpen(true)}
       />
-
-      {selectedReport && (
-        <ReportDetailDrawer
-          report={selectedReport}
-          onClose={() => setSelectedReport(null)}
-          onUpvote={handleUpvote}
-          onDeleteReport={handleDeleteReport}
-          onOpenEmergency={() => setIsEmergencyOpen(true)}
-        />
-      )}
     </div>
   );
 }

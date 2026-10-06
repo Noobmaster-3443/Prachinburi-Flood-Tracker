@@ -1,144 +1,154 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { Navbar } from '@/components/Navbar';
-import { DynamicMap } from '@/components/Map/DynamicMap';
-import { FilterBar } from '@/components/Filters/FilterBar';
-import { ReportFeedList } from '@/components/Feed/ReportFeedList';
-import { ReportFormModal } from '@/components/ReportModal/ReportFormModal';
-import { ReportDetailDrawer } from '@/components/ReportDrawer/ReportDetailDrawer';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { TelemetryNavbar } from '@/components/Navbar/TelemetryNavbar';
+import { DynamicTelemetryMap } from '@/components/Map/DynamicTelemetryMap';
+import { TelemetryFilterBar } from '@/components/Filters/TelemetryFilterBar';
+import { TelemetryStationFeedList } from '@/components/Feed/TelemetryStationFeedList';
+import { TelemetryDetailDrawer } from '@/components/ReportDrawer/TelemetryDetailDrawer';
 import { EmergencyDrawer } from '@/components/Emergency/EmergencyDrawer';
-import { FloatingActionButton } from '@/components/ReportModal/FloatingActionButton';
-import { FloodReport, FilterState } from '@/types';
-import { getReports, createReport, upvoteReport, deleteReport } from '@/lib/reports-store';
-import { CheckCircle2 } from 'lucide-react';
+import { TelemetryStation, HighwayDisasterAlert, DashboardFilterState } from '@/types/telemetry';
+import { getAutomatedTelemetryData } from '@/lib/telemetry-service';
+import { ShieldCheck, RefreshCw, Radio, CheckCircle2 } from 'lucide-react';
 
 export default function HomePage() {
-  const [reports, setReports] = useState<FloodReport[]>([]);
+  const [stations, setStations] = useState<TelemetryStation[]>([]);
+  const [highwayAlerts, setHighwayAlerts] = useState<HighwayDisasterAlert[]>([]);
+  const [gistdaGeoJson, setGistdaGeoJson] = useState<GeoJSON.FeatureCollection | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string>(new Date().toISOString());
+  const [isAutoRefresh, setIsAutoRefresh] = useState<boolean>(true);
+
   const [currentView, setCurrentView] = useState<'map' | 'list'>('map');
-  const [selectedReport, setSelectedReport] = useState<FloodReport | null>(null);
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [selectedStation, setSelectedStation] = useState<TelemetryStation | null>(null);
+  const [selectedHighwayAlert, setSelectedHighwayAlert] = useState<HighwayDisasterAlert | null>(null);
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Filter state
-  const [filter, setFilter] = useState<FilterState>({
+  const [filter, setFilter] = useState<DashboardFilterState>({
     district: 'all',
+    stationType: 'all',
     severity: 'all',
-    onlyPassable: null,
     searchQuery: '',
-    onlyVerified: false,
   });
 
-  // Load initial reports
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const data = await getReports();
-        setReports(data);
-      } catch (err) {
-        console.error('Failed to load flood reports:', err);
-      } finally {
-        setLoading(false);
+  // Fetch telemetry data function
+  const fetchData = useCallback(async (isManual = false) => {
+    if (isManual) setIsRefreshing(true);
+    try {
+      const data = await getAutomatedTelemetryData();
+      setStations(data.stations);
+      setHighwayAlerts(data.highwayAlerts);
+      setGistdaGeoJson(data.gistdaGeoJson);
+      setLastUpdated(data.lastUpdated);
+
+      if (isManual) {
+        setToastMessage('อัปเดตข้อมูลโทรมาตร สสน. และทางหลวงเรียบร้อย');
+        setTimeout(() => setToastMessage(null), 3000);
       }
+    } catch (err) {
+      console.error('Failed to load automated telemetry data:', err);
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
     }
-    loadData();
   }, []);
 
+  // Initial load
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Auto-refresh interval (every 60 seconds)
+  useEffect(() => {
+    if (!isAutoRefresh) return;
+    const interval = setInterval(() => {
+      fetchData(false);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [isAutoRefresh, fetchData]);
+
   // Filter logic
-  const filteredReports = useMemo(() => {
-    return reports.filter((rep) => {
+  const filteredStations = useMemo(() => {
+    return stations.filter((sta) => {
       // District filter
-      if (filter.district !== 'all' && rep.district !== filter.district) {
+      if (filter.district !== 'all' && sta.district !== filter.district) {
         return false;
       }
 
       // Severity filter
-      if (filter.severity !== 'all' && rep.severity !== filter.severity) {
+      if (filter.severity !== 'all' && sta.severity !== filter.severity) {
         return false;
-      }
-
-      // Passability filter
-      if (filter.onlyPassable !== null) {
-        if (filter.onlyPassable === true && !rep.passable_for_vehicles) return false;
-        if (filter.onlyPassable === false && rep.passable_for_vehicles) return false;
       }
 
       // Search query
       if (filter.searchQuery.trim() !== '') {
         const query = filter.searchQuery.toLowerCase();
-        const matchName = rep.location_name.toLowerCase().includes(query);
-        const matchDistrict = rep.district.toLowerCase().includes(query);
-        const matchSubdistrict = rep.subdistrict.toLowerCase().includes(query);
-        const matchDesc = rep.description?.toLowerCase().includes(query);
-        if (!matchName && !matchDistrict && !matchSubdistrict && !matchDesc) {
+        const matchName = sta.name_th.toLowerCase().includes(query);
+        const matchCode = sta.station_code.toLowerCase().includes(query);
+        const matchDistrict = sta.district.toLowerCase().includes(query);
+        const matchSubdistrict = sta.subdistrict.toLowerCase().includes(query);
+        const matchRiver = sta.river_name?.toLowerCase().includes(query) ?? false;
+        if (!matchName && !matchCode && !matchDistrict && !matchSubdistrict && !matchRiver) {
           return false;
         }
       }
 
       return true;
     });
-  }, [reports, filter]);
+  }, [stations, filter]);
 
-  // Handle report submission
-  const handleNewReport = async (
-    reportData: Omit<FloodReport, 'id' | 'created_at' | 'upvotes'>,
-    imageBlob?: Blob
-  ) => {
-    const created = await createReport(reportData, imageBlob);
-    setReports((prev) => [created, ...prev]);
-    setSelectedReport(created);
-
-    // Show success notification
-    setToastMessage('ขอบคุณที่ร่วมรายงาน! ข้อมูลของคุณช่วยให้ชาวปราจีนบุรีปลอดภัยยิ่งขึ้น');
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 4500);
-  };
-
-  // Handle report upvote
-  const handleUpvote = async (id: string) => {
-    const newCount = await upvoteReport(id);
-    setReports((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, upvotes: newCount } : r))
-    );
-    if (selectedReport && selectedReport.id === id) {
-      setSelectedReport((prev) => (prev ? { ...prev, upvotes: newCount } : null));
-    }
-  };
-
-  // Handle report delete (Admin)
-  const handleDeleteReport = async (id: string) => {
-    const success = await deleteReport(id);
-    if (success) {
-      setReports((prev) => prev.filter((r) => r.id !== id));
-      setSelectedReport(null);
-      setToastMessage('ลบรายงานออกจากระบบเรียบร้อยแล้ว');
-      setTimeout(() => {
-        setToastMessage(null);
-      }, 3500);
-    }
-  };
+  // Filtered Highway Alerts
+  const filteredHighwayAlerts = useMemo(() => {
+    return highwayAlerts.filter((alert) => {
+      if (filter.district !== 'all' && alert.district !== filter.district) {
+        return false;
+      }
+      if (filter.searchQuery.trim() !== '') {
+        const query = filter.searchQuery.toLowerCase();
+        const matchRoad = alert.road_name.toLowerCase().includes(query);
+        const matchRoute = alert.route_number.toLowerCase().includes(query);
+        const matchDist = alert.district.toLowerCase().includes(query);
+        if (!matchRoad && !matchRoute && !matchDist) return false;
+      }
+      return true;
+    });
+  }, [highwayAlerts, filter]);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden flex flex-col bg-slate-100">
-      {/* Top Navigation */}
-      <Navbar
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-50 font-sans">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs sm:text-sm px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 animate-in fade-in border border-slate-700">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Top Navbar */}
+      <TelemetryNavbar
         currentView={currentView}
         onViewChange={setCurrentView}
-        onOpenReportModal={() => setIsReportModalOpen(true)}
         onOpenEmergencyModal={() => setIsEmergencyModalOpen(true)}
-        reports={reports}
+        stations={stations}
+        highwayAlerts={highwayAlerts}
+        isAutoRefresh={isAutoRefresh}
       />
 
-      {/* Floating Filter Bar under Navbar */}
-      <div className="fixed top-18 sm:top-20 left-0 right-0 z-20 px-3 sm:px-4 pointer-events-none">
+      {/* Floating Filter Bar */}
+      <div className="fixed top-20 left-0 right-0 z-20 px-3 sm:px-4 pointer-events-none">
         <div className="pointer-events-auto">
-          <FilterBar
+          <TelemetryFilterBar
             filter={filter}
             onFilterChange={setFilter}
-            totalResults={filteredReports.length}
+            totalStations={filteredStations.length}
+            isAutoRefresh={isAutoRefresh}
+            onToggleAutoRefresh={() => setIsAutoRefresh(!isAutoRefresh)}
+            onManualRefresh={() => fetchData(true)}
+            isRefreshing={isRefreshing}
+            lastUpdated={lastUpdated}
           />
         </div>
       </div>
@@ -147,42 +157,50 @@ export default function HomePage() {
       <main className="flex-1 w-full h-full pt-16 relative">
         {currentView === 'map' ? (
           <div className="w-full h-full">
-            <DynamicMap
-              reports={filteredReports}
-              selectedReport={selectedReport}
-              onSelectReport={setSelectedReport}
+            <DynamicTelemetryMap
+              stations={filteredStations}
+              highwayAlerts={filteredHighwayAlerts}
+              gistdaGeoJson={gistdaGeoJson}
+              selectedStation={selectedStation}
+              selectedHighwayAlert={selectedHighwayAlert}
+              onSelectStation={(s) => {
+                setSelectedStation(s);
+                setSelectedHighwayAlert(null);
+              }}
+              onSelectHighwayAlert={(h) => {
+                setSelectedHighwayAlert(h);
+                setSelectedStation(null);
+              }}
               selectedDistrict={filter.district}
             />
           </div>
         ) : (
-          <div className="w-full h-full overflow-y-auto pt-24 pb-20">
-            <ReportFeedList
-              reports={filteredReports}
-              onSelectReport={(r) => {
-                setSelectedReport(r);
+          <div className="w-full h-full overflow-y-auto pt-28 pb-16">
+            <TelemetryStationFeedList
+              stations={filteredStations}
+              highwayAlerts={filteredHighwayAlerts}
+              onSelectStation={(s) => {
+                setSelectedStation(s);
+                setCurrentView('map');
+              }}
+              onSelectHighwayAlert={(h) => {
+                setSelectedHighwayAlert(h);
+                setCurrentView('map');
               }}
             />
           </div>
         )}
       </main>
 
-      {/* Mobile Floating Action Button (FAB) */}
-      <FloatingActionButton onClick={() => setIsReportModalOpen(true)} />
-
-      {/* Detail Slide Drawer / Popup */}
-      <ReportDetailDrawer
-        report={selectedReport}
-        onClose={() => setSelectedReport(null)}
-        onUpvote={handleUpvote}
+      {/* Detail Slide Drawer */}
+      <TelemetryDetailDrawer
+        station={selectedStation}
+        highwayAlert={selectedHighwayAlert}
+        onClose={() => {
+          setSelectedStation(null);
+          setSelectedHighwayAlert(null);
+        }}
         onOpenEmergency={() => setIsEmergencyModalOpen(true)}
-        onDeleteReport={handleDeleteReport}
-      />
-
-      {/* Submission Modal */}
-      <ReportFormModal
-        isOpen={isReportModalOpen}
-        onClose={() => setIsReportModalOpen(false)}
-        onSubmit={handleNewReport}
       />
 
       {/* Emergency Hotline Modal */}
@@ -190,14 +208,6 @@ export default function HomePage() {
         isOpen={isEmergencyModalOpen}
         onClose={() => setIsEmergencyModalOpen(false)}
       />
-
-      {/* Success Toast */}
-      {toastMessage && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 text-xs sm:text-sm animate-in fade-in slide-in-from-top-2 border border-slate-700 max-w-sm sm:max-w-md mx-auto">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-          <span className="font-medium">{toastMessage}</span>
-        </div>
-      )}
     </div>
   );
 }
