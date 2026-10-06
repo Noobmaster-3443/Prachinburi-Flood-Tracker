@@ -73,7 +73,7 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
     const isWater = station.station_type === 'water_level';
 
     return (
-      <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[460px] bg-white shadow-2xl flex flex-col font-sans animate-in slide-in-from-right duration-300 border-l border-slate-200">
+      <div className="fixed inset-y-0 right-0 z-[60] w-full sm:w-[460px] bg-white shadow-2xl flex flex-col font-sans animate-in slide-in-from-right duration-300 border-l border-slate-200">
         {/* Header */}
         <div className="px-5 py-4 border-b border-slate-100 flex items-start justify-between bg-slate-50/80">
           <div className="space-y-1">
@@ -226,7 +226,7 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
     const isImpassable = !highwayAlert.passable;
 
     return (
-      <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[460px] bg-white shadow-2xl flex flex-col font-sans animate-in slide-in-from-right duration-300 border-l border-slate-200">
+      <div className="fixed inset-y-0 right-0 z-[60] w-full sm:w-[460px] bg-white shadow-2xl flex flex-col font-sans animate-in slide-in-from-right duration-300 border-l border-slate-200">
         {/* Header */}
         <div className="px-5 py-4 border-b border-slate-100 flex items-start justify-between bg-slate-50/80">
           <div className="space-y-1">

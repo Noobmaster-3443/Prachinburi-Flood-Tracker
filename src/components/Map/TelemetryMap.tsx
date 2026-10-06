@@ -273,6 +273,11 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
           <div class="text-[11px] text-blue-700 mt-2 font-medium flex items-center gap-1 border-t border-slate-100 pt-1.5">
             <span>✓ ${station.source_name_th}</span>
           </div>
+
+          <button id="btn-open-detail-${station.id}" class="w-full mt-2.5 py-1.5 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer">
+            <span>ดูรายละเอียดเชิงลึกด้านข้าง</span>
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          </button>
         </div>
       `;
 
@@ -291,6 +296,16 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         onSelectStation(station);
         onSelectHighwayAlert(null);
         marker.openPopup();
+      });
+
+      marker.on('popupopen', () => {
+        const btn = document.getElementById(`btn-open-detail-${station.id}`);
+        if (btn) {
+          btn.onclick = () => {
+            onSelectStation(station);
+            onSelectHighwayAlert(null);
+          };
+        }
       });
 
       if (isSelected) {
@@ -353,6 +368,11 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
           <div class="text-[11px] text-blue-700 mt-2 font-medium border-t border-slate-100 pt-1.5">
             ✓ ${alert.source_name_th}
           </div>
+
+          <button id="btn-open-hwy-${alert.id}" class="w-full mt-2.5 py-1.5 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer">
+            <span>ดูข้อมูลเส้นทางเลี่ยงด้านข้าง</span>
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          </button>
         </div>
       `;
 
@@ -371,6 +391,16 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         onSelectHighwayAlert(alert);
         onSelectStation(null);
         marker.openPopup();
+      });
+
+      marker.on('popupopen', () => {
+        const btn = document.getElementById(`btn-open-hwy-${alert.id}`);
+        if (btn) {
+          btn.onclick = () => {
+            onSelectHighwayAlert(alert);
+            onSelectStation(null);
+          };
+        }
       });
 
       if (isSelected) {
