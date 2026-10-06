@@ -39,7 +39,7 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
   const isFiltered = filter.district !== 'all' || filter.severity !== 'all' || filter.searchQuery.trim() !== '';
 
   return (
-    <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-slate-200/90 p-2.5 sm:p-3 max-w-5xl mx-auto transition-all font-sans">
+    <div className="bg-white rounded-xl shadow-md border border-slate-200 p-2.5 sm:p-3 max-w-5xl mx-auto transition-all font-sans">
       {/* Main Search & Compact Bar */}
       <div className="flex items-center gap-2">
         {/* Search Input */}
