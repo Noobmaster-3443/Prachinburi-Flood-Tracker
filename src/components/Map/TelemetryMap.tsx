@@ -157,21 +157,7 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         };
       });
 
-      // District center label badges (Subtle & clean, non-intrusive)
-      PRACHINBURI_DISTRICTS.forEach((d) => {
-        const labelHtml = `
-          <div class="px-2 py-0.5 rounded-full bg-slate-900/60 backdrop-blur-xs text-[10px] font-medium text-white/90 tracking-wide pointer-events-none whitespace-nowrap text-center shadow-xs border border-white/20 select-none">
-            ${d.name_th.replace('อำเภอ', 'อ.')}
-          </div>
-        `;
-        const icon = L.divIcon({
-          className: 'custom-district-badge',
-          html: labelHtml,
-          iconSize: [70, 18],
-          iconAnchor: [35, 9],
-        });
-        L.marker([d.lat, d.lng], { icon, interactive: false, zIndexOffset: -100 }).addTo(labelsLayerRef.current!);
-      });
+      // District boundaries are rendered cleanly via GeoJSON without redundant center pills
     }
   }, [showBoundaries, selectedDistrict]);
 
@@ -244,20 +230,16 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
 
       const markerHtml = `
         <div class="relative flex flex-col items-center cursor-pointer group transition-transform ${isSelected ? 'scale-115 z-50' : 'hover:scale-105'}">
-          ${isCritical ? `<div class="absolute -top-1 w-7 h-7 rounded-full animate-ping opacity-60" style="background-color: ${col.hex};"></div>` : ''}
-          
-          {/* Main Pin Badge with Status Dot + Code */}
-          <div class="flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-full bg-slate-900/90 text-white shadow-xl border border-white/20 backdrop-blur-md">
-            <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 shadow-xs" style="background-color: ${col.hex};">
+          ${isCritical ? `<div class="absolute -top-1 w-6 h-6 rounded-full animate-ping opacity-75" style="background-color: ${col.hex};"></div>` : ''}
+          <div class="flex items-center gap-1.5 px-2 py-1 rounded-full bg-slate-900/95 text-white shadow-xl border border-white/25 backdrop-blur-md">
+            <div class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 shadow-xs" style="background-color: ${col.hex};">
               ${iconSvg}
             </div>
             <span class="text-[11px] font-bold tracking-tight text-white leading-none whitespace-nowrap">
               ${station.station_code}
             </span>
           </div>
-
-          {/* Pointer needle */}
-          <div class="w-2 h-2 -mt-1 bg-slate-900/90 rotate-45 border-r border-b border-white/20"></div>
+          <div class="w-2 h-2 -mt-1 bg-slate-900/95 rotate-45 border-r border-b border-white/20"></div>
         </div>
       `;
 
@@ -316,19 +298,16 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
 
       const markerHtml = `
         <div class="relative flex flex-col items-center cursor-pointer group transition-transform ${isSelected ? 'scale-115 z-50' : 'hover:scale-105'}">
-          {/* Main Pin Badge */}
-          <div class="flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-full text-white shadow-xl backdrop-blur-md border border-white/20 ${
+          <div class="flex items-center gap-1.5 px-2 py-1 rounded-full text-white shadow-xl backdrop-blur-md border border-white/25 ${
             isImpassable ? 'bg-red-600 ring-2 ring-red-400' : 'bg-amber-600 ring-1 ring-amber-300'
           }">
-            <div class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-              <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+            <div class="w-4 h-4 rounded-full bg-white/25 flex items-center justify-center flex-shrink-0">
+              <svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
             </div>
-            <span class="text-[11px] font-black tracking-tight text-white leading-none whitespace-nowrap">
-              ${alert.route_number.replace('ทางหลวง ', 'ทล.')}
+            <span class="text-[11px] font-bold text-white tracking-wide leading-none whitespace-nowrap">
+              ${alert.route_number.replace('ทางหลวง', 'ทล.').trim()}
             </span>
           </div>
-
-          {/* Pointer needle */}
           <div class="w-2 h-2 -mt-1 rotate-45 border-r border-b border-white/20 ${isImpassable ? 'bg-red-600' : 'bg-amber-600'}"></div>
         </div>
       `;
