@@ -69,6 +69,7 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
   useEffect(() => {
     if (typeof window !== 'undefined') {
       (window as any).__openStationDrawer = (id: string) => {
+        (window as any).__openTelemetryStationById?.(id);
         const st = stations.find((s) => s.id === id);
         if (st) {
           onSelectStation(st);
@@ -76,6 +77,7 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         }
       };
       (window as any).__openHighwayDrawer = (id: string) => {
+        (window as any).__openTelemetryHighwayById?.(id);
         const hw = highwayAlerts.find((h) => h.id === id);
         if (hw) {
           onSelectHighwayAlert(hw);
@@ -90,6 +92,14 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
       const action = target.getAttribute('data-action');
       if (action === 'open-station-detail') {
         const id = target.getAttribute('data-station-id');
+        if (id) {
+          (window as any).__openTelemetryStationById?.(id);
+          window.dispatchEvent(
+            new CustomEvent('open-telemetry-drawer', {
+              detail: { type: 'station', id },
+            })
+          );
+        }
         const st = stations.find((s) => s.id === id);
         if (st) {
           onSelectStation(st);
@@ -97,6 +107,14 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         }
       } else if (action === 'open-highway-detail') {
         const id = target.getAttribute('data-highway-id');
+        if (id) {
+          (window as any).__openTelemetryHighwayById?.(id);
+          window.dispatchEvent(
+            new CustomEvent('open-telemetry-drawer', {
+              detail: { type: 'highway', id },
+            })
+          );
+        }
         const hw = highwayAlerts.find((h) => h.id === id);
         if (hw) {
           onSelectHighwayAlert(hw);
@@ -141,6 +159,56 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
     labelsLayerRef.current = L.layerGroup().addTo(map);
     stationsLayerRef.current = L.layerGroup().addTo(map);
     highwaysLayerRef.current = L.layerGroup().addTo(map);
+
+    // Global Leaflet popupopen event listener to wire detail drawer buttons reliably
+    map.on('popupopen', (e: L.PopupEvent) => {
+      const popupEl = e.popup.getElement();
+      if (!popupEl) return;
+
+      const stationBtn = popupEl.querySelector('[data-action="open-station-detail"]') as HTMLElement | null;
+      if (stationBtn) {
+        const stationId = stationBtn.getAttribute('data-station-id');
+        const triggerStation = (ev: Event) => {
+          if (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+          }
+          if (stationId) {
+            (window as any).__openTelemetryStationById?.(stationId);
+            window.dispatchEvent(
+              new CustomEvent('open-telemetry-drawer', {
+                detail: { type: 'station', id: stationId },
+              })
+            );
+          }
+        };
+        stationBtn.onclick = triggerStation;
+        stationBtn.ontouchend = triggerStation;
+        stationBtn.onpointerdown = triggerStation;
+      }
+
+      const highwayBtn = popupEl.querySelector('[data-action="open-highway-detail"]') as HTMLElement | null;
+      if (highwayBtn) {
+        const highwayId = highwayBtn.getAttribute('data-highway-id');
+        const triggerHighway = (ev: Event) => {
+          if (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+          }
+          if (highwayId) {
+            (window as any).__openTelemetryHighwayById?.(highwayId);
+            window.dispatchEvent(
+              new CustomEvent('open-telemetry-drawer', {
+                detail: { type: 'highway', id: highwayId },
+              })
+            );
+          }
+        };
+        highwayBtn.onclick = triggerHighway;
+        highwayBtn.ontouchend = triggerHighway;
+        highwayBtn.onpointerdown = triggerHighway;
+      }
+    });
 
     mapInstanceRef.current = map;
 
@@ -323,17 +391,16 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
             <span>✓ ${station.source_name_th}</span>
           </div>
 
-          <a 
-            href="javascript:void(0)"
-            role="button"
+          <button 
+            type="button"
             data-action="open-station-detail" 
             data-station-id="${station.id}"
-            onclick="if(window.__openStationDrawer){window.__openStationDrawer('${station.id}');} return false;"
-            class="w-full mt-2.5 py-2 px-3 rounded-xl bg-blue-600 active:bg-blue-800 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer pointer-events-auto select-none no-underline block text-center"
+            onclick="if(window.__openTelemetryStationById){window.__openTelemetryStationById('${station.id}');} if(window.dispatchEvent){window.dispatchEvent(new CustomEvent('open-telemetry-drawer',{detail:{type:'station',stationId:'${station.id}'}}));} return false;"
+            class="w-full mt-2.5 py-2 px-3 rounded-xl bg-blue-600 active:bg-blue-800 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer pointer-events-auto select-none border-none outline-none block text-center"
           >
             <span>ดูรายละเอียด</span>
             <svg class="w-3.5 h-3.5 pointer-events-none inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
-          </a>
+          </button>
         </div>
       `;
 
@@ -349,8 +416,6 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
       );
 
       marker.on('click', () => {
-        onSelectStation(station);
-        onSelectHighwayAlert(null);
         marker.openPopup();
       });
 
@@ -364,11 +429,18 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
                 L.DomEvent.stopPropagation(ev);
                 L.DomEvent.preventDefault(ev);
               }
+              (window as any).__openTelemetryStationById?.(station.id);
               onSelectStation(station);
               onSelectHighwayAlert(null);
+              window.dispatchEvent(
+                new CustomEvent('open-telemetry-drawer', {
+                  detail: { type: 'station', id: station.id, station },
+                })
+              );
             };
             L.DomEvent.on(btn, 'click', trigger);
             L.DomEvent.on(btn, 'touchend', trigger);
+            L.DomEvent.on(btn, 'pointerdown', trigger);
           }
         }
       });
@@ -434,17 +506,16 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
             ✓ ${alert.source_name_th}
           </div>
 
-          <a 
-            href="javascript:void(0)"
-            role="button"
+          <button 
+            type="button"
             data-action="open-highway-detail" 
             data-highway-id="${alert.id}"
-            onclick="if(window.__openHighwayDrawer){window.__openHighwayDrawer('${alert.id}');} return false;"
-            class="w-full mt-2.5 py-2 px-3 rounded-xl bg-blue-600 active:bg-blue-800 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer pointer-events-auto select-none no-underline block text-center"
+            onclick="if(window.__openTelemetryHighwayById){window.__openTelemetryHighwayById('${alert.id}');} if(window.dispatchEvent){window.dispatchEvent(new CustomEvent('open-telemetry-drawer',{detail:{type:'highway',highwayId:'${alert.id}'}}));} return false;"
+            class="w-full mt-2.5 py-2 px-3 rounded-xl bg-blue-600 active:bg-blue-800 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer pointer-events-auto select-none border-none outline-none block text-center"
           >
             <span>ดูรายละเอียด</span>
             <svg class="w-3.5 h-3.5 pointer-events-none inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
-          </a>
+          </button>
         </div>
       `;
 
@@ -460,8 +531,6 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
       );
 
       marker.on('click', () => {
-        onSelectHighwayAlert(alert);
-        onSelectStation(null);
         marker.openPopup();
       });
 
@@ -475,11 +544,18 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
                 L.DomEvent.stopPropagation(ev);
                 L.DomEvent.preventDefault(ev);
               }
+              (window as any).__openTelemetryHighwayById?.(alert.id);
               onSelectHighwayAlert(alert);
               onSelectStation(null);
+              window.dispatchEvent(
+                new CustomEvent('open-telemetry-drawer', {
+                  detail: { type: 'highway', id: alert.id, highway: alert },
+                })
+              );
             };
             L.DomEvent.on(btn, 'click', trigger);
             L.DomEvent.on(btn, 'touchend', trigger);
+            L.DomEvent.on(btn, 'pointerdown', trigger);
           }
         }
       });

@@ -71,6 +71,47 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, [isAutoRefresh, fetchData]);
 
+  // Global Detail Drawer Opener - connects map popups & feed list items directly to drawer state
+  useEffect(() => {
+    (window as any).__openTelemetryStationById = (stationId: string) => {
+      const st = stations.find((s) => s.id === stationId);
+      if (st) {
+        setSelectedStation(st);
+        setSelectedHighwayAlert(null);
+      }
+    };
+
+    (window as any).__openTelemetryHighwayById = (highwayId: string) => {
+      const hw = highwayAlerts.find((h) => h.id === highwayId);
+      if (hw) {
+        setSelectedHighwayAlert(hw);
+        setSelectedStation(null);
+      }
+    };
+
+    const handleCustomDrawerOpen = (e: any) => {
+      const detail = e.detail;
+      if (detail?.type === 'station') {
+        const st = detail.station || stations.find((s) => s.id === detail.stationId || s.id === detail.id);
+        if (st) {
+          setSelectedStation(st);
+          setSelectedHighwayAlert(null);
+        }
+      } else if (detail?.type === 'highway') {
+        const hw = detail.highway || highwayAlerts.find((h) => h.id === detail.highwayId || h.id === detail.id);
+        if (hw) {
+          setSelectedHighwayAlert(hw);
+          setSelectedStation(null);
+        }
+      }
+    };
+
+    window.addEventListener('open-telemetry-drawer', handleCustomDrawerOpen as any);
+    return () => {
+      window.removeEventListener('open-telemetry-drawer', handleCustomDrawerOpen as any);
+    };
+  }, [stations, highwayAlerts]);
+
   // Filter logic
   const filteredStations = useMemo(() => {
     return stations.filter((sta) => {
@@ -143,7 +184,7 @@ export default function HomePage() {
         <>
           {/* Floating Filter Bar & Top Quick Metrics (Map View Only) */}
           <div className="fixed top-[60px] sm:top-20 left-0 right-0 z-20 px-2 sm:px-4 pointer-events-none space-y-1.5 sm:space-y-2">
-            <div className="pointer-events-auto max-w-5xl mx-auto space-y-1.5 sm:space-y-2">
+            <div className="pointer-events-auto max-w-3xl sm:max-w-4xl mx-auto space-y-1.5 sm:space-y-2">
               <MetricBanner
                 stations={stations}
                 highwayAlerts={highwayAlerts}
