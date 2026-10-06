@@ -430,11 +430,6 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         autoPan: true,
       });
 
-      marker.bindTooltip(
-        `<div class="text-xs font-bold text-slate-900">${station.name_th}</div>`,
-        { direction: 'top', offset: [0, -30] }
-      );
-
       marker.on('click', () => {
         marker.openPopup();
       });
@@ -519,11 +514,6 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         autoPan: true,
       });
 
-      marker.bindTooltip(
-        `<div class="text-xs font-bold text-slate-900">${alert.route_number}</div>`,
-        { direction: 'top', offset: [0, -28] }
-      );
-
       marker.on('click', () => {
         marker.openPopup();
       });
@@ -596,7 +586,6 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
       `;
 
       marker.bindPopup(popupHtml, { offset: [0, -28], closeButton: true, autoPan: true });
-      marker.bindTooltip(`<div class="text-xs font-bold text-slate-900">${dam.name_th}</div>`, { direction: 'top', offset: [0, -28] });
       marker.on('click', () => marker.openPopup());
 
       if (isSelected) {
@@ -666,7 +655,6 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
       `;
 
       marker.bindPopup(popupHtml, { offset: [0, -28], closeButton: true, autoPan: true });
-      marker.bindTooltip(`<div class="text-xs font-bold text-slate-900">${alert.location_name}</div>`, { direction: 'top', offset: [0, -28] });
       marker.on('click', () => marker.openPopup());
 
       if (isSelected) {
@@ -735,7 +723,6 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
       `;
 
       marker.bindPopup(popupHtml, { offset: [0, -28], closeButton: true, autoPan: true });
-      marker.bindTooltip(`<div class="text-xs font-bold text-slate-900">${shelter.name}</div>`, { direction: 'top', offset: [0, -28] });
       marker.on('click', () => marker.openPopup());
 
       if (isSelected) {

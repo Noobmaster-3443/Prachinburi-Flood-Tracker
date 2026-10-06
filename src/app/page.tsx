@@ -232,31 +232,9 @@ export default function HomePage() {
       {/* Main Content Area */}
       {currentView === 'map' ? (
         <>
-          {/* Floating Filter Bar & Top Quick Metrics (Map View Only) */}
-          <div className="fixed top-[60px] sm:top-20 left-0 right-0 z-20 px-2 sm:px-4 pointer-events-none space-y-1.5 sm:space-y-2">
-            <div className="pointer-events-auto max-w-3xl sm:max-w-4xl mx-auto space-y-1.5 sm:space-y-2">
-              <MetricBanner
-                stations={stations}
-                highwayAlerts={highwayAlerts}
-                highTide={highTide ?? undefined}
-                flashFloodAlerts={flashFloodAlerts}
-                dams={dams}
-                onFilterSeverity={(sev) => setFilter({ ...filter, severity: sev as any })}
-                onFilterRoad={() => setCurrentView('list')}
-                onOpenHighTide={() => {
-                  clearAllSelections();
-                  if (highTide) setSelectedHighTide(highTide);
-                }}
-                onOpenFlashFlood={(flash) => {
-                  clearAllSelections();
-                  setSelectedFlashFlood(flash);
-                }}
-                onOpenDam={(d) => {
-                  clearAllSelections();
-                  setSelectedDam(d);
-                }}
-              />
-
+          {/* Floating Filter Bar (Map View Only) */}
+          <div className="fixed top-[58px] sm:top-[72px] left-0 right-0 z-20 px-2 sm:px-4 pointer-events-none">
+            <div className="pointer-events-auto max-w-xl sm:max-w-2xl mx-auto space-y-1.5">
               <TelemetryFilterBar
                 filter={filter}
                 onFilterChange={setFilter}
@@ -267,6 +245,46 @@ export default function HomePage() {
                 isRefreshing={isRefreshing}
                 lastUpdated={lastUpdated}
               />
+
+              {/* Compact Floating Alert Badges (Only shown if there's high tide or critical flash flood) */}
+              {(highTide || flashFloodAlerts.some((f) => f.severity === 'red')) && (
+                <div className="flex items-center justify-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                  {highTide && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        clearAllSelections();
+                        setSelectedHighTide(highTide);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-blue-600/95 hover:bg-blue-700 text-white shadow-md backdrop-blur-md transition-all active:scale-95 cursor-pointer"
+                    >
+                      <span>🌊</span>
+                      <span className="truncate max-w-[160px] sm:max-w-xs">
+                        น้ำทะเลหนุนสูง (+{highTide.morning_peak_m_msl} ม.รทก.)
+                      </span>
+                      <span className="text-blue-200 text-[10px]">รายละเอียด &gt;</span>
+                    </button>
+                  )}
+                  {flashFloodAlerts
+                    .filter((f) => f.severity === 'red')
+                    .slice(0, 1)
+                    .map((flash) => (
+                      <button
+                        key={flash.id}
+                        type="button"
+                        onClick={() => {
+                          clearAllSelections();
+                          setSelectedFlashFlood(flash);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-rose-600/95 hover:bg-rose-700 text-white shadow-md backdrop-blur-md transition-all active:scale-95 animate-pulse cursor-pointer"
+                      >
+                        <span>🚨</span>
+                        <span className="truncate max-w-[160px] sm:max-w-xs">เตือนน้ำป่า: {flash.location_name}</span>
+                        <span className="text-rose-200 text-[10px]">รายละเอียด &gt;</span>
+                      </button>
+                    ))}
+                </div>
+              )}
             </div>
           </div>
 
