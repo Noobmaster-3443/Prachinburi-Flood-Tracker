@@ -6,14 +6,15 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css)
 ![Leaflet](https://img.shields.io/badge/Leaflet-1.9-green?style=for-the-badge&logo=leaflet)
-![Open Data](https://img.shields.io/badge/Open%20Data-HII%20%7C%20RID%20%7C%20GISTDA%20%7C%20DOH-blue?style=for-the-badge)
+![Open Data](https://img.shields.io/badge/Open%20Data-HII%20%7C%20RID%20%7C%20GISTDA%20%7C%20DOH%20%7C%20DDPM-blue?style=for-the-badge)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)
-![Google Gemini](https://img.shields.io/badge/Built%20with-Google%20Gemini-8E75C4?style=for-the-badge&logo=google)
+![Built with Google Gemini](https://img.shields.io/badge/Built%20with-Google%20Gemini-8E75C4?style=for-the-badge&logo=google)
 ![Vercel](https://img.shields.io/badge/Vercel-Deployment-000000?style=for-the-badge&logo=vercel)
 
-**Prachinburi Flood & Water Telemetry Dashboard • ศูนย์ข้อมูลน้ำท่าและติดตามสถานการณ์น้ำแบบอัตโนมัติ**
+**ระบบติดตามสถานการณ์น้ำท่า โทรมาตรเตือนภัย และวิเคราะห์ความเสี่ยงอุทกภัยแบบรวมศูนย์ จังหวัดปราจีนบุรี**  
+*Prachinburi Real-Time Multi-Hazard & Water Telemetry Open Data Dashboard*
 
-**[ภาษาไทย](#-ภาษาไทย-thai-version) • [English](#-english-version) • [เครดิต AI / Credits](#-เครดิตการพัฒนา--credits)**
+**[🇹🇭 ภาษาไทย](#-ภาษาไทย-thai-version) • [🇬🇧 English](#-english-version) • [🤖 เครดิตการพัฒนา](#-เครดิตการพัฒนา--credits)**
 
 </div>
 
@@ -22,217 +23,180 @@
 ## 🇹🇭 ภาษาไทย (Thai Version)
 
 ### 📖 เกี่ยวกับโครงการ (About the Project)
-> **"ศูนย์รวมข้อมูลน้ำท่าโทรมาตรและเตือนภัยเส้นทางคมนาคมจังหวัดปราจีนบุรีแบบอัตโนมัติ (Automated Open Data Dashboard)"**
+> **"ศูนย์รวมข้อมูลน้ำท่าโทรมาตร ข้อมูลเขื่อน น้ำทะเลหนุน น้ำป่าไหลหลาก และเตือนภัยเส้นทางคมนาคมจังหวัดปราจีนบุรีแบบอัตโนมัติ (Automated Multi-Hazard Open Data Dashboard)"**
 
-จังหวัดปราจีนบุรีเป็นพื้นที่ลุ่มน้ำสำคัญที่รองรับมวลน้ำจากทางตอนเหนือ เทือกเขาใหญ่ และอุทยานแห่งชาติทับลาน โดยมีแม่น้ำปราจีนบุรี แควหนุมาน และแควพระปรงไหลผ่าน ซึ่งในสถานการณ์ปัจจุบัน ปัญหาอุทกภัยเกิดจากฝนที่ตกชุกสะสมติดต่อกันหลายวันในพื้นที่ตอนเหนือ ส่งผลให้มีมวลน้ำเหนือก้อนใหญ่ไหลหลากลงมาสมทบอย่างต่อเนื่อง จนเอ่อล้นตลิ่งเข้าท่วมบ้านเรือนและเส้นทางสัญจรในหลายอำเภอ (โดยเฉพาะอำเภอกบินทร์บุรี, อำเภอบ้านสร้าง, อำเภอศรีมหาโพธิ ฯลฯ)
+จังหวัดปราจีนบุรีเป็นพื้นที่ลุ่มน้ำสำคัญในภาคตะวันออกที่รองรับมวลน้ำจากทางตอนเหนือ เทือกเขาใหญ่ และอุทยานแห่งชาติทับลาน โดยมีแม่น้ำปราจีนบุรี แควหนุมาน และแควพระปรงไหลมาบรรจบกัน ปัญหาอุทกภัยในพื้นที่เกิดจากปัจจัยร่วมหลายด้าน ทั้งน้ำหลากจากยอดเขา ปริมาณน้ำกักเก็บในเขื่อนหลักที่ต้องระบายออก ปริมาณน้ำฝนสะสม และปรากฏการณ์น้ำทะเลหนุนสูงในแม่น้ำบางปะกงที่ดันย้อนเข้าสู่แม่น้ำปราจีนบุรี ทำให้การระบายน้ำล่าช้าและส่งผลกระทบเป็นวงกว้าง (โดยเฉพาะ อ.กบินทร์บุรี, อ.บ้านสร้าง, อ.ศรีมหาโพธิ, อ.เมืองปราจีนบุรี และ อ.นาดี)
 
-**PrachinFlood** ได้รับการพัฒนาและยกระดับเป็น **Automated Open Data Dashboard** ดึงข้อมูลตรงจากแหล่งข้อมูลเปิดของภาครัฐและสถาบันวิจัยชั้นนำ เพื่อให้ประชาชนและเจ้าหน้าที่สามารถ:
-1. **ติดตามสถานีโทรมาตรวัดน้ำท่า (HII / ThaiWater & RID):** แสดงระดับน้ำเทียบตลิ่ง (ม.รทก.), % ความจุลำน้ำ, ปริมาณฝนสะสม 24 ชม. แบบเรียลไทม์
-2. **ขอบเขตพื้นที่น้ำท่วมจากดาวเทียม (GISTDA Flood Extent):** แสดงพื้นที่น้ำท่วมขังและพื้นที่รับน้ำนอง (Polygons) จากข้อมูลดาวเทียมเรดาร์ของ GISTDA
-3. **แจ้งเตือนสภาพเส้นทางคมนาคม (DOH Open Data):** ตรวจสอบจุดน้ำท่วมผิวจราจรบนทางหลวงสายสำคัญ (เช่น ทล.304, ทล.319) พร้อมระดับน้ำท่วมทางและคำแนะนำเส้นทางเลี่ยง
-4. **Auto-refresh Telemetry:** ระบบเปิด/ปิด การดึงข้อมูลอัตโนมัติทุก 60 วินาที
-5. **รับรองแหล่งที่มาของข้อมูล:** แสดงป้าย Official Agency Badge กำกับทุกจุดอย่างโปร่งใส พร้อมสายด่วนช่วยเหลือ 1784 / 1669 / 1586
+**PrachinFlood** ได้รับการพัฒนาให้เป็นระบบติดตามสถานการณ์น้ำแบบรวมศูนย์ (Multi-Hazard Disaster Intelligence) รวบรวมและประมวลผลข้อมูลจากหน่วยงานภาครัฐและสถาบันวิจัยชั้นนำ เพื่อให้ประชาชนและเจ้าหน้าที่สามารถประเมินสถานการณ์ได้อย่างแม่นยำและทันท่วงที:
+1. **สถานีโทรมาตรวัดน้ำท่า (HII / ThaiWater & RID):** ตรวจวัดระดับน้ำเทียบตลิ่ง (ม.รทก.), ร้อยละความจุลำน้ำ (% Bank Capacity) และปริมาณฝนสะสม 24 ชม.
+2. **ข้อมูลเขื่อนและอ่างเก็บน้ำหลัก (RID Dams & Reservoirs):** ติดตามปริมาณน้ำกักเก็บและอัตราการระบายน้ำของเขื่อนนฤบดินทรจินดา (ห้วยโสมง), เขื่อนขุนด่านปราการชล และเขื่อนคลองสียัด
+3. **แจ้งเตือนน้ำทะเลหนุนสูง (Hydrographic Department, Royal Thai Navy):** ข้อมูลระดับน้ำทะเลหนุนสูงสุดประจำวันและช่วงเวลาเฝ้าระวังน้ำดันย้อนตลิ่งในพื้นที่ อ.บ้านสร้าง และ อ.เมืองปราจีนบุรี
+4. **เตือนภัยน้ำป่าไหลหลากล่วงหน้า (Flash Flood Early Warning):** ตรวจจับปริมาณฝนสะสมบนเทือกเขาใหญ่และทับลาน พร้อมคำนวณระยะเวลาคาดการณ์ก่อนมวลน้ำหลากเข้าท่วมชุมชน
+5. **ศูนย์พักพิงและจุดอพยพชั่วคราว (DDPM Evacuation Shelters):** แสดงจุดปลอดภัย ความจุที่รองรับได้ จำนวนผู้พักพิงปัจจุบัน และเบอร์ติดต่อผู้ประสานงาน
+6. **จุดเตือนน้ำท่วมทางหลวง (DOH Open Data):** ข้อมูลเส้นทางสัญจร จุดน้ำท่วมผิวจราจร (เช่น ทล.304, ทล.319) สถานะรถผ่านได้/ไม่ได้ และคำแนะนำเส้นทางเลี่ยง
+7. **พื้นที่น้ำท่วมจากภาพถ่ายดาวเทียม (GISTDA Flood Extent):** แสดงแนวขอบเขตพื้นที่น้ำท่วมขังจริงจากดาวเทียมเรดาร์
+8. **เรดาร์กลุ่มฝนสด (Live Rain Radar):** ชั้นข้อมูลเรดาร์ตรวจจับเมฆฝนแบบเรียลไทม์ พร้อมระบบ Upscaling อัตโนมัติ
 
 ---
 
 ### ✨ ฟีเจอร์หลัก (Key Features)
 
-1. **🗺️ แผนที่เชิงโต้ตอบไร้ลายน้ำ (Interactive Leaflet Map):**
-   * แสดงหมุดสถานะน้ำท่วม 4 ระดับสี พร้อมเอฟเฟกต์วงแหวนเรดาร์กะพริบ (Radar Pulse):
-     * 🟢 **เขียว:** เฝ้าระวัง / น้ำแห้งแล้ว / สัญจรปกติ
-     * 🟡 **เหลือง:** น้ำท่วมขังเล็กน้อย รถเล็กผ่านได้
-     * 🟠 **ส้ม:** น้ำท่วมสูง รถเล็กผ่านไม่ได้
-     * 🔴 **แดง:** วิกฤต / ต้องการความช่วยเหลือด่วน
-   * ใช้แผนที่ **Official OpenStreetMap** (ฟรี 100% ไร้ลายน้ำ ไม่ต้องใช้ API Key)
-   * สลับดู **ภาพถ่ายดาวเทียมความละเอียดสูง (Esri World Imagery)** ได้ใน 1 แตะ
+#### 1. 🗺️ แผนที่โทรมาตรเชิงโต้ตอบไร้รอยต่อ (Interactive Telemetry Map)
+* ออกแบบหน้าจอตามหลัก Clean UX ให้แผนที่เป็นจุดสนใจหลัก (Zero UI Clutter) ปราศจากกล่องข้อความบดบัง
+* สลับดูแผนที่ถนนความคมชัดสูง (OpenStreetMap) หรือภาพถ่ายดาวเทียมความละเอียดสูง (Esri World Imagery) ได้ในคลิกเดียว
+* ระบบจัดการเลเยอร์ข้อมูล (Layer Switcher) ที่สามารถเปิด-ปิดได้ตามต้องการ:
+  * 🏞️ เขื่อนและอ่างเก็บน้ำหลัก (Dams & Reservoirs)
+  * ⛰️ จุดเตือนภัยน้ำป่าไหลหลาก (Flash Flood Alerts)
+  * ⛺ ศูนย์พักพิงชั่วคราว ปภ. (Evacuation Shelters)
+  * 🚧 จุดเตือนน้ำท่วมทางหลวง (Highway Flood Alerts)
+  * 🌧️ เรดาร์กลุ่มฝนสด (Live Weather Radar)
+  * 🛰️ พื้นที่น้ำท่วมจากดาวเทียม GISTDA (ปรับ Opacity ได้)
+  * 🌐 เส้นขอบเขตการปกครอง 7 อำเภอ
 
-2. **📐 เส้นขอบเขต 7 อำเภอ พร้อมปุ่มเปิด-ปิด (District Boundaries & Toggle):**
-   * ตีเส้นขอบเขตการปกครองชัดเจนครอบคลุมทั้ง 7 อำเภอ (อ.เมือง, กบินทร์บุรี, บ้านสร้าง, ศรีมหาโพธิ, นาดี, ประจันตคาม, ศรีมโหสถ)
-   * ป้ายชื่ออำเภอแบบเข็มกลัดลอย (Badges) ระบุพื้นที่ชัดเจน
-   * **ปุ่มเปิด-ปิดขอบเขต:** สามารถแตะเปิดหรือปิดเส้นขอบเขตได้ในคลิกเดียว สำหรับผู้ที่ต้องการดูแผนที่แบบโล่งๆ
+#### 2. 📋 มุมมองรายการสถานีและสรุปสถานการณ์ (Categorized Feed List)
+* สลับมุมมองระหว่าง **"แผนที่"** และ **"รายการ"** ได้อย่างรวดเร็วผ่านปุ่มแถบนำทางด้านบน
+* สรุปตัวเลขสถิติภาพรวมสำคัญ 4 มิติ: สถานีวิกฤต, สถานีเฝ้าระวัง, เส้นทางที่ไม่สามารถสัญจรได้ และสถานะความจุเขื่อนหลัก
+* บัตรข้อมูลแยกตามหมวดหมู่อย่างเป็นระเบียบ พร้อมปุ่ม **"เปิดดูในแผนที่"** ที่จะแพนกล้องไปยังพิกัดเป้าหมายทันที
 
-3. **📱 ฟอร์มแจ้งสถานการณ์น้ำและระบบย่อรูปภาพ (Crowdsourced Reporting):**
-   * ปุ่มลอยแจ้งเหตุด่วน (Floating Action Button) เด่นชัดสำหรับมือถือ
-   * ดึงพิกัด GPS อัตโนมัติ พร้อมตัวเลือกอำเภอและตำบลในปราจีนบุรี
-   * **Client-Side Image Compression:** ย่อขนาดรูปถ่ายหน้างานจากกล้องมือถือ (5–15 MB) ให้เหลือเพียง ~80–150 KB ในเสี้ยววินาที รองรับการส่งในจุดอับสัญญาณ
+#### 3. 🔍 แถบค้นหาและตัวกรองข้อมูลแบบลอยตัว (Floating Filter Bar)
+* ค้นหาสถานี, ลำคลอง หรือรหัสสถานี (เช่น Kgt.3, HII-PC03) ได้ทันที
+* กรองข้อมูลเจาะจงรายอำเภอทั้ง 7 อำเภอในจังหวัดปราจีนบุรี
+* กรองตามระดับความรุนแรงของสถานการณ์น้ำ (ปกติ, เฝ้าระวัง, เตือนภัย, วิกฤต/ล้นตลิ่ง)
+* รองรับระบบ **Auto-refresh** ดึงข้อมูลอัปเดตอัตโนมัติทุก 60 วินาที พร้อมปุ่มกดรีเฟรชด้วยตนเอง
 
-4. **📞 สายด่วนฉุกเฉิน & ระบบเสนอเบอร์โทร:**
-   * เบอร์หลักโทรออกได้ทันทีใน 1 แตะ: **1784** (สายด่วน ปภ. ช่วยเหลือน้ำท่วม 24 ชม.) และ **1669** (การแพทย์ฉุกเฉิน EMS)
-   * ประชาชนสามารถกด **"เสนอเพิ่มเบอร์กู้ภัยในพื้นที่"** ได้ โดยข้อมูลจะต้องผ่านการตรวจสอบและอนุมัติจากแอดมินก่อนขึ้นระบบจริง
+#### 4. 📊 หน้าต่างวิเคราะห์รายละเอียดเชิงลึก (Hazard Detail Drawer)
+* เมื่อกดที่หมุดหรือบัตรข้อมูล หน้าต่างลิ้นชักด้านล่างจะเลื่อนขึ้นมาแสดงผลการวิเคราะห์ระดับมืออาชีพ:
+  * **สถานีวัดน้ำ:** ระดับน้ำปัจจุบันเทียบระดับตลิ่ง, ร้อยละความจุลำน้ำ, กราฟสเกลจำลองระดับน้ำ และปริมาณฝนสะสม
+  * **เขื่อน/อ่างเก็บน้ำ:** ร้อยละความจุอ่าง, อัตราน้ำไหลเข้า-ออก (ลบ.ม./วินาที) และการแจ้งเตือนท้ายเขื่อน
+  * **น้ำทะเลหนุน:** ตารางเปรียบเทียบระดับน้ำขึ้นสูงสุดรอบเช้าและรอบเย็น (ม.รทก.)
+  * **น้ำป่าไหลหลาก:** ปริมาณฝนบนยอดเขา ระยะเวลาคาดการณ์น้ำหลาก (ชั่วโมง) และข้อควรระวัง
+  * **ศูนย์พักพิง:** จำนวนรองรับ, สถานะความพร้อม (โรงครัว/ทีมแพทย์/ที่จอดรถ) และปุ่มโทรประสานงาน
 
-5. **📍 หน้าพื้นที่ของฉัน (My Area Breakdown - `/area`):**
-   * ตรวจสอบระดับน้ำเจาะลึกรายอำเภอ (ครอบคลุมทั้ง 7 อำเภอและตำบลทั้งหมดในปราจีนบุรี)
-   * ปุ่ม **"ใกล้ฉัน"** ใช้ GPS ค้นหาอำเภอที่ผู้ใช้อยู่ทันที ไม่ต้องเลื่อนหาเอง
-   * สรุปแถบสถานะความรุนแรงสูงสุด (วิกฤต, ท่วมสูง, ขัง, ปกติ), จำนวนจุดทางขาด/รถผ่านไม่ได้
-   * แสดงแผนที่เฉพาะอำเภอ และรายการรายงานล่าสุดพร้อมรูปถ่าย
+#### 5. 📞 สายด่วนฉุกเฉินและขอความช่วยเหลือ 24 ชั่วโมง (Emergency Hotline)
+* ปุ่มโทรฉุกเฉินเด่นชัดในแถบนำทาง พร้อมไฟกระพริบเตือน
+* โทรออกได้ใน 1 สัมผัส:
+  * **1784:** สายด่วน ปภ. (กรมป้องกันและบรรเทาสาธารณภัย) รับแจ้งเหตุน้ำท่วมและขอเรืออพยพ
+  * **1669:** สถาบันการแพทย์ฉุกเฉินแห่งชาติ (EMS) เจ็บป่วยฉุกเฉินและอุบัติเหตุทางน้ำ
+  * **1586:** สายด่วนกรมทางหลวง สอบถามเส้นทางและเหตุดินสไลด์/น้ำท่วมทาง
 
-6. **🛡️ ระบบควบคุมหลังบ้าน (Admin Moderation Dashboard):**
-   * เข้าใช้งานที่ `/admin` พร้อมระบบล็อกอินด้วย Admin Passcode
-   * ตรวจสอบและกดลบรายงานก่อกวน/ข้อมูลเท็จได้ทันที
-   * กดรับรองรายงาน (Verify Badge ✓) เพื่อยืนยันว่าเจ้าหน้าที่ตรวจสอบแล้ว
-   * กดอนุมัติหรือปฏิเสธเบอร์โทรฉุกเฉินที่ประชาชนเสนอเข้ามา
-
----
-
-### 🚀 วิธีการติดตั้งและรันในเครื่อง (Local Setup)
-
-```bash
-# 1. ติดตั้ง Dependencies
-npm install
-
-# 2. รันโหมด Development (ผูกกับ 0.0.0.0 เพื่อให้มือถือในวง Wi-Fi เข้าทดสอบได้)
-npm run dev
-```
-
-เปิดดูในเบราว์เซอร์:
-* หน้าเว็บหลัก: `http://localhost:3000`
-* หน้าแอดมิน: `http://localhost:3000/admin` *(รหัสผ่านเริ่มต้น: `admin8888`)*
+#### 6. 📍 หน้าเจาะลึก 7 อำเภอ (Area Breakdown - `/area`)
+* วิเคราะห์สถานการณ์น้ำเฉพาะพื้นที่รายอำเภอ (ครอบคลุมทั้ง 7 อำเภอของปราจีนบุรี)
+* ปุ่ม **"ใกล้ฉัน"** ใช้พิกัด GPS เพื่อสลับไปยังอำเภอที่ผู้ใช้อยู่โดยอัตโนมัติ
+* สรุปสถานการณ์ของแต่ละอำเภอ พร้อมจุดเตือนเส้นทางคมนาคมในเขตพื้นที่
 
 ---
 
 ## 🇬🇧 English Version
 
 ### 📖 About the Project
-> **"Empowering the Prachinburi community with real-time, citizen-driven flood intelligence."**
+> **"Automated Multi-Hazard Telemetry & Flood Intelligence Platform for Prachinburi Province"**
 
-Prachinburi Province serves as a critical downstream drainage basin in eastern Thailand, receiving water flows from the northern regions, Khao Yai, and Thap Lan national parks via the Prachinburi, Hanuman, and Phra Prong rivers. Under current conditions, persistent and heavy rainfall over multiple consecutive days in upstream northern areas has generated an immense volume of runoff, resulting in severe river overflows and widespread flooding across low-lying districts such as Kabin Buri, Ban Sang, and Si Maha Phot.
+Prachinburi Province represents a major hydrologic basin in eastern Thailand, receiving water runoff from Khao Yai and Thap Lan national parks via the Prachinburi, Hanuman, and Phra Prong river systems. Recurring floods are driven by multi-faceted factors: upstream mountain flash floods, reservoir discharges, prolonged basin-wide precipitation, and high tidal surges pushing up through the Bang Pakong river.
 
-**PrachinFlood (Prachinburi Flood Tracker)** was developed as an open-source civic technology platform to bridge the gap between affected citizens, volunteers, and rescue agencies:
-1. **Real-Time Citizen Reporting:** Upload photos and mark flood hotspots without requiring registration.
-2. **Bandwidth-Optimized:** Compresses smartphone images in the browser before transmission, ensuring reliable delivery even under weak network signals.
-3. **Route Navigation Safety:** Quickly verify road conditions (passable for small cars vs. impassable).
-4. **Emergency Lifeline:** One-tap dialing to disaster hotlines (1784 & 1669) plus community-suggested rescue contacts.
-5. **Quality Assurance:** Backoffice admin moderation to prevent spam, rumors, and troll submissions.
-
----
-
-### ✨ Key Features
-
-1. **🗺️ Interactive Map (Leaflet.js):**
-   * Color-coded flood severity markers with animated radar pulse rings (Green, Yellow, Orange, Red).
-   * Powered by **Official OpenStreetMap** (100% Free, Zero API keys, No watermarks).
-   * Instant toggle to **High-Resolution Satellite Imagery (Esri World Imagery)**.
-
-2. **📐 Prachinburi District Boundaries with 1-Tap Toggle:**
-   * Official polygon boundaries covering all 7 districts of Prachinburi Province.
-   * Floating center badges with district names.
-   * **1-Tap Boundary Toggle:** Turn administrative boundaries on/off anytime.
-
-3. **📱 Crowdsourced Reporting & Client-Side Compression:**
-   * Prominent mobile Floating Action Button (FAB).
-   * Geolocation auto-fill with draggable coordinate placement.
-   * Dropdowns for Prachinburi districts and subdistricts.
-   * **Client-Side Image Compression:** Compresses 5–15 MB smartphone photos down to ~80–150 KB in milliseconds using HTML5 Canvas.
-
-4. **📞 Emergency Hotlines & Community Number Suggestions:**
-   * One-tap direct dial for primary hotlines: **1784** (DDPM Disaster Hotline) and **1669** (Emergency Medical Services).
-   * Citizen hotline submission form: Community members can submit local rescue contacts, which remain pending until admin approval.
-
-5. **📍 My Area Breakdown (`/area`):**
-   * Filter and examine live flood situations per district (covering all 7 districts).
-   * **Locate Me:** Instant GPS geolocation to automatically select the nearest district.
-   * District-level status badges, critical blockage alerts, localized mini-map, and recent incident logs.
-
-6. **🛡️ Admin Moderation Dashboard (`/admin`):**
-   * Passcode protected backoffice.
-   * Remove spam, trolling, or inaccurate flood reports immediately.
-   * Verify genuine reports with official verification badges.
-   * Approve or reject citizen-submitted emergency contacts.
+**PrachinFlood** delivers a unified, real-time disaster intelligence dashboard that integrates verified open data from leading government and scientific authorities:
+1. **River Telemetry Gauges (HII & RID):** Real-time monitoring of river stage above mean sea level (m.MSL), % riverbank capacity, and 24-hour rainfall.
+2. **Major Dams & Reservoirs (RID):** Live tracking of storage volume, reservoir capacity percentages, inflow, and outflow rates for Narubodin Jinda (Huai Samong), Khun Dan Prakarnchon, and Klong Si Yat dams.
+3. **Marine High Tide Surge Warnings (Royal Thai Navy Hydrographic Dept):** Twice-daily astronomical high tide predictions and river backflow risk alerts for Ban Sang and Mueang Prachinburi districts.
+4. **Flash Flood Early Warnings:** Monitored mountain precipitation and estimated travel-time to residential lowlands.
+5. **DDPM Evacuation Shelters:** Emergency evacuation site directory, capacity statuses, onboard relief amenities, and direct hotline dials.
+6. **Highway Disaster Alerts (Department of Highways):** Flood-affected roadway tracking (e.g. Route 304, Route 319) with small-vehicle passability status and detour advisories.
+7. **Satellite Flood Inundation (GISTDA):** Radar satellite-derived flood extent polygons with adjustable layer opacity.
+8. **Live TMD Rain Radar:** Interactive weather radar composite with automatic zoom upscaling.
 
 ---
 
-### 🛠️ Project Structure
+### 🛠️ โครงสร้างไฟล์และสถาปัตยกรรม (Project Structure)
 
 ```text
 PrachinBuri-flood/
 ├── src/
 │   ├── app/
 │   │   ├── admin/
-│   │   │   └── page.tsx             # Admin Moderation Dashboard
+│   │   │   └── page.tsx                 # แผงควบคุมระบบตรวจสอบของผู้ดูแล
 │   │   ├── area/
-│   │   │   └── page.tsx             # My Area Breakdown Page
-│   │   ├── globals.css              # Custom markers, Leaflet styles, Tailwind CSS
-│   │   ├── layout.tsx               # Root layout with IBM Plex Sans Thai font
-│   │   └── page.tsx                 # Main application page (Map & Feed)
+│   │   │   └── page.tsx                 # หน้าสรุปสถานการณ์น้ำเจาะลึก 7 อำเภอ
+│   │   ├── globals.css                  # สไตล์ Tailwind CSS และ Leaflet Pin Animations
+│   │   ├── layout.tsx                   # โครงสร้างหน้าเว็บพร้อมฟอนต์ IBM Plex Sans Thai
+│   │   └── page.tsx                     # หน้าหลัก (Map View / Categorized Feed List)
 │   ├── components/
+│   │   ├── Dashboard/
+│   │   │   └── MetricBanner.tsx         # การ์ดสรุปสถิติ 4 มิติและแถบน้ำทะเลหนุน/น้ำป่า
 │   │   ├── Emergency/
-│   │   │   └── EmergencyDrawer.tsx  # Emergency hotline modal & suggestion form
+│   │   │   └── EmergencyDrawer.tsx      # หน้าต่างสายด่วนฉุกเฉิน 1784 / 1669 / 1586
 │   │   ├── Feed/
-│   │   │   └── ReportFeedList.tsx   # Card feed view for mobile / low data
+│   │   │   └── TelemetryStationFeedList.tsx # ฟีดแสดงรายการสถานี เขื่อน ศูนย์พักพิง และจุดเตือนภัย
 │   │   ├── Filters/
-│   │   │   └── FilterBar.tsx        # District, severity, and text search filter
+│   │   │   └── TelemetryFilterBar.tsx   # แถบค้นหาและตัวกรองอำเภอ/ระดับน้ำแบบลอยตัว
 │   │   ├── Map/
-│   │   │   ├── DynamicMap.tsx       # Dynamic Client Loader preventing SSR issues
-│   │   │   └── FloodMap.tsx         # Leaflet map with boundaries & radar markers
-│   │   ├── Navbar.tsx               # Header with live summary & view toggler
-│   │   ├── ReportDrawer/
-│   │   │   └── ReportDetailDrawer.tsx # Report detail bottom sheet & directions
-│   │   └── ReportModal/
-│   │       ├── FloatingActionButton.tsx # Mobile floating report button (FAB)
-│   │       └── ReportFormModal.tsx  # Flood reporting form with image compression
+│   │   │   ├── DynamicTelemetryMap.tsx  # Dynamic SSR Loader สำหรับแผนที่ Leaflet
+│   │   │   └── TelemetryMap.tsx         # แผนที่หลักพร้อมระบบสลับชั้นข้อมูล 7 รูปแบบ
+│   │   ├── Navbar/
+│   │   │   └── TelemetryNavbar.tsx      # แถบนำทางด้านบน ปุ่มสลับมุมมอง และปุ่มสายด่วน
+│   │   └── ReportDrawer/
+│   │       └── TelemetryDetailDrawer.tsx # ลิ้นชักแสดงรายละเอียดเชิงวิเคราะห์ของแต่ละภัยพิบัติ
 │   ├── data/
-│   │   ├── emergency-contacts.ts    # Default hotlines (1784, 1669)
-│   │   ├── mock-reports.ts          # Clean production data store
-│   │   ├── prachinburi-districts.json # GeoJSON boundaries for 7 districts
-│   │   └── prachinburi-locations.ts # Prachinburi districts & subdistricts list
+│   │   ├── open-data-telemetry.ts       # ชุดข้อมูลสถานีโทรมาตร เขื่อน ศูนย์พักพิง และน้ำหนุน
+│   │   ├── prachinburi-districts.json   # GeoJSON เส้นขอบเขตการปกครอง 7 อำเภอ
+│   │   └── prachinburi-locations.ts     # รายชื่ออำเภอและตำบลในจังหวัดปราจีนบุรี
 │   ├── lib/
-│   │   ├── contacts-store.ts        # Emergency contacts store & approval logic
-│   │   ├── reports-store.ts         # Flood reports data management
-│   │   ├── storage.ts               # Canvas-based client-side image compressor
-│   │   └── supabase.ts              # Supabase Cloud Client
+│   │   ├── telemetry-service.ts         # เซอร์วิสประมวลผลข้อมูลโทรมาตรและคำนวณความเสี่ยง
+│   │   ├── contacts-store.ts            # การจัดการรายชื่อเบอร์โทรฉุกเฉิน
+│   │   └── supabase.ts                  # ไคลเอนต์ Supabase สำหรับจัดเก็บข้อมูลบนคลาวด์
 │   └── types/
-│       └── index.ts                 # TypeScript interfaces
-├── supabase/
-│   └── schema.sql                   # SQL schema with RLS policies & tables
-├── .env.example                     # Environment variables guide
-├── .env.local                       # Local configuration (e.g. Admin PIN)
-├── .gitignore                       # Git ignore rules
-├── tailwind.config.ts               # Tailwind CSS theme configuration
-├── tsconfig.json                    # TypeScript configuration
-└── package.json
+│       ├── telemetry.ts                 # โครงสร้างประเภทข้อมูล (Data Models) ครบวงจร
+│       └── index.ts                     # TypeScript Interfaces
+├── public/                              # ไฟล์ภาพและ Static Assets
+├── .env.example                         # ตัวอย่างการตั้งค่า Environment Variables
+├── tailwind.config.ts                   # การตั้งค่าชุดสีและสไตล์ Tailwind CSS
+├── tsconfig.json                        # การตั้งค่า TypeScript
+└── package.json                         # ข้อมูลแพ็กเกจและ Dependencies
 ```
 
 ---
 
-### ⚙️ Environment Variables
+### 🚀 การติดตั้งและรันในเครื่อง (Local Setup)
 
-Create `.env.local` in the root directory:
+```bash
+# 1. โคลนคลังโค้ด
+git clone https://github.com/Noobmaster-3443/Prachinburi-Flood-Tracker.git
+cd Prachinburi-Flood-Tracker
 
-```env
-# Admin Passcode for /admin dashboard
-NEXT_PUBLIC_ADMIN_PIN=admin8888
+# 2. ติดตั้ง Dependencies
+npm install
 
-# Optional: Supabase configuration for cloud synchronization
-# NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-# NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+# 3. รันโหมด Development
+npm run dev
 ```
 
----
-
-### 🚢 Deployment to Vercel
-
-1. Push your repository to GitHub.
-2. Sign in to [Vercel](https://vercel.com/) and click **Add New Project**.
-3. Select your repository.
-4. Add environment variables (`NEXT_PUBLIC_ADMIN_PIN`) under **Environment Variables**.
-5. Click **Deploy**. Your app will be live with free global HTTPS!
+เปิดดูในเบราว์เซอร์:
+* หน้าเว็บหลัก: `http://localhost:3000`
+* หน้าเจาะลึกรายอำเภอ: `http://localhost:3000/area`
+* หน้าแอดมิน: `http://localhost:3000/admin` *(รหัสผ่านเริ่มต้น: `admin8888`)*
 
 ---
 
-## 🤖 เครดิตการพัฒนา / Credits & Acknowledgements
+### 🌐 แหล่งข้อมูลเปิดที่เชื่อมต่อ (Data Sources & Acknowledgements)
+
+ระบบเชื่อมต่อและอ้างอิงข้อมูลจากหน่วยงานหลักด้านทรัพยากรน้ำและภัยพิบัติของประเทศไทย:
+* **HII (สถาบันสารสนเทศทรัพยากรน้ำ - องค์การมหาชน):** ข้อมูลโทรมาตรวัดระดับน้ำท่าและฝนสะสม (คลังข้อมูลน้ำแห่งชาติ ThaiWater)
+* **RID (กรมชลประทาน):** ข้อมูลระดับน้ำในทางน้ำชลประทาน และข้อมูลปริมาณน้ำกักเก็บในเขื่อนและอ่างเก็บน้ำหลัก
+* **Hydrographic Department (กรมอุทกศาสตร์ กองทัพเรือ):** ข้อมูลระดับน้ำขึ้น-น้ำลง และการคาดการณ์น้ำทะเลหนุนสูง
+* **DDPM (กรมป้องกันและบรรเทาสาธารณภัย):** ระบบเตือนภัยล่วงหน้าน้ำป่าไหลหลาก และฐานข้อมูลศูนย์พักพิงชั่วคราว
+* **DOH (กรมทางหลวง):** ข้อมูลสถานการณ์น้ำท่วมผิวจราจรบนทางหลวงแผ่นดิน
+* **GISTDA (สำนักงานพัฒนาเทคโนโลยีอวกาศและภูมิสารสนเทศ):** แผนที่ขอบเขตพื้นที่น้ำท่วมจากภาพถ่ายดาวเทียมเรดาร์
+* **RainViewer & TMD:** ข้อมูลเรดาร์ตรวจวัดกลุ่มฝนสดแบบกระจายเชิงพื้นที่
+
+---
+
+## 🤖 เครดิตการพัฒนา / Credits
 
 * **พัฒนาและออกแบบร่วมกับ (Co-developed with):** **Google Gemini** (Gemini AI Models by **Google DeepMind**)
-* **ขอบเขตงานที่สร้างโดย AI:**
-  - สถาปัตยกรรม Next.js 14 App Router, TypeScript & Tailwind CSS
-  - ระบบแผนที่เชิงโต้ตอบ Leaflet.js และการประมวลผล GeoJSON ขอบเขต 7 อำเภอของจังหวัดปราจีนบุรี
-  - ระบบบีบอัดรูปภาพหน้างาน Client-Side Canvas Image Compression เพื่อประหยัดแบนด์วิดท์ในพื้นที่ภัยพิบัติ
-  - ระบบตรวจสอบและลบรายงานก่อกวน (Admin Moderation Dashboard) และระบบอนุมัติเบอร์โทรฉุกเฉิน
 * **สัญญาอนุญาต (License):** เผยแพร่ภายใต้สัญญาอนุญาต **MIT License** เพื่อสาธารณประโยชน์และการกู้ภัยพิบัติของประชาชน
 
 ---
 
-### 🙏 ข้อความจากผู้จัดทำ / Note & Disclaimer
+### 🙏 ข้อความจากผู้จัดทำ / Disclaimer
 
-> **🇹🇭 หมายเหตุ:** โครงการนี้จัดทำขึ้นด้วยความตั้งใจเพื่อเป็นประโยชน์ต่อพี่น้องประชาชนชาวปราจีนบุรีและผู้ประสบภัยพิบัติ หากมีข้อผิดพลาด ข้อมูลคลาดเคลื่อน หรือข้อบกพร่องประการใด คณะผู้จัดทำต้องกราบขออภัยมา ณ ที่นี้ด้วยครับ/ค่ะ ท่านสามารถร่วมแจ้งปัญหาหรือเสนอแนะการปรับปรุงเพิ่มเติมผ่านทาง GitHub Issues ได้ตลอดเวลาครับ  
+> **🇹🇭 หมายเหตุ:** โครงการนี้จัดทำขึ้นด้วยความตั้งใจเพื่อเป็นประโยชน์ต่อพี่น้องประชาชนชาวปราจีนบุรีและผู้ประสบภัยพิบัติ หากมีข้อผิดพลาด ข้อมูลคลาดเคลื่อน หรือข้อบกพร่องประการใด คณะผู้จัดทำต้องกราบขออภัยมา ณ ที่นี้ด้วยครับ ท่านสามารถร่วมแจ้งปัญหาหรือเสนอแนะการปรับปรุงเพิ่มเติมผ่านทาง GitHub Issues ได้ตลอดเวลาครับ  
 >  
-> **🇬🇧 Disclaimer:** This project was created with good intentions to assist the residents of Prachinburi Province and disaster relief efforts. If there are any unintentional errors, inaccuracies, or shortcomings, we sincerely apologize. Feedback, issue reports, and contributions are always warmly welcomed via GitHub Issues.
+> **🇬🇧 Disclaimer:** This project was created with good intentions to assist the residents of Prachinburi Province and disaster relief efforts. If there are any unintentional errors or inaccuracies, we sincerely apologize. Feedback and suggestions are always warmly welcomed via GitHub Issues.
