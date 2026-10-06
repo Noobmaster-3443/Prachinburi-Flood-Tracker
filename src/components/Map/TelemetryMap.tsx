@@ -52,7 +52,9 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
   const [mapType, setMapType] = useState<'street' | 'satellite'>('street');
   const [showBoundaries, setShowBoundaries] = useState<boolean>(true);
   const [showGistdaLayer, setShowGistdaLayer] = useState<boolean>(true);
+  const [gistdaOpacity, setGistdaOpacity] = useState<number>(0.35);
   const [showRoadAlerts, setShowRoadAlerts] = useState<boolean>(true);
+  const [isLayersOpen, setIsLayersOpen] = useState<boolean>(false);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -191,7 +193,7 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         weight: 2,
         opacity: 0.9,
         fillColor: color,
-        fillOpacity: 0.35,
+        fillOpacity: gistdaOpacity,
         dashArray: '3, 6',
       };
     });
@@ -382,83 +384,122 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
       <div ref={mapContainerRef} className="w-full h-full z-0" />
 
       {/* Floating Map Controls (Top Right) */}
-      <div className="absolute top-4 right-4 z-[400] flex flex-col gap-2">
-        {/* Layer Switches Box */}
-        <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-slate-200/90 p-2 space-y-1.5 text-xs text-slate-700">
-          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider px-1 pb-1 border-b border-slate-100 flex items-center justify-between gap-2">
-            <span>ชั้นข้อมูลเชิงพื้นที่</span>
-            <Layers className="w-3.5 h-3.5 text-blue-600" />
+      <div className="absolute top-4 right-4 z-[400] flex flex-col items-end gap-2">
+        {/* Toggle Layers Button (Mobile & Compact) */}
+        <button
+          onClick={() => setIsLayersOpen(!isLayersOpen)}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl shadow-lg border text-xs font-bold backdrop-blur-md transition-all ${
+            isLayersOpen
+              ? 'bg-blue-600 text-white border-blue-600'
+              : 'bg-white/95 text-slate-800 border-slate-200 hover:bg-white'
+          }`}
+        >
+          <Layers className="w-4 h-4 text-blue-500" />
+          <span>ชั้นข้อมูล</span>
+          <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded-full font-bold ml-0.5">
+            {[mapType === 'satellite', showGistdaLayer, showRoadAlerts, showBoundaries].filter(Boolean).length}
+          </span>
+        </button>
+
+        {/* Layer Switches Box (Collapsible / Expandable) */}
+        {isLayersOpen && (
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/90 p-2.5 space-y-2 text-xs text-slate-700 w-64 animate-in fade-in duration-200">
+            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider px-1 pb-1 border-b border-slate-100 flex items-center justify-between">
+              <span>เลือกชั้นข้อมูลแสดงผล</span>
+              <button 
+                onClick={() => setIsLayersOpen(false)}
+                className="text-slate-400 hover:text-slate-600 text-[11px]"
+              >
+                ✕ ปิด
+              </button>
+            </div>
+
+            {/* Toggle Satellite */}
+            <button
+              onClick={() => setMapType(mapType === 'street' ? 'satellite' : 'street')}
+              className={`w-full flex items-center justify-between px-2 py-1.5 rounded-xl transition-all ${
+                mapType === 'satellite'
+                  ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                  : 'hover:bg-slate-100 text-slate-700'
+              }`}
+            >
+              <span className="flex items-center gap-1.5">
+                <Satellite className="w-3.5 h-3.5" />
+                <span>ภาพถ่ายดาวเทียม (Esri)</span>
+              </span>
+              {mapType === 'satellite' && <Check className="w-3.5 h-3.5" />}
+            </button>
+
+            {/* Toggle GISTDA Flood Satellite Extent */}
+            <div className="space-y-1 bg-slate-50/80 p-2 rounded-xl border border-slate-200/60">
+              <button
+                onClick={() => setShowGistdaLayer(!showGistdaLayer)}
+                className="w-full flex items-center justify-between text-left"
+              >
+                <span className="flex items-center gap-1.5 font-semibold text-slate-800">
+                  <Activity className="w-3.5 h-3.5 text-red-600" />
+                  <span>พื้นที่ท่วมดาวเทียม GISTDA</span>
+                </span>
+                {showGistdaLayer ? <Eye className="w-3.5 h-3.5 text-red-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
+              </button>
+
+              {showGistdaLayer && (
+                <div className="pt-1.5 space-y-1">
+                  <div className="flex justify-between text-[10px] text-slate-500">
+                    <span>ความโปร่งใส (Opacity):</span>
+                    <span className="font-bold">{Math.round(gistdaOpacity * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="0.8"
+                    step="0.05"
+                    value={gistdaOpacity}
+                    onChange={(e) => setGistdaOpacity(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Toggle Highway Alerts */}
+            <button
+              onClick={() => setShowRoadAlerts(!showRoadAlerts)}
+              className={`w-full flex items-center justify-between px-2 py-1.5 rounded-xl transition-all ${
+                showRoadAlerts
+                  ? 'bg-amber-50 text-amber-900 font-semibold border border-amber-200'
+                  : 'hover:bg-slate-100 text-slate-600'
+              }`}
+            >
+              <span className="flex items-center gap-1.5">
+                <Car className="w-3.5 h-3.5 text-amber-600" />
+                <span>จุดเตือนน้ำท่วมทางหลวง (DOH)</span>
+              </span>
+              {showRoadAlerts ? <Eye className="w-3.5 h-3.5 text-amber-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
+            </button>
+
+            {/* Toggle District Boundaries */}
+            <button
+              onClick={() => setShowBoundaries(!showBoundaries)}
+              className={`w-full flex items-center justify-between px-2 py-1.5 rounded-xl transition-all ${
+                showBoundaries
+                  ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-200'
+                  : 'hover:bg-slate-100 text-slate-600'
+              }`}
+            >
+              <span className="flex items-center gap-1.5">
+                <Grid className="w-3.5 h-3.5 text-blue-600" />
+                <span>เส้นขอบเขต 7 อำเภอ</span>
+              </span>
+              {showBoundaries ? <Eye className="w-3.5 h-3.5 text-blue-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
+            </button>
           </div>
-
-          {/* Toggle Satellite */}
-          <button
-            onClick={() => setMapType(mapType === 'street' ? 'satellite' : 'street')}
-            className={`w-full flex items-center justify-between px-2 py-1.5 rounded-xl transition-all ${
-              mapType === 'satellite'
-                ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                : 'hover:bg-slate-100 text-slate-700'
-            }`}
-          >
-            <span className="flex items-center gap-1.5">
-              <Satellite className="w-3.5 h-3.5" />
-              <span>ภาพถ่ายดาวเทียม</span>
-            </span>
-            {mapType === 'satellite' && <Check className="w-3.5 h-3.5" />}
-          </button>
-
-          {/* Toggle GISTDA Flood Satellite Extent */}
-          <button
-            onClick={() => setShowGistdaLayer(!showGistdaLayer)}
-            className={`w-full flex items-center justify-between px-2 py-1.5 rounded-xl transition-all ${
-              showGistdaLayer
-                ? 'bg-red-50 text-red-700 font-semibold border border-red-200'
-                : 'hover:bg-slate-100 text-slate-600'
-            }`}
-          >
-            <span className="flex items-center gap-1.5">
-              <Activity className="w-3.5 h-3.5 text-red-600" />
-              <span>พื้นที่ท่วมดาวเทียม GISTDA</span>
-            </span>
-            {showGistdaLayer ? <Eye className="w-3.5 h-3.5 text-red-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
-          </button>
-
-          {/* Toggle Highway Alerts */}
-          <button
-            onClick={() => setShowRoadAlerts(!showRoadAlerts)}
-            className={`w-full flex items-center justify-between px-2 py-1.5 rounded-xl transition-all ${
-              showRoadAlerts
-                ? 'bg-amber-50 text-amber-800 font-semibold border border-amber-200'
-                : 'hover:bg-slate-100 text-slate-600'
-            }`}
-          >
-            <span className="flex items-center gap-1.5">
-              <Car className="w-3.5 h-3.5 text-amber-600" />
-              <span>จุดเตือนน้ำท่วมถนน ทล.</span>
-            </span>
-            {showRoadAlerts ? <Eye className="w-3.5 h-3.5 text-amber-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
-          </button>
-
-          {/* Toggle District Boundaries */}
-          <button
-            onClick={() => setShowBoundaries(!showBoundaries)}
-            className={`w-full flex items-center justify-between px-2 py-1.5 rounded-xl transition-all ${
-              showBoundaries
-                ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-200'
-                : 'hover:bg-slate-100 text-slate-600'
-            }`}
-          >
-            <span className="flex items-center gap-1.5">
-              <Grid className="w-3.5 h-3.5 text-blue-600" />
-              <span>เส้นขอบเขต 7 อำเภอ</span>
-            </span>
-            {showBoundaries ? <Eye className="w-3.5 h-3.5 text-blue-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
-          </button>
-        </div>
+        )}
 
         {/* Reset View Button */}
         <button
           onClick={handleResetCenter}
-          className="p-2.5 rounded-xl bg-white/95 backdrop-blur-md hover:bg-white text-slate-700 shadow-lg border border-slate-200/90 transition-all flex items-center justify-center self-end"
+          className="p-2.5 rounded-2xl bg-white/95 backdrop-blur-md hover:bg-white text-slate-700 shadow-lg border border-slate-200/90 transition-all flex items-center justify-center"
           title="จัดมุมมองศูนย์กลางปราจีนบุรี"
         >
           <Navigation className="w-4 h-4 text-blue-600" />

@@ -9,7 +9,8 @@ import { TelemetryDetailDrawer } from '@/components/ReportDrawer/TelemetryDetail
 import { EmergencyDrawer } from '@/components/Emergency/EmergencyDrawer';
 import { TelemetryStation, HighwayDisasterAlert, DashboardFilterState } from '@/types/telemetry';
 import { getAutomatedTelemetryData } from '@/lib/telemetry-service';
-import { ShieldCheck, RefreshCw, Radio, CheckCircle2 } from 'lucide-react';
+import { MetricBanner } from '@/components/Dashboard/MetricBanner';
+import { CheckCircle2 } from 'lucide-react';
 
 export default function HomePage() {
   const [stations, setStations] = useState<TelemetryStation[]>([]);
@@ -137,9 +138,17 @@ export default function HomePage() {
         isAutoRefresh={isAutoRefresh}
       />
 
-      {/* Floating Filter Bar */}
-      <div className="fixed top-20 left-0 right-0 z-20 px-3 sm:px-4 pointer-events-none">
-        <div className="pointer-events-auto">
+      {/* Floating Filter Bar & Top Quick Metrics */}
+      <div className="fixed top-20 left-0 right-0 z-20 px-3 sm:px-4 pointer-events-none space-y-2">
+        <div className="pointer-events-auto max-w-5xl mx-auto space-y-2">
+          {/* Provincial Key Metrics Glance */}
+          <MetricBanner
+            stations={stations}
+            highwayAlerts={highwayAlerts}
+            onFilterSeverity={(sev) => setFilter({ ...filter, severity: sev as any })}
+            onFilterRoad={() => setCurrentView('list')}
+          />
+
           <TelemetryFilterBar
             filter={filter}
             onFilterChange={setFilter}
@@ -175,7 +184,7 @@ export default function HomePage() {
             />
           </div>
         ) : (
-          <div className="w-full h-full overflow-y-auto pt-28 pb-16">
+          <div className="w-full h-full overflow-y-auto pt-44 sm:pt-48 pb-16">
             <TelemetryStationFeedList
               stations={filteredStations}
               highwayAlerts={filteredHighwayAlerts}
