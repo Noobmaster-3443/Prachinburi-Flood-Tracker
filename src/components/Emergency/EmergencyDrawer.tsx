@@ -8,16 +8,11 @@ import {
   Check,
   ShieldAlert,
   HeartPulse,
-  Plus,
-  Loader2,
-  CheckCircle2,
   Clock,
   MapPin,
-  LifeBuoy,
 } from 'lucide-react';
 import { EmergencyContact } from '@/types';
-import { getEmergencyContacts, suggestEmergencyContact } from '@/lib/contacts-store';
-import { PRACHINBURI_DISTRICTS } from '@/data/prachinburi-locations';
+import { getEmergencyContacts } from '@/lib/contacts-store';
 
 interface EmergencyDrawerProps {
   isOpen: boolean;
@@ -30,16 +25,6 @@ export const EmergencyDrawer: React.FC<EmergencyDrawerProps> = ({
 }) => {
   const [contacts, setContacts] = useState<EmergencyContact[]>([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
-
-  // Add form fields
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [description, setDescription] = useState('');
-  const [district, setDistrict] = useState(PRACHINBURI_DISTRICTS[0].name_th);
-  const [submittedBy, setSubmittedBy] = useState('');
 
   // Load contacts
   useEffect(() => {
@@ -60,40 +45,6 @@ export const EmergencyDrawer: React.FC<EmergencyDrawerProps> = ({
     navigator.clipboard.writeText(phoneNumber.replace(/[^0-9]/g, ''));
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
-  };
-
-  const handleSuggest = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !phone.trim()) {
-      alert('กรุณากรอกชื่อหน่วยงานและเบอร์โทรศัพท์');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await suggestEmergencyContact({
-        name: name.trim(),
-        phone: phone.trim(),
-        description: description.trim() || 'เบอร์ช่วยเหลือฉุกเฉินในพื้นที่',
-        district,
-        category: 'rescue',
-        is_24h: true,
-        submitted_by: submittedBy.trim() || 'ประชาชน',
-      });
-
-      setShowAddForm(false);
-      setName('');
-      setPhone('');
-      setDescription('');
-      setSubmittedBy('');
-      setSuccessMsg('ส่งข้อมูลเบอร์โทรเรียบร้อยแล้ว! จะแสดงผลเมื่อได้รับการอนุมัติจากแอดมิน');
-      setTimeout(() => setSuccessMsg(''), 5000);
-    } catch (err) {
-      console.error(err);
-      alert('เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่อีกครั้ง');
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   // Separate official from community-approved
@@ -124,12 +75,6 @@ export const EmergencyDrawer: React.FC<EmergencyDrawerProps> = ({
 
         {/* Scrollable Content */}
         <div className="p-5 overflow-y-auto space-y-4 flex-1">
-          {successMsg && (
-            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs text-emerald-800 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-              <span>{successMsg}</span>
-            </div>
-          )}
 
           {/* Top 2 Primary Official Hotlines (1784 & 1669) */}
           <div className="space-y-3">
@@ -257,133 +202,18 @@ export const EmergencyDrawer: React.FC<EmergencyDrawerProps> = ({
             </div>
           )}
 
-          {/* Form to Suggest a New Phone Number */}
-          <div className="pt-2 border-t border-slate-100">
-            {!showAddForm ? (
-              <button
-                type="button"
-                onClick={() => setShowAddForm(true)}
-                className="w-full py-2.5 px-4 rounded-2xl border-2 border-dashed border-slate-300 hover:border-blue-400 bg-slate-50/50 hover:bg-blue-50/40 text-slate-700 hover:text-blue-700 text-xs font-semibold flex items-center justify-center gap-2 transition-all"
-              >
-                <Plus className="w-4 h-4 text-blue-600" />
-                <span>+ เสนอเพิ่มเบอร์โทรฉุกเฉิน / หน่วยกู้ภัยประจำพื้นที่</span>
-              </button>
-            ) : (
-              <form onSubmit={handleSuggest} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 animate-in fade-in">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-xs text-slate-800 flex items-center gap-1.5">
-                    <LifeBuoy className="w-3.5 h-3.5 text-blue-600" />
-                    <span>เสนอเพิ่มเบอร์โทรฉุกเฉิน (รอแอดมินอนุมัติ)</span>
-                  </h4>
-                  <button
-                    type="button"
-                    onClick={() => setShowAddForm(false)}
-                    className="text-slate-400 hover:text-slate-600 text-xs"
-                  >
-                    ยกเลิก
-                  </button>
-                </div>
-
-                <div className="space-y-2 text-xs">
-                  <div>
-                    <label className="block text-[11px] text-slate-600 font-medium mb-1">
-                      ชื่อหน่วยงาน / จุดกู้ภัย / ผู้ติดต่อ <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="เช่น กู้ภัยสว่างบำเพ็ญ จุดบ้านสร้าง, อบต.ท่าตูม"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-[11px] text-slate-600 font-medium mb-1">
-                        เบอร์โทรศัพท์ <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="tel"
-                        required
-                        placeholder="เช่น 037-xxx-xxx"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] text-slate-600 font-medium mb-1">
-                        อำเภอในปราจีนบุรี
-                      </label>
-                      <select
-                        value={district}
-                        onChange={(e) => setDistrict(e.target.value)}
-                        className="w-full px-2.5 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-xs"
-                      >
-                        {PRACHINBURI_DISTRICTS.map((d) => (
-                          <option key={d.id} value={d.name_th}>
-                            {d.name_th}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] text-slate-600 font-medium mb-1">
-                      รายละเอียดการช่วยเหลือ (ไม่บังคับ)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="เช่น มีเรือท้องแบน 2 ลำ, บริการขนย้ายผู้สูงอายุ"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] text-slate-600 font-medium mb-1">
-                      ชื่อผู้ส่งข้อมูล (ไม่บังคับ)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="เช่น ผู้ใหญ่บ้าน ม.3, จิตอาสา"
-                      value={submittedBy}
-                      onChange={(e) => setSubmittedBy(e.target.value)}
-                      className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-1 flex items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddForm(false)}
-                    className="px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 text-xs hover:bg-slate-100"
-                  >
-                    ยกเลิก
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm"
-                  >
-                    {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-                    <span>ส่งข้อมูลเพื่อรอแอดมินอนุมัติ</span>
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
         </div>
 
-        {/* Footer Note */}
-        <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 text-center text-xs text-slate-500">
-          เบอร์โทรที่ประชาชนเสนอเข้ามาจะถูกตรวจสอบโดยแอดมินก่อนแสดงผล เพื่อความปลอดภัยและถูกต้อง
+        {/* Footer */}
+        <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+          <span>กรณีฉุกเฉินเร่งด่วน โทร 1784 หรือ 1669 ได้ตลอด 24 ชั่วโมง</span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-1.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold transition-colors cursor-pointer"
+          >
+            ปิดหน้าต่าง
+          </button>
         </div>
       </div>
     </div>
