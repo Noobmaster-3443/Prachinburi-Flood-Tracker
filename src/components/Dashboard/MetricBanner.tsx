@@ -35,8 +35,53 @@ export const MetricBanner: React.FC<MetricBannerProps> = ({
   )[0];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 font-sans">
-      {/* 1. จุดล้นตลิ่ง (Critical) */}
+    <div className="font-sans">
+      {/* Mobile Compact Horizontal Status Pills (Takes only ~32px of height!) */}
+      <div className="flex md:hidden items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 px-0.5">
+        {/* 1. น้ำล้นตลิ่ง */}
+        <button
+          onClick={() => onFilterSeverity && onFilterSeverity('red')}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs whitespace-nowrap shadow-xs bg-white transition-all cursor-pointer ${
+            overflowStations.length > 0 ? 'border-red-400 text-red-700 bg-red-50/50' : 'border-slate-200 text-slate-700'
+          }`}
+        >
+          <span className={`w-2 h-2 rounded-full ${overflowStations.length > 0 ? 'bg-red-600 animate-ping' : 'bg-slate-400'}`}></span>
+          <span className="font-bold">ล้นตลิ่ง {overflowStations.length}</span>
+          {overflowStations[0] && (
+            <span className="text-[10px] bg-red-100 text-red-800 px-1 rounded font-bold">{overflowStations[0].station_code}</span>
+          )}
+        </button>
+
+        {/* 2. จ่อล้น */}
+        <button
+          onClick={() => onFilterSeverity && onFilterSeverity('orange')}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-slate-200 text-slate-700 text-xs whitespace-nowrap shadow-xs bg-white transition-all cursor-pointer hover:border-orange-300"
+        >
+          <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+          <span className="font-medium text-orange-900">จ่อล้น {warningStations.length}</span>
+        </button>
+
+        {/* 3. ทางขาด */}
+        <button
+          onClick={() => onFilterRoad && onFilterRoad()}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs whitespace-nowrap shadow-xs bg-white transition-all cursor-pointer ${
+            impassableRoads.length > 0 ? 'border-amber-400 text-amber-900 bg-amber-50/50' : 'border-slate-200 text-slate-700'
+          }`}
+        >
+          <Car className="w-3 h-3 text-amber-600" />
+          <span className="font-bold">ทางขาด {impassableRoads.length}</span>
+          <span className="text-[10px] text-red-600 font-bold">ทล. 304</span>
+        </button>
+
+        {/* 4. ฝนสูงสุด */}
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-slate-200 bg-white text-slate-700 text-xs whitespace-nowrap shadow-xs">
+          <CloudRain className="w-3 h-3 text-blue-600" />
+          <span>ฝน {highestRainStation?.rain_24h_mm ?? 0} มม.</span>
+        </div>
+      </div>
+
+      {/* Desktop Key Metrics Grid */}
+      <div className="hidden md:grid md:grid-cols-4 gap-2">
       <div 
         onClick={() => onFilterSeverity && onFilterSeverity('red')}
         className={`p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer shadow-sm hover:shadow-md bg-white ${
@@ -137,5 +182,6 @@ export const MetricBanner: React.FC<MetricBannerProps> = ({
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 };

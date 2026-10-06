@@ -39,23 +39,23 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
   const isFiltered = filter.district !== 'all' || filter.severity !== 'all' || filter.searchQuery.trim() !== '';
 
   return (
-    <div className="bg-white rounded-xl shadow-md border border-slate-200 p-2.5 sm:p-3 max-w-5xl mx-auto transition-all font-sans">
+    <div className="bg-white rounded-xl shadow-md border border-slate-200 p-1.5 sm:p-3 max-w-5xl mx-auto transition-all font-sans">
       {/* Main Search & Compact Bar */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2">
         {/* Search Input */}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
           <input
             type="text"
-            placeholder="ค้นหาสถานี, คลอง, แม่น้ำ, รหัส Kgt.3..."
+            placeholder="ค้นหาสถานี, คลอง, รหัส Kgt.3..."
             value={filter.searchQuery}
             onChange={(e) => onFilterChange({ ...filter, searchQuery: e.target.value })}
-            className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-100 hover:bg-slate-100/80 focus:bg-white text-xs sm:text-sm text-slate-900 placeholder-slate-400 border border-transparent focus:border-blue-500 focus:outline-none transition-all font-medium"
+            className="w-full pl-8 sm:pl-9 pr-7 sm:pr-8 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-slate-100 hover:bg-slate-100/80 focus:bg-white text-xs sm:text-sm text-slate-900 placeholder-slate-400 border border-transparent focus:border-blue-500 focus:outline-none transition-all font-medium"
           />
           {filter.searchQuery && (
             <button
               onClick={() => onFilterChange({ ...filter, searchQuery: '' })}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
             >
               <X className="w-3.5 h-3.5" />
             </button>

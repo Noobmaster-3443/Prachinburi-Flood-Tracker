@@ -38,24 +38,24 @@ export const TelemetryNavbar: React.FC<TelemetryNavbarProps> = ({
 
   return (
     <header className="fixed top-0 left-0 right-0 z-30 bg-white border-b border-slate-200 shadow-xs transition-all font-sans">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-2">
+      <div className="max-w-7xl mx-auto px-2.5 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
         {/* Brand */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 flex-shrink-0">
-            <Waves className="w-6 h-6 animate-pulse" />
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-cyan-500 flex items-center justify-center text-white shadow-xs shadow-blue-500/20 flex-shrink-0">
+            <Waves className="w-4 h-4 sm:w-6 sm:h-6 animate-pulse" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <h1 className="font-bold text-base sm:text-lg tracking-tight text-slate-900 leading-tight">
-                ศูนย์ข้อมูลน้ำท่าปราจีนบุรี
+              <h1 className="font-bold text-sm sm:text-base tracking-tight text-slate-900 leading-tight whitespace-nowrap truncate">
+                ข้อมูลน้ำปราจีนบุรี
               </h1>
-              <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-1">
+              <span className="hidden sm:inline-flex bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-300 items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-ping"></span>
                 <span>OPEN DATA</span>
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 hidden sm:block">
-              ThaiWater (สสน.) • กรมชลประทาน (RID) • GISTDA • กรมทางหลวง
+            <p className="text-[10px] sm:text-[11px] text-slate-500 hidden sm:block truncate">
+              ThaiWater (สสน.) • กรมชลประทาน • GISTDA • กรมทางหลวง
             </p>
           </div>
         </div>

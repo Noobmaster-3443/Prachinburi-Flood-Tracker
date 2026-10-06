@@ -65,6 +65,55 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
   const stationsLayerRef = useRef<L.LayerGroup | null>(null);
   const highwaysLayerRef = useRef<L.LayerGroup | null>(null);
 
+  // Global click & touch capture for popup "ดูรายละเอียด" buttons
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).__openStationDrawer = (id: string) => {
+        const st = stations.find((s) => s.id === id);
+        if (st) {
+          onSelectStation(st);
+          onSelectHighwayAlert(null);
+        }
+      };
+      (window as any).__openHighwayDrawer = (id: string) => {
+        const hw = highwayAlerts.find((h) => h.id === id);
+        if (hw) {
+          onSelectHighwayAlert(hw);
+          onSelectStation(null);
+        }
+      };
+    }
+
+    const handleGlobalPopupClick = (e: MouseEvent | TouchEvent) => {
+      const target = (e.target as HTMLElement)?.closest?.('[data-action]');
+      if (!target) return;
+      const action = target.getAttribute('data-action');
+      if (action === 'open-station-detail') {
+        const id = target.getAttribute('data-station-id');
+        const st = stations.find((s) => s.id === id);
+        if (st) {
+          onSelectStation(st);
+          onSelectHighwayAlert(null);
+        }
+      } else if (action === 'open-highway-detail') {
+        const id = target.getAttribute('data-highway-id');
+        const hw = highwayAlerts.find((h) => h.id === id);
+        if (hw) {
+          onSelectHighwayAlert(hw);
+          onSelectStation(null);
+        }
+      }
+    };
+
+    document.addEventListener('click', handleGlobalPopupClick, true);
+    document.addEventListener('touchend', handleGlobalPopupClick, true);
+
+    return () => {
+      document.removeEventListener('click', handleGlobalPopupClick, true);
+      document.removeEventListener('touchend', handleGlobalPopupClick, true);
+    };
+  }, [stations, highwayAlerts, onSelectStation, onSelectHighwayAlert]);
+
   // Initialize Leaflet Map
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
@@ -274,9 +323,15 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
             <span>✓ ${station.source_name_th}</span>
           </div>
 
-          <button id="btn-open-detail-${station.id}" class="w-full mt-2.5 py-1.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer">
+          <button 
+            type="button"
+            data-action="open-station-detail" 
+            data-station-id="${station.id}"
+            onclick="if(window.__openStationDrawer){window.__openStationDrawer('${station.id}')}"
+            class="w-full mt-2.5 py-2 px-3 rounded-xl bg-blue-600 active:bg-blue-800 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer pointer-events-auto select-none"
+          >
             <span>ดูรายละเอียด</span>
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+            <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
           </button>
         </div>
       `;
@@ -296,16 +351,6 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         onSelectStation(station);
         onSelectHighwayAlert(null);
         marker.openPopup();
-      });
-
-      marker.on('popupopen', () => {
-        const btn = document.getElementById(`btn-open-detail-${station.id}`);
-        if (btn) {
-          btn.onclick = () => {
-            onSelectStation(station);
-            onSelectHighwayAlert(null);
-          };
-        }
       });
 
       if (isSelected) {
@@ -369,9 +414,15 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
             ✓ ${alert.source_name_th}
           </div>
 
-          <button id="btn-open-hwy-${alert.id}" class="w-full mt-2.5 py-1.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer">
+          <button 
+            type="button"
+            data-action="open-highway-detail" 
+            data-highway-id="${alert.id}"
+            onclick="if(window.__openHighwayDrawer){window.__openHighwayDrawer('${alert.id}')}"
+            class="w-full mt-2.5 py-2 px-3 rounded-xl bg-blue-600 active:bg-blue-800 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer pointer-events-auto select-none"
+          >
             <span>ดูรายละเอียด</span>
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+            <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
           </button>
         </div>
       `;
@@ -391,16 +442,6 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         onSelectHighwayAlert(alert);
         onSelectStation(null);
         marker.openPopup();
-      });
-
-      marker.on('popupopen', () => {
-        const btn = document.getElementById(`btn-open-hwy-${alert.id}`);
-        if (btn) {
-          btn.onclick = () => {
-            onSelectHighwayAlert(alert);
-            onSelectStation(null);
-          };
-        }
       });
 
       if (isSelected) {
@@ -439,27 +480,11 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
     <div className="w-full h-full relative font-sans">
       <div ref={mapContainerRef} className="w-full h-full z-0" />
 
-      {/* Floating Map Controls (Top Right) */}
-      <div className="absolute top-4 right-4 z-[400] flex flex-col items-end gap-2">
-        {/* Toggle Layers Button (Mobile & Compact) */}
-        <button
-          onClick={() => setIsLayersOpen(!isLayersOpen)}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl shadow-lg border text-xs font-bold backdrop-blur-md transition-all ${
-            isLayersOpen
-              ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-white/95 text-slate-800 border-slate-200 hover:bg-white'
-          }`}
-        >
-          <Layers className="w-4 h-4 text-blue-500" />
-          <span>ชั้นข้อมูล</span>
-          <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded-full font-bold ml-0.5">
-            {[mapType === 'satellite', showGistdaLayer, showRoadAlerts, showBoundaries].filter(Boolean).length}
-          </span>
-        </button>
-
+      {/* Floating Map Controls (Bottom Right - thumb accessible, zero overlap) */}
+      <div className="absolute bottom-6 right-3 sm:right-4 z-[400] flex flex-col items-end gap-2">
         {/* Layer Switches Box (Collapsible / Expandable) */}
         {isLayersOpen && (
-          <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/90 p-2.5 space-y-2 text-xs text-slate-700 w-64 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 p-2.5 space-y-2 text-xs text-slate-700 w-64 animate-in fade-in duration-200 mb-1">
             <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider px-1 pb-1 border-b border-slate-100 flex items-center justify-between">
               <span>เลือกชั้นข้อมูลแสดงผล</span>
               <button 
@@ -552,10 +577,26 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
           </div>
         )}
 
+        {/* Toggle Layers Button */}
+        <button
+          onClick={() => setIsLayersOpen(!isLayersOpen)}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl sm:rounded-2xl shadow-md border text-xs font-bold transition-all cursor-pointer ${
+            isLayersOpen
+              ? 'bg-blue-600 text-white border-blue-600'
+              : 'bg-white text-slate-800 border-slate-200 hover:bg-slate-50'
+          }`}
+        >
+          <Layers className="w-4 h-4 text-blue-500" />
+          <span>ชั้นข้อมูล</span>
+          <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded-full font-bold ml-0.5">
+            {[mapType === 'satellite', showGistdaLayer, showRoadAlerts, showBoundaries].filter(Boolean).length}
+          </span>
+        </button>
+
         {/* Reset View Button */}
         <button
           onClick={handleResetCenter}
-          className="p-2.5 rounded-2xl bg-white/95 backdrop-blur-md hover:bg-white text-slate-700 shadow-lg border border-slate-200/90 transition-all flex items-center justify-center"
+          className="p-2.5 rounded-xl sm:rounded-2xl bg-white hover:bg-slate-50 text-slate-700 shadow-md border border-slate-200 transition-all flex items-center justify-center cursor-pointer"
           title="จัดมุมมองศูนย์กลางปราจีนบุรี"
         >
           <Navigation className="w-4 h-4 text-blue-600" />

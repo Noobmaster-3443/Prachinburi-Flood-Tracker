@@ -139,8 +139,8 @@ export default function HomePage() {
       />
 
       {/* Floating Filter Bar & Top Quick Metrics */}
-      <div className="fixed top-20 left-0 right-0 z-20 px-3 sm:px-4 pointer-events-none space-y-2">
-        <div className="pointer-events-auto max-w-5xl mx-auto space-y-2">
+      <div className="fixed top-15 sm:top-20 left-0 right-0 z-20 px-2 sm:px-4 pointer-events-none space-y-1.5 sm:space-y-2">
+        <div className="pointer-events-auto max-w-5xl mx-auto space-y-1.5 sm:space-y-2">
           {/* Provincial Key Metrics Glance */}
           <MetricBanner
             stations={stations}
@@ -163,7 +163,7 @@ export default function HomePage() {
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full h-full pt-16 relative">
+      <main className="flex-1 w-full h-full pt-14 sm:pt-16 relative">
         {currentView === 'map' ? (
           <div className="w-full h-full">
             <DynamicTelemetryMap
