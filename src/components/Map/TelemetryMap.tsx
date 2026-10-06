@@ -157,20 +157,20 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         };
       });
 
-      // District center label badges
+      // District center label badges (Subtle & clean, non-intrusive)
       PRACHINBURI_DISTRICTS.forEach((d) => {
         const labelHtml = `
-          <div class="px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-xs text-[11px] font-bold text-slate-800 shadow-sm border border-slate-300 pointer-events-none whitespace-nowrap text-center">
+          <div class="px-2 py-0.5 rounded-full bg-slate-900/60 backdrop-blur-xs text-[10px] font-medium text-white/90 tracking-wide pointer-events-none whitespace-nowrap text-center shadow-xs border border-white/20 select-none">
             ${d.name_th.replace('อำเภอ', 'อ.')}
           </div>
         `;
         const icon = L.divIcon({
           className: 'custom-district-badge',
           html: labelHtml,
-          iconSize: [80, 20],
-          iconAnchor: [40, 10],
+          iconSize: [70, 18],
+          iconAnchor: [35, 9],
         });
-        L.marker([d.lat, d.lng], { icon, interactive: false }).addTo(labelsLayerRef.current!);
+        L.marker([d.lat, d.lng], { icon, interactive: false, zIndexOffset: -100 }).addTo(labelsLayerRef.current!);
       });
     }
   }, [showBoundaries, selectedDistrict]);
@@ -233,35 +233,39 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
     stations.forEach((station) => {
       const col = severityColors[station.severity] || severityColors.yellow;
       const isSelected = selectedStation?.id === station.id;
+      const isWater = station.station_type === 'water_level';
 
-      const isWaterLevel = station.station_type === 'water_level';
-      const iconEmoji = isWaterLevel ? '🌊' : '🌧️';
+      // SVG Icons for clean rendering instead of OS emojis
+      const iconSvg = isWater 
+        ? `<svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918"/></svg>`
+        : `<svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"/></svg>`;
 
-      // Pulse ring for critical / warning stations
-      const hasPulse = station.severity === 'red' || station.severity === 'orange';
-      const pulseHtml = hasPulse
-        ? `<div class="absolute -inset-2 rounded-full animate-ping opacity-75" style="background-color: ${col.hex};"></div>`
-        : '';
+      const isCritical = station.severity === 'red';
 
       const markerHtml = `
-        <div class="relative flex items-center justify-center cursor-pointer group">
-          ${pulseHtml}
-          <div class="relative w-8 h-8 rounded-full border-2 shadow-lg flex items-center justify-center text-white font-bold text-xs transition-transform transform group-hover:scale-110 ${
-            isSelected ? 'scale-125 ring-4 ring-blue-500 ring-offset-2' : ''
-          }" style="background-color: ${col.hex}; border-color: ${col.border};">
-            <span class="text-sm">${iconEmoji}</span>
+        <div class="relative flex flex-col items-center cursor-pointer group transition-transform ${isSelected ? 'scale-115 z-50' : 'hover:scale-105'}">
+          ${isCritical ? `<div class="absolute -top-1 w-7 h-7 rounded-full animate-ping opacity-60" style="background-color: ${col.hex};"></div>` : ''}
+          
+          {/* Main Pin Badge with Status Dot + Code */}
+          <div class="flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-full bg-slate-900/90 text-white shadow-xl border border-white/20 backdrop-blur-md">
+            <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 shadow-xs" style="background-color: ${col.hex};">
+              ${iconSvg}
+            </div>
+            <span class="text-[11px] font-bold tracking-tight text-white leading-none whitespace-nowrap">
+              ${station.station_code}
+            </span>
           </div>
-          <div class="absolute -bottom-5 whitespace-nowrap bg-white/95 px-1.5 py-0.5 rounded shadow-xs text-[10px] font-bold text-slate-800 border border-slate-200 pointer-events-none">
-            ${station.station_code}
-          </div>
+
+          {/* Pointer needle */}
+          <div class="w-2 h-2 -mt-1 bg-slate-900/90 rotate-45 border-r border-b border-white/20"></div>
         </div>
       `;
 
       const customIcon = L.divIcon({
-        className: 'telemetry-station-icon',
+        className: 'telemetry-station-pin',
         html: markerHtml,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
+        iconSize: [80, 34],
+        iconAnchor: [40, 32],
       });
 
       const marker = L.marker([station.latitude, station.longitude], {
@@ -291,7 +295,7 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
           <div class="text-[10px] text-blue-700 mt-1 font-medium">✓ ${station.source_name_th}</div>
         </div>
         `,
-        { direction: 'top', offset: [0, -18] }
+        { direction: 'top', offset: [0, -30] }
       );
 
       marker.addTo(stationsLayerRef.current!);
@@ -311,23 +315,29 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
       const isImpassable = !alert.passable;
 
       const markerHtml = `
-        <div class="relative flex items-center justify-center cursor-pointer group">
-          <div class="w-8 h-8 rounded-xl border-2 shadow-lg flex items-center justify-center text-white transition-transform transform group-hover:scale-110 ${
-            isImpassable ? 'bg-red-600 border-red-800 animate-bounce' : 'bg-amber-500 border-amber-700'
-          } ${isSelected ? 'scale-125 ring-4 ring-red-400 ring-offset-2' : ''}">
-            <span class="text-sm">🚧</span>
+        <div class="relative flex flex-col items-center cursor-pointer group transition-transform ${isSelected ? 'scale-115 z-50' : 'hover:scale-105'}">
+          {/* Main Pin Badge */}
+          <div class="flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-full text-white shadow-xl backdrop-blur-md border border-white/20 ${
+            isImpassable ? 'bg-red-600 ring-2 ring-red-400' : 'bg-amber-600 ring-1 ring-amber-300'
+          }">
+            <div class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+              <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+            </div>
+            <span class="text-[11px] font-black tracking-tight text-white leading-none whitespace-nowrap">
+              ${alert.route_number.replace('ทางหลวง ', 'ทล.')}
+            </span>
           </div>
-          <div class="absolute -bottom-5 whitespace-nowrap bg-white/95 px-1.5 py-0.5 rounded shadow-xs text-[10px] font-bold text-slate-800 border border-slate-200 pointer-events-none">
-            ${alert.route_number}
-          </div>
+
+          {/* Pointer needle */}
+          <div class="w-2 h-2 -mt-1 rotate-45 border-r border-b border-white/20 ${isImpassable ? 'bg-red-600' : 'bg-amber-600'}"></div>
         </div>
       `;
 
       const customIcon = L.divIcon({
-        className: 'highway-alert-icon',
+        className: 'highway-alert-pin',
         html: markerHtml,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
+        iconSize: [80, 34],
+        iconAnchor: [40, 32],
       });
 
       const marker = L.marker([alert.latitude, alert.longitude], {
