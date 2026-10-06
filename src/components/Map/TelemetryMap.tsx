@@ -323,16 +323,17 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
             <span>✓ ${station.source_name_th}</span>
           </div>
 
-          <button 
-            type="button"
+          <a 
+            href="javascript:void(0)"
+            role="button"
             data-action="open-station-detail" 
             data-station-id="${station.id}"
-            onclick="if(window.__openStationDrawer){window.__openStationDrawer('${station.id}')}"
-            class="w-full mt-2.5 py-2 px-3 rounded-xl bg-blue-600 active:bg-blue-800 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer pointer-events-auto select-none"
+            onclick="if(window.__openStationDrawer){window.__openStationDrawer('${station.id}');} return false;"
+            class="w-full mt-2.5 py-2 px-3 rounded-xl bg-blue-600 active:bg-blue-800 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer pointer-events-auto select-none no-underline block text-center"
           >
             <span>ดูรายละเอียด</span>
-            <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
-          </button>
+            <svg class="w-3.5 h-3.5 pointer-events-none inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          </a>
         </div>
       `;
 
@@ -351,6 +352,25 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         onSelectStation(station);
         onSelectHighwayAlert(null);
         marker.openPopup();
+      });
+
+      marker.on('popupopen', (e) => {
+        const popupEl = e.popup.getElement();
+        if (popupEl) {
+          const btn = popupEl.querySelector('[data-action="open-station-detail"]') as HTMLElement | null;
+          if (btn) {
+            const trigger = (ev: any) => {
+              if (ev) {
+                L.DomEvent.stopPropagation(ev);
+                L.DomEvent.preventDefault(ev);
+              }
+              onSelectStation(station);
+              onSelectHighwayAlert(null);
+            };
+            L.DomEvent.on(btn, 'click', trigger);
+            L.DomEvent.on(btn, 'touchend', trigger);
+          }
+        }
       });
 
       if (isSelected) {
@@ -414,16 +434,17 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
             ✓ ${alert.source_name_th}
           </div>
 
-          <button 
-            type="button"
+          <a 
+            href="javascript:void(0)"
+            role="button"
             data-action="open-highway-detail" 
             data-highway-id="${alert.id}"
-            onclick="if(window.__openHighwayDrawer){window.__openHighwayDrawer('${alert.id}')}"
-            class="w-full mt-2.5 py-2 px-3 rounded-xl bg-blue-600 active:bg-blue-800 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer pointer-events-auto select-none"
+            onclick="if(window.__openHighwayDrawer){window.__openHighwayDrawer('${alert.id}');} return false;"
+            class="w-full mt-2.5 py-2 px-3 rounded-xl bg-blue-600 active:bg-blue-800 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer pointer-events-auto select-none no-underline block text-center"
           >
             <span>ดูรายละเอียด</span>
-            <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
-          </button>
+            <svg class="w-3.5 h-3.5 pointer-events-none inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          </a>
         </div>
       `;
 
@@ -442,6 +463,25 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         onSelectHighwayAlert(alert);
         onSelectStation(null);
         marker.openPopup();
+      });
+
+      marker.on('popupopen', (e) => {
+        const popupEl = e.popup.getElement();
+        if (popupEl) {
+          const btn = popupEl.querySelector('[data-action="open-highway-detail"]') as HTMLElement | null;
+          if (btn) {
+            const trigger = (ev: any) => {
+              if (ev) {
+                L.DomEvent.stopPropagation(ev);
+                L.DomEvent.preventDefault(ev);
+              }
+              onSelectHighwayAlert(alert);
+              onSelectStation(null);
+            };
+            L.DomEvent.on(btn, 'click', trigger);
+            L.DomEvent.on(btn, 'touchend', trigger);
+          }
+        }
       });
 
       if (isSelected) {
