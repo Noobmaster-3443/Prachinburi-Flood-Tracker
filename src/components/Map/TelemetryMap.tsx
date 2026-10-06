@@ -254,31 +254,50 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         icon: customIcon,
       });
 
-      marker.on('click', () => {
-        onSelectStation(station);
-        onSelectHighwayAlert(null);
-      });
-
-      marker.bindTooltip(
-        `
-        <div class="p-1.5 text-xs font-sans">
-          <div class="font-bold text-slate-900">${station.name_th}</div>
-          <div class="text-[11px] text-slate-600">สถานะ: <b style="color: ${col.hex}">${station.severity_label}</b></div>
+      const popupHtml = `
+        <div class="p-1 font-sans min-w-[240px] text-slate-800 select-text">
+          <div class="font-bold text-sm text-slate-900 leading-snug">${station.name_th}</div>
+          <div class="text-xs text-slate-600 mt-1">
+            สถานะ: <b style="color: ${col.hex}">${station.severity_label}</b>
+          </div>
           ${
             station.water_level_m_msl
-              ? `<div class="text-[11px] text-slate-700">ระดับน้ำ: <b>${station.water_level_m_msl} ม.รทก.</b> (ตลิ่ง ${station.bank_level_m_msl} ม.)</div>`
+              ? `<div class="text-xs text-slate-700 mt-0.5">ระดับน้ำ: <b>${station.water_level_m_msl} ม.รทก.</b> (ตลิ่ง ${station.bank_level_m_msl} ม.)</div>`
               : ''
           }
           ${
             station.rain_24h_mm
-              ? `<div class="text-[11px] text-slate-700">ฝน 24 ชม.: <b>${station.rain_24h_mm} มม.</b></div>`
+              ? `<div class="text-xs text-slate-700 mt-0.5">ฝน 24 ชม.: <b>${station.rain_24h_mm} มม.</b></div>`
               : ''
           }
-          <div class="text-[10px] text-blue-700 mt-1 font-medium">✓ ${station.source_name_th}</div>
+          <div class="text-[11px] text-blue-700 mt-2 font-medium flex items-center gap-1 border-t border-slate-100 pt-1.5">
+            <span>✓ ${station.source_name_th}</span>
+          </div>
         </div>
-        `,
+      `;
+
+      marker.bindPopup(popupHtml, {
+        offset: [0, -28],
+        closeButton: true,
+        autoPan: true,
+      });
+
+      marker.bindTooltip(
+        `<div class="text-xs font-bold text-slate-900">${station.name_th}</div>`,
         { direction: 'top', offset: [0, -30] }
       );
+
+      marker.on('click', () => {
+        onSelectStation(station);
+        onSelectHighwayAlert(null);
+        marker.openPopup();
+      });
+
+      if (isSelected) {
+        setTimeout(() => {
+          marker.openPopup();
+        }, 150);
+      }
 
       marker.addTo(stationsLayerRef.current!);
     });
@@ -323,24 +342,42 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         icon: customIcon,
       });
 
-      marker.on('click', () => {
-        onSelectHighwayAlert(alert);
-        onSelectStation(null);
+      const popupHtml = `
+        <div class="p-1 font-sans min-w-[240px] text-slate-800 select-text">
+          <div class="font-bold text-sm text-slate-900 leading-snug">${alert.route_number} (${alert.road_name})</div>
+          <div class="text-xs mt-1 ${isImpassable ? 'text-red-600 font-bold' : 'text-amber-700 font-bold'}">
+            สถานะ: ${isImpassable ? '⛔ น้ำท่วมทาง รถเล็กผ่านไม่ได้' : '⚠️ มีน้ำท่วมขัง เฝ้าระวัง'}
+          </div>
+          <div class="text-xs text-slate-700 mt-0.5">ระดับน้ำท่วมผิวทาง: <b>${alert.water_height_cm} ซม.</b></div>
+          <div class="text-xs text-slate-600 mt-0.5">ช่วง กม.: ${alert.km_range} (${alert.district})</div>
+          <div class="text-[11px] text-blue-700 mt-2 font-medium border-t border-slate-100 pt-1.5">
+            ✓ ${alert.source_name_th}
+          </div>
+        </div>
+      `;
+
+      marker.bindPopup(popupHtml, {
+        offset: [0, -28],
+        closeButton: true,
+        autoPan: true,
       });
 
       marker.bindTooltip(
-        `
-        <div class="p-1.5 text-xs font-sans">
-          <div class="font-bold text-slate-900">${alert.route_number} (${alert.road_name})</div>
-          <div class="text-[11px] ${isImpassable ? 'text-red-600 font-bold' : 'text-amber-700 font-bold'}">
-            ${isImpassable ? '⛔ รถเล็กผ่านไม่ได้ (น้ำท่วมผิวทาง)' : '⚠️ รถเล็กผ่านได้ด้วยความระมัดระวัง'}
-          </div>
-          <div class="text-[11px] text-slate-600">ระดับน้ำท่วมทาง: <b>${alert.water_height_cm} ซม.</b> (${alert.km_range})</div>
-          <div class="text-[10px] text-blue-700 mt-1 font-medium">✓ ${alert.source_name_th}</div>
-        </div>
-        `,
-        { direction: 'top', offset: [0, -18] }
+        `<div class="text-xs font-bold text-slate-900">${alert.route_number}</div>`,
+        { direction: 'top', offset: [0, -28] }
       );
+
+      marker.on('click', () => {
+        onSelectHighwayAlert(alert);
+        onSelectStation(null);
+        marker.openPopup();
+      });
+
+      if (isSelected) {
+        setTimeout(() => {
+          marker.openPopup();
+        }, 150);
+      }
 
       marker.addTo(highwaysLayerRef.current!);
     });
