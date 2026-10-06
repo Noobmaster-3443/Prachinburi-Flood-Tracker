@@ -68,7 +68,7 @@ export const TelemetryStationFeedList: React.FC<TelemetryStationFeedListProps> =
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-4 space-y-5 font-sans">
+    <div className="space-y-4 font-sans pt-1">
       {/* Highway Flood Alerts Section */}
       {highwayAlerts.length > 0 && (
         <div className="space-y-2.5">

@@ -138,53 +138,78 @@ export default function HomePage() {
         isAutoRefresh={isAutoRefresh}
       />
 
-      {/* Floating Filter Bar & Top Quick Metrics */}
-      <div className="fixed top-[60px] sm:top-20 left-0 right-0 z-20 px-2 sm:px-4 pointer-events-none space-y-1.5 sm:space-y-2">
-        <div className="pointer-events-auto max-w-5xl mx-auto space-y-1.5 sm:space-y-2">
-          {/* Provincial Key Metrics Glance */}
-          <MetricBanner
-            stations={stations}
-            highwayAlerts={highwayAlerts}
-            onFilterSeverity={(sev) => setFilter({ ...filter, severity: sev as any })}
-            onFilterRoad={() => setCurrentView('list')}
-          />
-
-          <TelemetryFilterBar
-            filter={filter}
-            onFilterChange={setFilter}
-            totalStations={filteredStations.length}
-            isAutoRefresh={isAutoRefresh}
-            onToggleAutoRefresh={() => setIsAutoRefresh(!isAutoRefresh)}
-            onManualRefresh={() => fetchData(true)}
-            isRefreshing={isRefreshing}
-            lastUpdated={lastUpdated}
-          />
-        </div>
-      </div>
-
       {/* Main Content Area */}
-      <main className="flex-1 w-full h-full pt-14 sm:pt-16 relative">
-        {currentView === 'map' ? (
-          <div className="w-full h-full">
-            <DynamicTelemetryMap
-              stations={filteredStations}
-              highwayAlerts={filteredHighwayAlerts}
-              gistdaGeoJson={gistdaGeoJson}
-              selectedStation={selectedStation}
-              selectedHighwayAlert={selectedHighwayAlert}
-              onSelectStation={(s) => {
-                setSelectedStation(s);
-                setSelectedHighwayAlert(null);
-              }}
-              onSelectHighwayAlert={(h) => {
-                setSelectedHighwayAlert(h);
-                setSelectedStation(null);
-              }}
-              selectedDistrict={filter.district}
-            />
+      {currentView === 'map' ? (
+        <>
+          {/* Floating Filter Bar & Top Quick Metrics (Map View Only) */}
+          <div className="fixed top-[60px] sm:top-20 left-0 right-0 z-20 px-2 sm:px-4 pointer-events-none space-y-1.5 sm:space-y-2">
+            <div className="pointer-events-auto max-w-5xl mx-auto space-y-1.5 sm:space-y-2">
+              <MetricBanner
+                stations={stations}
+                highwayAlerts={highwayAlerts}
+                onFilterSeverity={(sev) => setFilter({ ...filter, severity: sev as any })}
+                onFilterRoad={() => setCurrentView('list')}
+              />
+
+              <TelemetryFilterBar
+                filter={filter}
+                onFilterChange={setFilter}
+                totalStations={filteredStations.length}
+                isAutoRefresh={isAutoRefresh}
+                onToggleAutoRefresh={() => setIsAutoRefresh(!isAutoRefresh)}
+                onManualRefresh={() => fetchData(true)}
+                isRefreshing={isRefreshing}
+                lastUpdated={lastUpdated}
+              />
+            </div>
           </div>
-        ) : (
-          <div className="w-full h-full overflow-y-auto pt-44 sm:pt-48 pb-16">
+
+          <main className="flex-1 w-full h-full pt-14 sm:pt-16 relative">
+            <div className="w-full h-full">
+              <DynamicTelemetryMap
+                stations={filteredStations}
+                highwayAlerts={filteredHighwayAlerts}
+                gistdaGeoJson={gistdaGeoJson}
+                selectedStation={selectedStation}
+                selectedHighwayAlert={selectedHighwayAlert}
+                onSelectStation={(s) => {
+                  setSelectedStation(s);
+                  setSelectedHighwayAlert(null);
+                }}
+                onSelectHighwayAlert={(h) => {
+                  setSelectedHighwayAlert(h);
+                  setSelectedStation(null);
+                }}
+                selectedDistrict={filter.district}
+              />
+            </div>
+          </main>
+        </>
+      ) : (
+        /* List View: Natural clean scrolling without floating overlap */
+        <main className="flex-1 w-full h-full pt-14 sm:pt-16 overflow-y-auto bg-slate-50">
+          <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-sans">
+            {/* Provincial Key Metrics */}
+            <MetricBanner
+              stations={stations}
+              highwayAlerts={highwayAlerts}
+              onFilterSeverity={(sev) => setFilter({ ...filter, severity: sev as any })}
+              onFilterRoad={() => {}}
+            />
+
+            {/* Filter Bar */}
+            <TelemetryFilterBar
+              filter={filter}
+              onFilterChange={setFilter}
+              totalStations={filteredStations.length}
+              isAutoRefresh={isAutoRefresh}
+              onToggleAutoRefresh={() => setIsAutoRefresh(!isAutoRefresh)}
+              onManualRefresh={() => fetchData(true)}
+              isRefreshing={isRefreshing}
+              lastUpdated={lastUpdated}
+            />
+
+            {/* Feed List Items */}
             <TelemetryStationFeedList
               stations={filteredStations}
               highwayAlerts={filteredHighwayAlerts}
@@ -198,8 +223,8 @@ export default function HomePage() {
               }}
             />
           </div>
-        )}
-      </main>
+        </main>
+      )}
 
       {/* Detail Slide Drawer */}
       <TelemetryDetailDrawer
