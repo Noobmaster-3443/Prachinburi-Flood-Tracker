@@ -248,7 +248,7 @@ export default function HomePage() {
 
               {/* Compact Floating Alert Badges (Only shown if there's high tide or critical flash flood) */}
               {(highTide || flashFloodAlerts.some((f) => f.severity === 'red')) && (
-                <div className="flex items-center justify-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                <div className="flex items-center justify-center gap-2 overflow-x-auto no-scrollbar py-0.5">
                   {highTide && (
                     <button
                       type="button"
@@ -256,13 +256,11 @@ export default function HomePage() {
                         clearAllSelections();
                         setSelectedHighTide(highTide);
                       }}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-blue-600/95 hover:bg-blue-700 text-white shadow-md backdrop-blur-md transition-all active:scale-95 cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-600/95 hover:bg-blue-700 text-white shadow-md backdrop-blur-md transition-all active:scale-95 cursor-pointer whitespace-nowrap"
                     >
                       <span>🌊</span>
-                      <span className="truncate max-w-[160px] sm:max-w-xs">
-                        น้ำทะเลหนุนสูง (+{highTide.morning_peak_m_msl} ม.รทก.)
-                      </span>
-                      <span className="text-blue-200 text-[10px]">รายละเอียด &gt;</span>
+                      <span>น้ำทะเลหนุนสูง (+{highTide.morning_peak_m_msl}ม.)</span>
+                      <span className="text-blue-200 text-xs ml-0.5 font-bold">›</span>
                     </button>
                   )}
                   {flashFloodAlerts
@@ -276,11 +274,11 @@ export default function HomePage() {
                           clearAllSelections();
                           setSelectedFlashFlood(flash);
                         }}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-rose-600/95 hover:bg-rose-700 text-white shadow-md backdrop-blur-md transition-all active:scale-95 animate-pulse cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-600/95 hover:bg-rose-700 text-white shadow-md backdrop-blur-md transition-all active:scale-95 animate-pulse cursor-pointer whitespace-nowrap"
                       >
                         <span>🚨</span>
-                        <span className="truncate max-w-[160px] sm:max-w-xs">เตือนน้ำป่า: {flash.location_name}</span>
-                        <span className="text-rose-200 text-[10px]">รายละเอียด &gt;</span>
+                        <span>เตือนน้ำป่า ({flash.district})</span>
+                        <span className="text-rose-200 text-xs ml-0.5 font-bold">›</span>
                       </button>
                     ))}
                 </div>

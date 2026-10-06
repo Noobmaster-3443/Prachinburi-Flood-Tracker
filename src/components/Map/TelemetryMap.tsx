@@ -284,17 +284,55 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
       radarTileLayerRef.current = null;
     }
 
-    if (showRainRadar) {
-      // Free public RainViewer live radar coverage for Thailand
-      radarTileLayerRef.current = L.tileLayer(
-        'https://tilecache.rainviewer.com/v2/radar/nowcast_0/512/{z}/{x}/{y}/2/1_1.png',
-        {
-          opacity: 0.65,
-          zIndex: 350,
-          attribution: '&copy; <a href="https://www.rainviewer.com" target="_blank">RainViewer</a> / TMD Weather Radar',
+    if (!showRainRadar) return;
+
+    let isMounted = true;
+
+    const loadRadarLayer = async () => {
+      let host = 'https://tilecache.rainviewer.com';
+      let radarPath = '';
+
+      try {
+        const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+        if (res.ok) {
+          const data = await res.json();
+          host = data.host || host;
+          const frames = data.radar?.past || [];
+          if (frames.length > 0) {
+            radarPath = frames[frames.length - 1].path;
+          }
         }
-      ).addTo(map);
-    }
+      } catch (err) {
+        console.warn('Could not fetch latest radar timestamp, using fallback', err);
+      }
+
+      if (!isMounted || !mapInstanceRef.current) return;
+
+      // RainViewer Free Tier is limited to native zoom level 7.
+      // Setting maxNativeZoom: 7 instructs Leaflet to stop requesting higher zoom tiles from server
+      // and instead scale up the level 7 tiles, preventing the gray "Zoom Level Not Supported" tiles.
+      const tileUrl = radarPath
+        ? `${host}${radarPath}/256/{z}/{x}/{y}/2/1_1.png`
+        : 'https://tilecache.rainviewer.com/v2/radar/nowcast_0/256/{z}/{x}/{y}/2/1_1.png';
+
+      radarTileLayerRef.current = L.tileLayer(tileUrl, {
+        opacity: 0.7,
+        zIndex: 350,
+        maxNativeZoom: 7,
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.rainviewer.com" target="_blank">RainViewer</a> / TMD Weather Radar',
+      }).addTo(mapInstanceRef.current);
+    };
+
+    loadRadarLayer();
+
+    return () => {
+      isMounted = false;
+      if (radarTileLayerRef.current && mapInstanceRef.current) {
+        mapInstanceRef.current.removeLayer(radarTileLayerRef.current);
+        radarTileLayerRef.current = null;
+      }
+    };
   }, [showRainRadar]);
 
   // District Boundaries Layer
