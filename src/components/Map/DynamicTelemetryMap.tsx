@@ -3,16 +3,31 @@
 import dynamic from 'next/dynamic';
 import React from 'react';
 import { Loader2 } from 'lucide-react';
-import { TelemetryStation, HighwayDisasterAlert } from '@/types/telemetry';
+import { 
+  TelemetryStation, 
+  HighwayDisasterAlert,
+  DamReservoirInfo,
+  FlashFloodAlert,
+  EvacuationShelter,
+} from '@/types/telemetry';
 
-interface DynamicTelemetryMapProps {
+export interface DynamicTelemetryMapProps {
   stations: TelemetryStation[];
   highwayAlerts: HighwayDisasterAlert[];
   gistdaGeoJson: GeoJSON.FeatureCollection | null;
+  dams?: DamReservoirInfo[];
+  flashFloodAlerts?: FlashFloodAlert[];
+  shelters?: EvacuationShelter[];
   selectedStation: TelemetryStation | null;
   selectedHighwayAlert: HighwayDisasterAlert | null;
+  selectedDam?: DamReservoirInfo | null;
+  selectedFlashFlood?: FlashFloodAlert | null;
+  selectedShelter?: EvacuationShelter | null;
   onSelectStation: (station: TelemetryStation | null) => void;
   onSelectHighwayAlert: (alert: HighwayDisasterAlert | null) => void;
+  onSelectDam?: (dam: DamReservoirInfo | null) => void;
+  onSelectFlashFlood?: (flashFlood: FlashFloodAlert | null) => void;
+  onSelectShelter?: (shelter: EvacuationShelter | null) => void;
   selectedDistrict: string;
 }
 

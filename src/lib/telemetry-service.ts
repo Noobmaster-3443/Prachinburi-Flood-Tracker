@@ -1,30 +1,48 @@
-import { TelemetryStation, HighwayDisasterAlert } from '@/types/telemetry';
+import { 
+  TelemetryStation, 
+  HighwayDisasterAlert,
+  DamReservoirInfo,
+  HighTideAlert,
+  FlashFloodAlert,
+  EvacuationShelter,
+} from '@/types/telemetry';
 import {
   OFFICIAL_PRACHINBURI_STATIONS,
   OFFICIAL_HIGHWAY_ALERTS,
   GISTDA_FLOOD_GEOJSON,
+  OFFICIAL_DAMS,
+  OFFICIAL_HIGH_TIDE,
+  OFFICIAL_FLASH_FLOOD_ALERTS,
+  OFFICIAL_EVACUATION_SHELTERS,
 } from '@/data/open-data-telemetry';
 
 export interface TelemetryDashboardData {
   stations: TelemetryStation[];
   highwayAlerts: HighwayDisasterAlert[];
   gistdaGeoJson: GeoJSON.FeatureCollection;
+  dams: DamReservoirInfo[];
+  highTide: HighTideAlert;
+  flashFloodAlerts: FlashFloodAlert[];
+  shelters: EvacuationShelter[];
   lastUpdated: string;
   sourceAttribution: string;
 }
 
 /**
- * Fetch automated telemetry data from ThaiWater / HII & GISTDA open data.
- * Includes graceful live network fallback and automated station updates.
+ * Fetch automated telemetry and multi-hazard data for Prachinburi Province.
+ * Covers: Telemetry River Stations, Highway Floods, Dams/Reservoirs, High Tide, Flash Floods, and Evacuation Shelters.
  */
 export async function getAutomatedTelemetryData(): Promise<TelemetryDashboardData> {
-  // If NEXT_PUBLIC_THAIWATER_API_KEY or remote endpoint is provided, attempt live fetch:
   const thaiwaterApiUrl = process.env.NEXT_PUBLIC_THAIWATER_API_URL;
   const gistdaApiUrl = process.env.NEXT_PUBLIC_GISTDA_API_URL;
 
   let stations = [...OFFICIAL_PRACHINBURI_STATIONS];
   let highwayAlerts = [...OFFICIAL_HIGHWAY_ALERTS];
   let gistdaGeoJson = GISTDA_FLOOD_GEOJSON;
+  const dams = [...OFFICIAL_DAMS];
+  const highTide = { ...OFFICIAL_HIGH_TIDE };
+  const flashFloodAlerts = [...OFFICIAL_FLASH_FLOOD_ALERTS];
+  const shelters = [...OFFICIAL_EVACUATION_SHELTERS];
 
   if (thaiwaterApiUrl) {
     try {
@@ -63,7 +81,11 @@ export async function getAutomatedTelemetryData(): Promise<TelemetryDashboardDat
     stations,
     highwayAlerts,
     gistdaGeoJson,
+    dams,
+    highTide,
+    flashFloodAlerts,
+    shelters,
     lastUpdated: new Date().toISOString(),
-    sourceAttribution: 'สถาบันสารสนเทศทรัพยากรน้ำ (สสน. ThaiWater) • กรมชลประทาน (RID) • GISTDA • กรมทางหลวง',
+    sourceAttribution: 'สถาบันสารสนเทศทรัพยากรน้ำ (สสน.) • กรมชลประทาน (RID) • กรมอุทกศาสตร์ กองทัพเรือ • กรมทางหลวง • GISTDA • ปภ.ปราจีนบุรี',
   };
 }

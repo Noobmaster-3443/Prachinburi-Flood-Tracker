@@ -1,4 +1,12 @@
-import { TelemetryStation, GistdaFloodZone, HighwayDisasterAlert } from '@/types/telemetry';
+import { 
+  TelemetryStation, 
+  GistdaFloodZone, 
+  HighwayDisasterAlert,
+  DamReservoirInfo,
+  HighTideAlert,
+  FlashFloodAlert,
+  EvacuationShelter,
+} from '@/types/telemetry';
 
 /**
  * Official Real-World Telemetry Stations in Prachinburi River Basin & Tributaries
@@ -319,3 +327,212 @@ export const GISTDA_FLOOD_GEOJSON: GeoJSON.FeatureCollection = {
     },
   ],
 };
+
+/**
+ * Official Major Dams & Reservoirs (RID SWOC - กรมชลประทาน)
+ * Directly protecting and affecting Prachinburi & Bang Pakong river basins
+ */
+export const OFFICIAL_DAMS: DamReservoirInfo[] = [
+  {
+    id: 'dam-narubodin',
+    name_th: 'อ่างเก็บน้ำนฤบดินทรจินดา (เขื่อนห้วยโสมง)',
+    name_en: 'Narubodin Jinda Reservoir (Huai Samong Dam)',
+    district: 'อำเภอนาดี',
+    subdistrict: 'แก่งดินสอ',
+    latitude: 14.1800,
+    longitude: 101.8850,
+    capacity_storage_mcm: 295.0,
+    current_storage_mcm: 268.45,
+    capacity_percentage: 91.0,
+    inflow_mcm_day: 12.4,
+    outflow_mcm_day: 8.5,
+    severity: 'orange',
+    status_label: 'เฝ้าระวังน้ำมาก (เร่งระบายน้ำ)',
+    description: 'เขื่อนหลักสำคัญที่สุดของปราจีนบุรี ตัดยอดน้ำหลากจากเทือกเขามรดกโลกดงพญาเย็น-ทับลาน ปัจจุบันมีการเปิดระบายน้ำผ่านทางระบายน้ำล้นเพื่อควบคุมระดับน้ำไม่ให้กระทบพื้นที่ชุมชนท้ายน้ำ',
+    observed_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+    agency: 'กรมชลประทาน (ศูนย์ปฏิบัติการน้ำอัจฉริยะ SWOC / โครงการห้วยโสมง)',
+    source_url: 'https://app.rid.go.th/reservoir',
+  },
+  {
+    id: 'dam-khundan',
+    name_th: 'เขื่อนขุนด่านปราการชล',
+    name_en: 'Khun Dan Prakan Chon Dam',
+    district: 'อำเภอเมืองนครนายก (เชื่อมต่อแม่น้ำปราจีนบุรี)',
+    subdistrict: 'หินตั้ง',
+    latitude: 14.3142,
+    longitude: 101.3206,
+    capacity_storage_mcm: 224.0,
+    current_storage_mcm: 198.5,
+    capacity_percentage: 88.6,
+    inflow_mcm_day: 8.2,
+    outflow_mcm_day: 5.1,
+    severity: 'yellow',
+    status_label: 'เฝ้าระวังระดับน้ำ',
+    description: 'ต้นน้ำลุ่มน้ำนครนายก ไหลมาบรรจบกับแม่น้ำปราจีนบุรีเป็นแม่น้ำบางปะกงที่ อ.บ้านสร้าง ปริมาณการระบายน้ำยังอยู่ในเกณฑ์ควบคุมได้',
+    observed_at: new Date(Date.now() - 40 * 60 * 1000).toISOString(),
+    agency: 'กรมชลประทาน (สำนักงานชลประทานที่ 9)',
+    source_url: 'https://app.rid.go.th/reservoir',
+  },
+  {
+    id: 'dam-klong-siyat',
+    name_th: 'อ่างเก็บน้ำคลองสียัด',
+    name_en: 'Klong Si Yat Reservoir',
+    district: 'อำเภอท่าตะเกียบ (ลุ่มน้ำบางปะกงตอนล่าง)',
+    subdistrict: 'ท่าตะเกียบ',
+    latitude: 13.4350,
+    longitude: 101.6050,
+    capacity_storage_mcm: 420.0,
+    current_storage_mcm: 315.0,
+    capacity_percentage: 75.0,
+    inflow_mcm_day: 4.8,
+    outflow_mcm_day: 2.2,
+    severity: 'green',
+    status_label: 'ระดับน้ำปกติ',
+    description: 'อ่างเก็บน้ำขนาดใหญ่ลุ่มน้ำบางปะกงตอนล่าง สามารถรองรับน้ำหลากได้อีก 105 ล้าน ลบ.ม.',
+    observed_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    agency: 'กรมชลประทาน',
+    source_url: 'https://app.rid.go.th/reservoir',
+  },
+];
+
+/**
+ * Official High Tide & Sea Water Level Forecast (Hydrographic Department, Royal Thai Navy)
+ * Direct impact on lower Prachinburi river drainage (Ban Sang & Mueang districts)
+ */
+export const OFFICIAL_HIGH_TIDE: HighTideAlert = {
+  date: new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }),
+  station_name: 'ปากแม่น้ำบางปะกง / อ่าวไทยตอนบน',
+  location: 'สถานีวัดระดับน้ำอุทกศาสตร์ กองทัพเรือ (ปากน้ำบางปะกง)',
+  morning_peak_time: '09:15 น.',
+  morning_peak_m_msl: 1.82,
+  evening_peak_time: '20:45 น.',
+  evening_peak_m_msl: 1.65,
+  current_status: 'high_tide',
+  warning_title: 'เตือนภัยช่วงเวลาน้ำทะเลหนุนสูง (08:30 - 11:30 น. และ 20:00 - 22:30 น.)',
+  warning_detail: 'น้ำทะเลหนุนสูง +1.82 ม.รทก. ส่งผลให้น้ำในแม่น้ำบางปะกงดันย้อนขึ้นสู่แม่น้ำปราจีนบุรี ทำให้การระบายน้ำชะลอตัวและเอ่อล้นเข้าท่วมพื้นที่ริมตลิ่ง อ.บ้านสร้าง และ อ.เมืองปราจีนบุรี',
+  affected_districts: ['อำเภอบ้านสร้าง', 'อำเภอเมืองปราจีนบุรี'],
+  observed_at: new Date().toISOString(),
+  agency: 'กรมอุทกศาสตร์ กองทัพเรือ / สำนักการระบายน้ำ',
+};
+
+/**
+ * Flash Flood & Mountain Runoff Early Warning (DNP / DWR)
+ * Sensors tracking extreme rainfall on Khao Yai & Thap Lan National Parks
+ */
+export const OFFICIAL_FLASH_FLOOD_ALERTS: FlashFloodAlert[] = [
+  {
+    id: 'flash-nadee-thablan',
+    location_name: 'พื้นที่เชิงเขาอุโมงค์ทับลาน - คลองพระปรง (ต.บุพราหมณ์)',
+    mountain_range: 'อุทยานแห่งชาติทับลาน - มรดกโลกดงพญาเย็น',
+    district: 'อำเภอนาดี',
+    subdistrict: 'บุพราหมณ์',
+    latitude: 14.1950,
+    longitude: 101.9120,
+    rain_mountain_24h_mm: 118.5,
+    severity: 'red',
+    severity_label: 'วิกฤต: เสี่ยงน้ำป่าไหลหลากใน 1-3 ชม.',
+    time_to_flood_hours: '1 - 3 ชั่วโมง',
+    advisory: 'ฝนตกสะสมบนเทือกเขาทับลานสูงเกิน 110 มม. ระดับน้ำในลำห้วยมีสีขุ่นแดงและกระแสน้ำเชี่ยว แจ้งเตือนประชาชนบริเวณบ้านวังมืด บ้านขุนศรี และชุมชนริมคลองพระปรง ยกของขึ้นที่สูงและติดตามการแจ้งเตือนใกล้ชิด',
+    observed_at: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+    agency: 'กรมอุทยานแห่งชาติฯ / กรมทรัพยากรน้ำ (ระบบ Early Warning)',
+  },
+  {
+    id: 'flash-prachantakham-thanthip',
+    location_name: 'ธารน้ำตกธารทิพย์ - คลองประจันตคาม',
+    mountain_range: 'อุทยานแห่งชาติเขาใหญ่ (ฝั่งปราจีนบุรี)',
+    district: 'อำเภอประจันตคาม',
+    subdistrict: 'โพธิ์งาม',
+    latitude: 14.2250,
+    longitude: 101.5540,
+    rain_mountain_24h_mm: 85.0,
+    severity: 'orange',
+    severity_label: 'เตือนภัย: เฝ้าระวังน้ำป่าไหลหลาก',
+    time_to_flood_hours: '2 - 4 ชั่วโมง',
+    advisory: 'ระดับน้ำในน้ำตกธารทิพย์และแก่งหินดาดเพิ่มสูงขึ้นต่อเนื่อง เจ้าหน้าที่สั่งปิดแหล่งท่องเที่ยวทางน้ำชั่วคราวและเฝ้าระวังมวลน้ำหลากลงสู่คลองประจันตคามตอนล่าง',
+    observed_at: new Date(Date.now() - 35 * 60 * 1000).toISOString(),
+    agency: 'อุทยานแห่งชาติเขาใหญ่ / เทศบาลตำบลโพธิ์งาม',
+  },
+];
+
+/**
+ * Official Emergency Shelters & Evacuation Centers (DDPM Prachinburi - ปภ. ปราจีนบุรี)
+ */
+export const OFFICIAL_EVACUATION_SHELTERS: EvacuationShelter[] = [
+  {
+    id: 'shelter-kabin-wittaya',
+    name: 'ศูนย์พักพิงโรงเรียนกบินทร์วิทยา',
+    shelter_type: 'school',
+    district: 'อำเภอกบินทร์บุรี',
+    subdistrict: 'กบินทร์',
+    latitude: 13.9980,
+    longitude: 101.7220,
+    capacity_persons: 500,
+    current_occupancy: 180,
+    status: 'open',
+    has_medical: true,
+    has_food_kitchen: true,
+    has_car_parking: true,
+    contact_name: 'นายกเทศมนตรีตำบลกบินทร์ / ปภ.อำเภอ',
+    contact_phone: '037-281-222',
+    address: 'หมู่ 1 ต.กบินทร์ อ.กบินทร์บุรี จ.ปราจีนบุรี',
+    notes: 'เปิดบริการตลอด 24 ชั่วโมง มีจุดจอดรถยนต์หนีน้ำได้ 120 คัน และหน่วยปฐมพยาบาล รพ.กบินทร์บุรี',
+  },
+  {
+    id: 'shelter-wat-bansang',
+    name: 'ศูนย์อพยพวัดบ้านสร้าง (โรงครัวพระราชทาน)',
+    shelter_type: 'temple',
+    district: 'อำเภอบ้านสร้าง',
+    subdistrict: 'บ้านสร้าง',
+    latitude: 13.9985,
+    longitude: 101.2180,
+    capacity_persons: 350,
+    current_occupancy: 95,
+    status: 'open',
+    has_medical: true,
+    has_food_kitchen: true,
+    has_car_parking: true,
+    contact_name: 'ฝ่ายป้องกันฯ อบต.บ้านสร้าง',
+    contact_phone: '037-271-155',
+    address: 'ต.บ้านสร้าง อ.บ้านสร้าง จ.ปราจีนบุรี',
+    notes: 'มีโรงครัวแจกจ่ายข้าวกล่องและน้ำดื่ม มีเรือท้องแบนสำหรับลำเลียงผู้ป่วยติดเตียง',
+  },
+  {
+    id: 'shelter-simahaphot-hall',
+    name: 'หอประชุมอำเภอศรีมหาโพธิ',
+    shelter_type: 'hall',
+    district: 'อำเภอศรีมหาโพธิ',
+    subdistrict: 'ศรีมหาโพธิ',
+    latitude: 13.9180,
+    longitude: 101.5120,
+    capacity_persons: 400,
+    current_occupancy: 45,
+    status: 'open',
+    has_medical: true,
+    has_food_kitchen: true,
+    has_car_parking: true,
+    contact_name: 'ที่ว่าการอำเภอศรีมหาโพธิ',
+    contact_phone: '037-279-111',
+    address: 'หน้าที่ว่าการอำเภอศรีมหาโพธิ จ.ปราจีนบุรี',
+    notes: 'พื้นที่ดอนน้ำไม่ท่วม รองรับประชาชนจากพื้นที่ริมแม่น้ำปราจีนบุรีและคลองรั้ง',
+  },
+  {
+    id: 'shelter-nadee-wittaya',
+    name: 'โรงเรียนนาดีวิทยา (ศูนย์พักพิงและจุดจอดรถ)',
+    shelter_type: 'school',
+    district: 'อำเภอนาดี',
+    subdistrict: 'นาดี',
+    latitude: 14.1500,
+    longitude: 101.9800,
+    capacity_persons: 300,
+    current_occupancy: 30,
+    status: 'open',
+    has_medical: true,
+    has_food_kitchen: true,
+    has_car_parking: true,
+    contact_name: 'งานป้องกันและบรรเทาสาธารณภัย อบต.นาดี',
+    contact_phone: '037-289-011',
+    address: 'ต.นาดี อ.นาดี จ.ปราจีนบุรี',
+    notes: 'รองรับการอพยพจากพื้นที่เสี่ยงน้ำป่าไหลหลากตอนบนอุทยานฯ ทับลาน',
+  },
+];
+

@@ -7,7 +7,15 @@ import { TelemetryFilterBar } from '@/components/Filters/TelemetryFilterBar';
 import { TelemetryStationFeedList } from '@/components/Feed/TelemetryStationFeedList';
 import { TelemetryDetailDrawer } from '@/components/ReportDrawer/TelemetryDetailDrawer';
 import { EmergencyDrawer } from '@/components/Emergency/EmergencyDrawer';
-import { TelemetryStation, HighwayDisasterAlert, DashboardFilterState } from '@/types/telemetry';
+import { 
+  TelemetryStation, 
+  HighwayDisasterAlert, 
+  DashboardFilterState,
+  DamReservoirInfo,
+  HighTideAlert,
+  FlashFloodAlert,
+  EvacuationShelter,
+} from '@/types/telemetry';
 import { getAutomatedTelemetryData } from '@/lib/telemetry-service';
 import { MetricBanner } from '@/components/Dashboard/MetricBanner';
 import { CheckCircle2 } from 'lucide-react';
@@ -16,16 +24,37 @@ export default function HomePage() {
   const [stations, setStations] = useState<TelemetryStation[]>([]);
   const [highwayAlerts, setHighwayAlerts] = useState<HighwayDisasterAlert[]>([]);
   const [gistdaGeoJson, setGistdaGeoJson] = useState<GeoJSON.FeatureCollection | null>(null);
+  const [dams, setDams] = useState<DamReservoirInfo[]>([]);
+  const [highTide, setHighTide] = useState<HighTideAlert | null>(null);
+  const [flashFloodAlerts, setFlashFloodAlerts] = useState<FlashFloodAlert[]>([]);
+  const [shelters, setShelters] = useState<EvacuationShelter[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>(new Date().toISOString());
   const [isAutoRefresh, setIsAutoRefresh] = useState<boolean>(true);
 
   const [currentView, setCurrentView] = useState<'map' | 'list'>('map');
+
+  // Selected hazard detail drawers
   const [selectedStation, setSelectedStation] = useState<TelemetryStation | null>(null);
   const [selectedHighwayAlert, setSelectedHighwayAlert] = useState<HighwayDisasterAlert | null>(null);
+  const [selectedDam, setSelectedDam] = useState<DamReservoirInfo | null>(null);
+  const [selectedFlashFlood, setSelectedFlashFlood] = useState<FlashFloodAlert | null>(null);
+  const [selectedShelter, setSelectedShelter] = useState<EvacuationShelter | null>(null);
+  const [selectedHighTide, setSelectedHighTide] = useState<HighTideAlert | null>(null);
+
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const clearAllSelections = useCallback(() => {
+    setSelectedStation(null);
+    setSelectedHighwayAlert(null);
+    setSelectedDam(null);
+    setSelectedFlashFlood(null);
+    setSelectedShelter(null);
+    setSelectedHighTide(null);
+  }, []);
 
   // Filter state
   const [filter, setFilter] = useState<DashboardFilterState>({
@@ -35,7 +64,7 @@ export default function HomePage() {
     searchQuery: '',
   });
 
-  // Fetch telemetry data function
+  // Fetch telemetry & multi-hazard data
   const fetchData = useCallback(async (isManual = false) => {
     if (isManual) setIsRefreshing(true);
     try {
@@ -43,10 +72,14 @@ export default function HomePage() {
       setStations(data.stations);
       setHighwayAlerts(data.highwayAlerts);
       setGistdaGeoJson(data.gistdaGeoJson);
+      setDams(data.dams);
+      setHighTide(data.highTide);
+      setFlashFloodAlerts(data.flashFloodAlerts);
+      setShelters(data.shelters);
       setLastUpdated(data.lastUpdated);
 
       if (isManual) {
-        setToastMessage('อัปเดตข้อมูลโทรมาตร สสน. และทางหลวงเรียบร้อย');
+        setToastMessage('อัปเดตข้อมูลโทรมาตร, เขื่อน, น้ำหนุน และศูนย์พักพิงเรียบร้อย');
         setTimeout(() => setToastMessage(null), 3000);
       }
     } catch (err) {
@@ -71,38 +104,68 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, [isAutoRefresh, fetchData]);
 
-  // Global Detail Drawer Opener - connects map popups & feed list items directly to drawer state
+  // Global Detail Drawer Openers - connects map popups & feed list items directly to drawer state
   useEffect(() => {
     (window as any).__openTelemetryStationById = (stationId: string) => {
       const st = stations.find((s) => s.id === stationId);
       if (st) {
+        clearAllSelections();
         setSelectedStation(st);
-        setSelectedHighwayAlert(null);
       }
     };
 
     (window as any).__openTelemetryHighwayById = (highwayId: string) => {
       const hw = highwayAlerts.find((h) => h.id === highwayId);
       if (hw) {
+        clearAllSelections();
         setSelectedHighwayAlert(hw);
-        setSelectedStation(null);
+      }
+    };
+
+    (window as any).__openTelemetryDamById = (damId: string) => {
+      const d = dams.find((item) => item.id === damId);
+      if (d) {
+        clearAllSelections();
+        setSelectedDam(d);
+      }
+    };
+
+    (window as any).__openTelemetryFlashById = (flashId: string) => {
+      const f = flashFloodAlerts.find((item) => item.id === flashId);
+      if (f) {
+        clearAllSelections();
+        setSelectedFlashFlood(f);
+      }
+    };
+
+    (window as any).__openTelemetryShelterById = (shelterId: string) => {
+      const s = shelters.find((item) => item.id === shelterId);
+      if (s) {
+        clearAllSelections();
+        setSelectedShelter(s);
       }
     };
 
     const handleCustomDrawerOpen = (e: any) => {
       const detail = e.detail;
+      clearAllSelections();
       if (detail?.type === 'station') {
-        const st = detail.station || stations.find((s) => s.id === detail.stationId || s.id === detail.id);
-        if (st) {
-          setSelectedStation(st);
-          setSelectedHighwayAlert(null);
-        }
+        const st = detail.station || stations.find((s) => s.id === detail.id || s.id === detail.stationId);
+        if (st) setSelectedStation(st);
       } else if (detail?.type === 'highway') {
-        const hw = detail.highway || highwayAlerts.find((h) => h.id === detail.highwayId || h.id === detail.id);
-        if (hw) {
-          setSelectedHighwayAlert(hw);
-          setSelectedStation(null);
-        }
+        const hw = detail.highway || highwayAlerts.find((h) => h.id === detail.id || h.id === detail.highwayId);
+        if (hw) setSelectedHighwayAlert(hw);
+      } else if (detail?.type === 'dam') {
+        const d = detail.dam || dams.find((item) => item.id === detail.id);
+        if (d) setSelectedDam(d);
+      } else if (detail?.type === 'flashFlood') {
+        const f = detail.flashFlood || flashFloodAlerts.find((item) => item.id === detail.id);
+        if (f) setSelectedFlashFlood(f);
+      } else if (detail?.type === 'shelter') {
+        const s = detail.shelter || shelters.find((item) => item.id === detail.id);
+        if (s) setSelectedShelter(s);
+      } else if (detail?.type === 'highTide') {
+        if (highTide) setSelectedHighTide(highTide);
       }
     };
 
@@ -110,22 +173,13 @@ export default function HomePage() {
     return () => {
       window.removeEventListener('open-telemetry-drawer', handleCustomDrawerOpen as any);
     };
-  }, [stations, highwayAlerts]);
+  }, [stations, highwayAlerts, dams, flashFloodAlerts, shelters, highTide, clearAllSelections]);
 
   // Filter logic
   const filteredStations = useMemo(() => {
     return stations.filter((sta) => {
-      // District filter
-      if (filter.district !== 'all' && sta.district !== filter.district) {
-        return false;
-      }
-
-      // Severity filter
-      if (filter.severity !== 'all' && sta.severity !== filter.severity) {
-        return false;
-      }
-
-      // Search query
+      if (filter.district !== 'all' && sta.district !== filter.district) return false;
+      if (filter.severity !== 'all' && sta.severity !== filter.severity) return false;
       if (filter.searchQuery.trim() !== '') {
         const query = filter.searchQuery.toLowerCase();
         const matchName = sta.name_th.toLowerCase().includes(query);
@@ -137,17 +191,13 @@ export default function HomePage() {
           return false;
         }
       }
-
       return true;
     });
   }, [stations, filter]);
 
-  // Filtered Highway Alerts
   const filteredHighwayAlerts = useMemo(() => {
     return highwayAlerts.filter((alert) => {
-      if (filter.district !== 'all' && alert.district !== filter.district) {
-        return false;
-      }
+      if (filter.district !== 'all' && alert.district !== filter.district) return false;
       if (filter.searchQuery.trim() !== '') {
         const query = filter.searchQuery.toLowerCase();
         const matchRoad = alert.road_name.toLowerCase().includes(query);
@@ -188,8 +238,23 @@ export default function HomePage() {
               <MetricBanner
                 stations={stations}
                 highwayAlerts={highwayAlerts}
+                highTide={highTide ?? undefined}
+                flashFloodAlerts={flashFloodAlerts}
+                dams={dams}
                 onFilterSeverity={(sev) => setFilter({ ...filter, severity: sev as any })}
                 onFilterRoad={() => setCurrentView('list')}
+                onOpenHighTide={() => {
+                  clearAllSelections();
+                  if (highTide) setSelectedHighTide(highTide);
+                }}
+                onOpenFlashFlood={(flash) => {
+                  clearAllSelections();
+                  setSelectedFlashFlood(flash);
+                }}
+                onOpenDam={(d) => {
+                  clearAllSelections();
+                  setSelectedDam(d);
+                }}
               />
 
               <TelemetryFilterBar
@@ -211,15 +276,33 @@ export default function HomePage() {
                 stations={filteredStations}
                 highwayAlerts={filteredHighwayAlerts}
                 gistdaGeoJson={gistdaGeoJson}
+                dams={dams}
+                flashFloodAlerts={flashFloodAlerts}
+                shelters={shelters}
                 selectedStation={selectedStation}
                 selectedHighwayAlert={selectedHighwayAlert}
+                selectedDam={selectedDam}
+                selectedFlashFlood={selectedFlashFlood}
+                selectedShelter={selectedShelter}
                 onSelectStation={(s) => {
+                  clearAllSelections();
                   setSelectedStation(s);
-                  setSelectedHighwayAlert(null);
                 }}
                 onSelectHighwayAlert={(h) => {
+                  clearAllSelections();
                   setSelectedHighwayAlert(h);
-                  setSelectedStation(null);
+                }}
+                onSelectDam={(d) => {
+                  clearAllSelections();
+                  setSelectedDam(d);
+                }}
+                onSelectFlashFlood={(f) => {
+                  clearAllSelections();
+                  setSelectedFlashFlood(f);
+                }}
+                onSelectShelter={(s) => {
+                  clearAllSelections();
+                  setSelectedShelter(s);
                 }}
                 selectedDistrict={filter.district}
               />
@@ -234,8 +317,23 @@ export default function HomePage() {
             <MetricBanner
               stations={stations}
               highwayAlerts={highwayAlerts}
+              highTide={highTide ?? undefined}
+              flashFloodAlerts={flashFloodAlerts}
+              dams={dams}
               onFilterSeverity={(sev) => setFilter({ ...filter, severity: sev as any })}
               onFilterRoad={() => {}}
+              onOpenHighTide={() => {
+                clearAllSelections();
+                if (highTide) setSelectedHighTide(highTide);
+              }}
+              onOpenFlashFlood={(flash) => {
+                clearAllSelections();
+                setSelectedFlashFlood(flash);
+              }}
+              onOpenDam={(d) => {
+                clearAllSelections();
+                setSelectedDam(d);
+              }}
             />
 
             {/* Filter Bar */}
@@ -254,13 +352,38 @@ export default function HomePage() {
             <TelemetryStationFeedList
               stations={filteredStations}
               highwayAlerts={filteredHighwayAlerts}
+              dams={dams}
+              flashFloodAlerts={flashFloodAlerts}
+              shelters={shelters}
+              highTide={highTide ?? undefined}
               onSelectStation={(s) => {
+                clearAllSelections();
                 setSelectedStation(s);
                 setCurrentView('map');
               }}
               onSelectHighwayAlert={(h) => {
+                clearAllSelections();
                 setSelectedHighwayAlert(h);
                 setCurrentView('map');
+              }}
+              onSelectDam={(d) => {
+                clearAllSelections();
+                setSelectedDam(d);
+                setCurrentView('map');
+              }}
+              onSelectFlashFlood={(f) => {
+                clearAllSelections();
+                setSelectedFlashFlood(f);
+                setCurrentView('map');
+              }}
+              onSelectShelter={(s) => {
+                clearAllSelections();
+                setSelectedShelter(s);
+                setCurrentView('map');
+              }}
+              onSelectHighTide={(t) => {
+                clearAllSelections();
+                setSelectedHighTide(t);
               }}
             />
           </div>
@@ -271,10 +394,11 @@ export default function HomePage() {
       <TelemetryDetailDrawer
         station={selectedStation}
         highwayAlert={selectedHighwayAlert}
-        onClose={() => {
-          setSelectedStation(null);
-          setSelectedHighwayAlert(null);
-        }}
+        dam={selectedDam}
+        flashFlood={selectedFlashFlood}
+        shelter={selectedShelter}
+        highTide={selectedHighTide}
+        onClose={clearAllSelections}
         onOpenEmergency={() => setIsEmergencyModalOpen(true)}
       />
 

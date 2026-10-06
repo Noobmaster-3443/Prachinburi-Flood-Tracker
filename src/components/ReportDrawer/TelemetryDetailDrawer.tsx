@@ -14,13 +14,33 @@ import {
   PhoneCall,
   Activity,
   Compass,
-  ArrowUpRight
+  ArrowUpRight,
+  Mountain,
+  Home,
+  Utensils,
+  Stethoscope,
+  Gauge,
+  Droplets,
+  AlertOctagon,
+  CheckCircle2,
 } from 'lucide-react';
-import { TelemetryStation, HighwayDisasterAlert, SeverityLevel } from '@/types/telemetry';
+import { 
+  TelemetryStation, 
+  HighwayDisasterAlert, 
+  SeverityLevel,
+  DamReservoirInfo,
+  HighTideAlert,
+  FlashFloodAlert,
+  EvacuationShelter,
+} from '@/types/telemetry';
 
 interface TelemetryDetailDrawerProps {
   station: TelemetryStation | null;
   highwayAlert: HighwayDisasterAlert | null;
+  dam?: DamReservoirInfo | null;
+  flashFlood?: FlashFloodAlert | null;
+  shelter?: EvacuationShelter | null;
+  highTide?: HighTideAlert | null;
   onClose: () => void;
   onOpenEmergency: () => void;
 }
@@ -62,12 +82,16 @@ const severityConfig: Record<
 export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
   station,
   highwayAlert,
+  dam,
+  flashFlood,
+  shelter,
+  highTide,
   onClose,
   onOpenEmergency,
 }) => {
-  if (!station && !highwayAlert) return null;
+  if (!station && !highwayAlert && !dam && !flashFlood && !shelter && !highTide) return null;
 
-  // Render Telemetry Station details
+  // 1. Render Telemetry Station details
   if (station) {
     const cfg = severityConfig[station.severity] || severityConfig.yellow;
     const isWater = station.station_type === 'water_level';
@@ -104,7 +128,6 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
 
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
-          {/* Official Open Data Badge */}
           <div className="p-3 rounded-2xl bg-blue-50/70 border border-blue-200 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
@@ -182,7 +205,7 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
             </div>
           )}
 
-          {/* Description & Situation Assessment */}
+          {/* Situation Assessment */}
           <div className="space-y-1.5 bg-slate-50/60 p-3.5 rounded-2xl border border-slate-200">
             <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
               <Activity className="w-3.5 h-3.5 text-blue-600" />
@@ -198,7 +221,7 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
           </div>
         </div>
 
-        {/* Footer Actions */}
+        {/* Footer */}
         <div className="p-4 border-t border-slate-100 bg-white grid grid-cols-2 gap-2">
           <button
             onClick={onOpenEmergency}
@@ -221,13 +244,12 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
     );
   }
 
-  // Render Highway Flood Alert details
+  // 2. Render Highway Flood Alert details
   if (highwayAlert) {
     const isImpassable = !highwayAlert.passable;
 
     return (
       <div className="fixed inset-y-0 right-0 z-[1000] w-full sm:w-[460px] bg-white shadow-2xl flex flex-col font-sans animate-in slide-in-from-right duration-300 border-l border-slate-200">
-        {/* Header */}
         <div className="px-5 py-4 border-b border-slate-100 flex items-start justify-between bg-slate-50/80">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -257,9 +279,7 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
           </button>
         </div>
 
-        {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
-          {/* Official Open Data Badge */}
           <div className="p-3 rounded-2xl bg-amber-50/80 border border-amber-200 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
@@ -283,7 +303,6 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
             </a>
           </div>
 
-          {/* Road Water Level Metric */}
           <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center">
             <span className="text-xs text-slate-500 block">ระดับน้ำท่วมผิวจราจร</span>
             <span className={`text-3xl font-black mt-1 block ${
@@ -298,7 +317,6 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
             </span>
           </div>
 
-          {/* Detour Information */}
           <div className="space-y-1.5 bg-slate-50/60 p-3.5 rounded-2xl border border-slate-200">
             <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
               <Car className="w-3.5 h-3.5 text-amber-600" />
@@ -314,7 +332,6 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
           </div>
         </div>
 
-        {/* Footer Actions */}
         <div className="p-4 border-t border-slate-100 bg-white grid grid-cols-2 gap-2">
           <a
             href="tel:1586"
@@ -332,6 +349,431 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
             <Compass className="w-4 h-4" />
             <span>นำทางตรวจสอบ</span>
           </a>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Render Dam & Major Reservoir details
+  if (dam) {
+    const isCriticalDam = dam.capacity_percentage >= 95;
+    const isWarningDam = dam.capacity_percentage >= 85;
+
+    return (
+      <div className="fixed inset-y-0 right-0 z-[1000] w-full sm:w-[460px] bg-white shadow-2xl flex flex-col font-sans animate-in slide-in-from-right duration-300 border-l border-slate-200">
+        <div className="px-5 py-4 border-b border-slate-100 flex items-start justify-between bg-slate-50/80">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-900 border border-blue-200">
+                เขื่อน & อ่างเก็บน้ำ
+              </span>
+              <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold text-white ${
+                isCriticalDam ? 'bg-red-600' : isWarningDam ? 'bg-orange-500' : 'bg-emerald-600'
+              }`}>
+                {dam.status_label}
+              </span>
+            </div>
+            <h3 className="font-bold text-base sm:text-lg text-slate-900 leading-snug">
+              {dam.name_th}
+            </h3>
+            <p className="text-xs text-slate-500 flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+              <span>ต.{dam.subdistrict} {dam.district}</span>
+            </p>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-xl bg-white hover:bg-slate-200 text-slate-400 hover:text-slate-700 shadow-2xs transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          <div className="p-3 rounded-2xl bg-cyan-50/80 border border-cyan-200 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-cyan-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                ชล.
+              </div>
+              <div>
+                <div className="text-xs font-bold text-cyan-950 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-cyan-600" />
+                  <span>ศูนย์ปฏิบัติการน้ำอัจฉริยะ SWOC</span>
+                </div>
+                <div className="text-[11px] text-cyan-800">{dam.agency}</div>
+              </div>
+            </div>
+            {dam.source_url && (
+              <a
+                href={dam.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-cyan-700 hover:text-cyan-900 p-1 rounded-lg hover:bg-cyan-100 transition-colors"
+              >
+                <ArrowUpRight className="w-4 h-4" />
+              </a>
+            )}
+          </div>
+
+          {/* Dam Storage Level Progress Gauge */}
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-slate-500 font-semibold">ปริมาณน้ำกักเก็บปัจจุบัน</span>
+              <span className="text-xl font-black text-blue-900">
+                {dam.capacity_percentage}%
+              </span>
+            </div>
+            <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  isCriticalDam ? 'bg-red-500' : isWarningDam ? 'bg-amber-500' : 'bg-blue-600'
+                }`}
+                style={{ width: `${Math.min(dam.capacity_percentage, 100)}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[11px] text-slate-500 pt-0.5">
+              <span>ปัจจุบัน: <b>{dam.current_storage_mcm}</b> ล้าน ลบ.ม.</span>
+              <span>ความจุอ่าง: <b>{dam.capacity_storage_mcm}</b> ล้าน ลบ.ม.</span>
+            </div>
+          </div>
+
+          {/* Inflow vs Outflow Cards */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="p-3 bg-emerald-50/70 rounded-2xl border border-emerald-200 text-center">
+              <span className="text-xs text-emerald-800 block font-medium">น้ำไหลลงอ่าง (Inflow)</span>
+              <span className="text-xl font-black text-emerald-900 mt-1 block">
+                {dam.inflow_mcm_day} <span className="text-xs font-normal text-emerald-700">ล้าน ลบ.ม./วัน</span>
+              </span>
+              <span className="text-[10px] text-emerald-600 mt-0.5 block">มวลน้ำจากเทือกเขา</span>
+            </div>
+
+            <div className="p-3 bg-blue-50/70 rounded-2xl border border-blue-200 text-center">
+              <span className="text-xs text-blue-800 block font-medium">การระบายน้ำ (Outflow)</span>
+              <span className="text-xl font-black text-blue-900 mt-1 block">
+                {dam.outflow_mcm_day} <span className="text-xs font-normal text-blue-700">ล้าน ลบ.ม./วัน</span>
+              </span>
+              <span className="text-[10px] text-blue-600 mt-0.5 block">ระบายสู่ลำน้ำสาขา</span>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="space-y-1.5 bg-slate-50/60 p-3.5 rounded-2xl border border-slate-200">
+            <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <Activity className="w-3.5 h-3.5 text-blue-600" />
+              <span>การบริหารจัดการน้ำของอ่างเก็บน้ำ</span>
+            </span>
+            <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+              {dam.description}
+            </p>
+            <div className="pt-2 text-[11px] text-slate-400 flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              <span>ตรวจวัดเมื่อ: {new Date(dam.observed_at).toLocaleTimeString('th-TH')} น.</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 border-t border-slate-100 bg-white grid grid-cols-2 gap-2">
+          <button
+            onClick={onOpenEmergency}
+            className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold text-xs sm:text-sm border border-blue-200 transition-colors"
+          >
+            <PhoneCall className="w-4 h-4 text-blue-600" />
+            <span>สายด่วนน้ำชลประทาน 1460</span>
+          </button>
+          <a
+            href={`https://www.google.com/maps/dir/?api=1&destination=${dam.latitude},${dam.longitude}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm transition-colors text-center"
+          >
+            <Compass className="w-4 h-4" />
+            <span>ดูพิกัดเขื่อน</span>
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  // 4. Render Flash Flood & Mountain Runoff details
+  if (flashFlood) {
+    const isCriticalFlash = flashFlood.severity === 'red';
+
+    return (
+      <div className="fixed inset-y-0 right-0 z-[1000] w-full sm:w-[460px] bg-white shadow-2xl flex flex-col font-sans animate-in slide-in-from-right duration-300 border-l border-slate-200">
+        <div className="px-5 py-4 border-b border-slate-100 flex items-start justify-between bg-slate-50/80">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-900 border border-rose-200 flex items-center gap-1">
+                <Mountain className="w-3 h-3" />
+                <span>เตือนภัยน้ำป่าไหลหลาก</span>
+              </span>
+              <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold text-white ${
+                isCriticalFlash ? 'bg-red-600' : 'bg-amber-500'
+              }`}>
+                {flashFlood.severity_label}
+              </span>
+            </div>
+            <h3 className="font-bold text-base sm:text-lg text-slate-900 leading-snug">
+              {flashFlood.location_name}
+            </h3>
+            <p className="text-xs text-slate-500 flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+              <span>ต.{flashFlood.subdistrict} อ.{flashFlood.district} • {flashFlood.mountain_range}</span>
+            </p>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-xl bg-white hover:bg-slate-200 text-slate-400 hover:text-slate-700 shadow-2xs transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          <div className="p-4 bg-rose-50/80 rounded-2xl border border-rose-200 text-center">
+            <span className="text-xs text-rose-800 block font-semibold">ปริมาณฝนสะสมบนยอดเขา (24 ชม.)</span>
+            <span className="text-3xl font-black text-rose-950 mt-1 block">
+              {flashFlood.rain_mountain_24h_mm} <span className="text-sm font-normal text-slate-600">มม.</span>
+            </span>
+            <span className="text-xs font-bold text-rose-700 mt-1 inline-block bg-white px-2.5 py-0.5 rounded-full border border-rose-200">
+              ⏱️ คาดการณ์มวลน้ำหลากลงสู่ชุมชนล่างใน {flashFlood.time_to_flood_hours}
+            </span>
+          </div>
+
+          <div className="space-y-1.5 bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200">
+            <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+              <span>คำแนะนำการเฝ้าระวัง & อพยพฉุกเฉิน</span>
+            </span>
+            <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+              {flashFlood.advisory}
+            </p>
+            <div className="pt-2 text-[11px] text-slate-400 flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              <span>รายงานโดย: {flashFlood.agency}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 border-t border-slate-100 bg-white grid grid-cols-2 gap-2">
+          <button
+            onClick={onOpenEmergency}
+            className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs sm:text-sm transition-colors shadow-xs"
+          >
+            <PhoneCall className="w-4 h-4" />
+            <span>ขอความช่วยเหลือฉุกเฉิน</span>
+          </button>
+          <a
+            href={`https://www.google.com/maps/dir/?api=1&destination=${flashFlood.latitude},${flashFlood.longitude}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm transition-colors text-center"
+          >
+            <Compass className="w-4 h-4" />
+            <span>ตรวจสอบพิกัดเสี่ยง</span>
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  // 5. Render Evacuation Shelter details
+  if (shelter) {
+    const occupancyPercent = Math.round((shelter.current_occupancy / shelter.capacity_persons) * 100);
+
+    return (
+      <div className="fixed inset-y-0 right-0 z-[1000] w-full sm:w-[460px] bg-white shadow-2xl flex flex-col font-sans animate-in slide-in-from-right duration-300 border-l border-slate-200">
+        <div className="px-5 py-4 border-b border-slate-100 flex items-start justify-between bg-slate-50/80">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-200 flex items-center gap-1">
+                <Home className="w-3 h-3" />
+                <span>จุดพักพิง & ศูนย์อพยพ ปภ.</span>
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-600 text-white">
+                {shelter.status === 'open' ? '✓ เปิดรองรับ' : 'ใกล้เต็ม'}
+              </span>
+            </div>
+            <h3 className="font-bold text-base sm:text-lg text-slate-900 leading-snug">
+              {shelter.name}
+            </h3>
+            <p className="text-xs text-slate-500 flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+              <span>{shelter.address}</span>
+            </p>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-xl bg-white hover:bg-slate-200 text-slate-400 hover:text-slate-700 shadow-2xs transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          {/* Capacity Progress Bar */}
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-slate-500 font-semibold">จำนวนผู้อพยพปัจจุบัน</span>
+              <span className="text-sm font-bold text-slate-900">
+                {shelter.current_occupancy} / {shelter.capacity_persons} คน ({occupancyPercent}%)
+              </span>
+            </div>
+            <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-emerald-500 rounded-full transition-all"
+                style={{ width: `${occupancyPercent}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Amenities & Facility Badges */}
+          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+            <div className={`p-2.5 rounded-xl border ${
+              shelter.has_medical ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 text-slate-400'
+            }`}>
+              <Stethoscope className="w-4 h-4 mx-auto mb-1" />
+              <span className="font-semibold block text-[11px]">หน่วยพยาบาล</span>
+              <span className="text-[10px]">{shelter.has_medical ? '✓ พร้อม' : '-'}</span>
+            </div>
+
+            <div className={`p-2.5 rounded-xl border ${
+              shelter.has_food_kitchen ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 text-slate-400'
+            }`}>
+              <Utensils className="w-4 h-4 mx-auto mb-1" />
+              <span className="font-semibold block text-[11px]">โรงครัว/อาหาร</span>
+              <span className="text-[10px]">{shelter.has_food_kitchen ? '✓ พร้อม' : '-'}</span>
+            </div>
+
+            <div className={`p-2.5 rounded-xl border ${
+              shelter.has_car_parking ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 text-slate-400'
+            }`}>
+              <Car className="w-4 h-4 mx-auto mb-1" />
+              <span className="font-semibold block text-[11px]">ที่จอดรถหนีน้ำ</span>
+              <span className="text-[10px]">{shelter.has_car_parking ? '✓ มีพื้นที่' : '-'}</span>
+            </div>
+          </div>
+
+          {/* Notes & Contact */}
+          <div className="space-y-1.5 bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200">
+            <span className="text-xs font-bold text-slate-800">ข้อมูลและสิ่งอำนวยความสะดวก:</span>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              {shelter.notes || 'เปิดบริการตลอด 24 ชม. มีเจ้าหน้าที่ ปภ. และ อสม. คอยอำนวยความสะดวก'}
+            </p>
+            <div className="pt-2 text-xs text-blue-800 font-semibold">
+              ผู้ประสานงาน: {shelter.contact_name} ({shelter.contact_phone})
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 border-t border-slate-100 bg-white grid grid-cols-2 gap-2">
+          <a
+            href={`tel:${shelter.contact_phone.replace(/-/g, '')}`}
+            className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm transition-colors shadow-xs"
+          >
+            <PhoneCall className="w-4 h-4" />
+            <span>โทรติดต่อศูนย์</span>
+          </a>
+          <a
+            href={`https://www.google.com/maps/dir/?api=1&destination=${shelter.latitude},${shelter.longitude}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm transition-colors text-center"
+          >
+            <Compass className="w-4 h-4" />
+            <span>นำทางไปศูนย์พักพิง</span>
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  // 6. Render High Tide Alert details
+  if (highTide) {
+    return (
+      <div className="fixed inset-y-0 right-0 z-[1000] w-full sm:w-[460px] bg-white shadow-2xl flex flex-col font-sans animate-in slide-in-from-right duration-300 border-l border-slate-200">
+        <div className="px-5 py-4 border-b border-slate-100 flex items-start justify-between bg-slate-50/80">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-cyan-100 text-cyan-900 border border-cyan-200 flex items-center gap-1">
+                <Waves className="w-3 h-3" />
+                <span>เกณฑ์น้ำทะเลหนุนสูง</span>
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-cyan-600 text-white">
+                กรมอุทกศาสตร์ กองทัพเรือ
+              </span>
+            </div>
+            <h3 className="font-bold text-base sm:text-lg text-slate-900 leading-snug">
+              {highTide.warning_title}
+            </h3>
+            <p className="text-xs text-slate-500 flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+              <span>{highTide.location}</span>
+            </p>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-xl bg-white hover:bg-slate-200 text-slate-400 hover:text-slate-700 shadow-2xs transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="p-3.5 bg-cyan-50/80 rounded-2xl border border-cyan-200 text-center">
+              <span className="text-xs text-cyan-800 font-semibold block">น้ำหนุนสูงสุดรอบเช้า</span>
+              <span className="text-2xl font-black text-cyan-950 mt-1 block">
+                +{highTide.morning_peak_m_msl} <span className="text-xs font-normal text-slate-600">ม.รทก.</span>
+              </span>
+              <span className="text-xs text-cyan-700 font-bold mt-1 block">
+                เวลา: {highTide.morning_peak_time}
+              </span>
+            </div>
+
+            <div className="p-3.5 bg-cyan-50/80 rounded-2xl border border-cyan-200 text-center">
+              <span className="text-xs text-cyan-800 font-semibold block">น้ำหนุนสูงสุดรอบค่ำ</span>
+              <span className="text-2xl font-black text-cyan-950 mt-1 block">
+                +{highTide.evening_peak_m_msl} <span className="text-xs font-normal text-slate-600">ม.รทก.</span>
+              </span>
+              <span className="text-xs text-cyan-700 font-bold mt-1 block">
+                เวลา: {highTide.evening_peak_time}
+              </span>
+            </div>
+          </div>
+
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+            <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 text-amber-600" />
+              <span>ผลกระทบต่อพื้นที่ลุ่มน้ำปราจีนบุรี</span>
+            </span>
+            <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+              {highTide.warning_detail}
+            </p>
+            <div className="pt-2 text-xs font-semibold text-slate-600">
+              พื้นที่ได้รับผลกระทบหลัก: {highTide.affected_districts.join(', ')}
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 border-t border-slate-100 bg-white grid grid-cols-2 gap-2">
+          <button
+            onClick={onOpenEmergency}
+            className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 font-bold text-xs sm:text-sm border border-red-200 transition-colors"
+          >
+            <PhoneCall className="w-4 h-4 text-red-500" />
+            <span>สายด่วน 1784</span>
+          </button>
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm transition-colors text-center"
+          >
+            <span>รับทราบข้อมูล</span>
+          </button>
         </div>
       </div>
     );

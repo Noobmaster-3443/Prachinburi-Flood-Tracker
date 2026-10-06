@@ -6,21 +6,42 @@ import {
   Car, 
   CloudRain, 
   Waves, 
+  Mountain,
+  ChevronRight,
+  Gauge
 } from 'lucide-react';
-import { TelemetryStation, HighwayDisasterAlert } from '@/types/telemetry';
+import { 
+  TelemetryStation, 
+  HighwayDisasterAlert, 
+  HighTideAlert, 
+  FlashFloodAlert, 
+  DamReservoirInfo 
+} from '@/types/telemetry';
 
 interface MetricBannerProps {
   stations: TelemetryStation[];
   highwayAlerts: HighwayDisasterAlert[];
+  highTide?: HighTideAlert;
+  flashFloodAlerts?: FlashFloodAlert[];
+  dams?: DamReservoirInfo[];
   onFilterSeverity?: (severity: string) => void;
   onFilterRoad?: () => void;
+  onOpenHighTide?: () => void;
+  onOpenFlashFlood?: (flash: FlashFloodAlert) => void;
+  onOpenDam?: (dam: DamReservoirInfo) => void;
 }
 
 export const MetricBanner: React.FC<MetricBannerProps> = ({
   stations,
   highwayAlerts,
+  highTide,
+  flashFloodAlerts = [],
+  dams = [],
   onFilterSeverity,
   onFilterRoad,
+  onOpenHighTide,
+  onOpenFlashFlood,
+  onOpenDam,
 }) => {
   const overflowStations = stations.filter((s) => s.severity === 'red');
   const warningStations = stations.filter((s) => s.severity === 'orange');
@@ -31,106 +52,162 @@ export const MetricBanner: React.FC<MetricBannerProps> = ({
     (a, b) => (b.rain_24h_mm || 0) - (a.rain_24h_mm || 0)
   )[0];
 
+  const criticalFlash = flashFloodAlerts.find((f) => f.severity === 'red');
+  const mainDam = dams.find((d) => d.id === 'dam-narubodin');
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 sm:gap-2 font-sans select-none">
-      {/* 1. จุดล้นตลิ่ง (Critical) */}
-      <div 
-        onClick={() => onFilterSeverity && onFilterSeverity('red')}
-        className={`p-2 sm:p-3 rounded-xl border transition-all cursor-pointer shadow-xs hover:shadow-md bg-white ${
-          overflowStations.length > 0 
-            ? 'border-red-300 hover:border-red-400' 
-            : 'border-slate-200 hover:border-slate-300'
-        }`}
-      >
-        <div className="flex items-center justify-between text-[11px] sm:text-xs text-slate-500">
-          <span className="font-semibold flex items-center gap-1 sm:gap-1.5 text-red-700 truncate">
-            <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-red-600 animate-pulse flex-shrink-0"></span>
-            <span className="truncate">น้ำล้นตลิ่งวิกฤต</span>
-          </span>
-          <Waves className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600 flex-shrink-0" />
-        </div>
-        <div className="mt-0.5 sm:mt-1 flex items-baseline justify-between">
-          <span className="text-lg sm:text-2xl font-black text-slate-900 leading-tight">
-            {overflowStations.length}
-            <span className="text-[10px] sm:text-xs font-semibold text-slate-500 ml-1">สถานี</span>
-          </span>
-          {overflowStations[0] && (
-            <span className="text-[9px] sm:text-[10px] font-bold text-red-700 truncate max-w-[70px] sm:max-w-[110px] bg-red-50 border border-red-200 px-1 sm:px-1.5 py-0.5 rounded">
-              {overflowStations[0].station_code}
+    <div className="space-y-1.5 font-sans select-none">
+      {/* High-Priority Active Alert Ribbon (High Tide & Flash Flood) */}
+      {highTide && (
+        <div 
+          onClick={onOpenHighTide}
+          className="bg-gradient-to-r from-cyan-900 via-blue-900 to-indigo-950 text-white rounded-xl sm:rounded-2xl px-3 py-1.5 sm:py-2 shadow-md flex items-center justify-between gap-2 border border-cyan-500/30 cursor-pointer hover:shadow-lg transition-all"
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping flex-shrink-0" />
+            <span className="text-[11px] sm:text-xs font-bold flex items-center gap-1.5 truncate">
+              <Waves className="w-3.5 h-3.5 text-cyan-300 flex-shrink-0" />
+              <span className="truncate">
+                น้ำทะเลหนุนสูง: +{highTide.morning_peak_m_msl} ม.รทก. ({highTide.morning_peak_time}) เฝ้าระวังน้ำดันย้อนตลิ่ง อ.บ้านสร้าง & อ.เมือง
+              </span>
             </span>
-          )}
-        </div>
-      </div>
+          </div>
 
-      {/* 2. จุดจ่อล้น / เตือนภัย */}
-      <div 
-        onClick={() => onFilterSeverity && onFilterSeverity('orange')}
-        className="p-2 sm:p-3 rounded-xl bg-white border border-slate-200 hover:border-orange-300 transition-all cursor-pointer shadow-xs hover:shadow-md"
-      >
-        <div className="flex items-center justify-between text-[11px] sm:text-xs text-slate-500">
-          <span className="font-semibold text-orange-700 flex items-center gap-1 sm:gap-1.5 truncate">
-            <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-orange-500 flex-shrink-0"></span>
-            <span className="truncate">จ่อล้น / เตือนภัย</span>
-          </span>
-          <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 flex-shrink-0" />
+          <div className="flex items-center gap-1 text-[10px] sm:text-xs font-semibold text-cyan-300 hover:text-white flex-shrink-0">
+            <span>ตารางน้ำหนุน</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </div>
         </div>
-        <div className="mt-0.5 sm:mt-1 flex items-baseline justify-between">
-          <span className="text-lg sm:text-2xl font-black text-slate-900 leading-tight">
-            {warningStations.length}
-            <span className="text-[10px] sm:text-xs font-semibold text-slate-500 ml-1">จุด</span>
-          </span>
-          <span className="text-[9px] sm:text-[10px] text-slate-500 truncate max-w-[70px] sm:max-w-none">
-            อ.บ้านสร้าง/นาดี
-          </span>
-        </div>
-      </div>
+      )}
 
-      {/* 3. ถนนถูกตัดขาด / รถเล็กผ่านไม่ได้ */}
-      <div 
-        onClick={() => onFilterRoad && onFilterRoad()}
-        className={`p-2 sm:p-3 rounded-xl border transition-all cursor-pointer shadow-xs hover:shadow-md bg-white ${
-          impassableRoads.length > 0 
-            ? 'border-amber-400 hover:border-amber-500' 
-            : 'border-slate-200 hover:border-slate-300'
-        }`}
-      >
-        <div className="flex items-center justify-between text-[11px] sm:text-xs text-slate-500">
-          <span className="font-semibold text-amber-900 flex items-center gap-1 sm:gap-1.5 truncate">
-            <Car className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
-            <span className="truncate">ทางหลวงน้ำท่วม</span>
-          </span>
-          <span className="text-[9px] sm:text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-1 py-0.2 rounded flex-shrink-0">
-            DOH
-          </span>
+      {/* Flash flood warning banner if critical */}
+      {criticalFlash && (
+        <div 
+          onClick={() => onOpenFlashFlood && onOpenFlashFlood(criticalFlash)}
+          className="bg-gradient-to-r from-rose-900 via-red-900 to-orange-950 text-white rounded-xl sm:rounded-2xl px-3 py-1.5 shadow-md flex items-center justify-between gap-2 border border-rose-400/30 cursor-pointer hover:shadow-lg transition-all"
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping flex-shrink-0" />
+            <span className="text-[11px] sm:text-xs font-bold flex items-center gap-1.5 truncate text-rose-100">
+              <Mountain className="w-3.5 h-3.5 text-rose-300 flex-shrink-0" />
+              <span className="truncate">
+                เตือนภัยน้ำป่า: {criticalFlash.location_name} ฝนสะสมยอดเขา {criticalFlash.rain_mountain_24h_mm} มม. (เสี่ยงหลากใน {criticalFlash.time_to_flood_hours})
+              </span>
+            </span>
+          </div>
+          <div className="flex items-center gap-1 text-[10px] sm:text-xs font-semibold text-rose-300 flex-shrink-0">
+            <span>ดูคำเตือน</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </div>
         </div>
-        <div className="mt-0.5 sm:mt-1 flex items-baseline justify-between">
-          <span className="text-lg sm:text-2xl font-black text-slate-900 leading-tight">
-            {impassableRoads.length}
-            <span className="text-[10px] sm:text-xs font-semibold text-slate-500 ml-1">จุดทางขาด</span>
-          </span>
-          <span className="text-[9px] sm:text-[10px] font-bold text-red-600 truncate max-w-[70px]">
-            ทล. 304
-          </span>
-        </div>
-      </div>
+      )}
 
-      {/* 4. ปริมาณฝนสูงสุด 24 ชม. */}
-      <div className="p-2 sm:p-3 rounded-xl bg-white border border-slate-200 hover:border-blue-300 transition-all shadow-xs hover:shadow-md">
-        <div className="flex items-center justify-between text-[11px] sm:text-xs text-slate-500">
-          <span className="font-semibold text-blue-700 flex items-center gap-1 sm:gap-1.5 truncate">
-            <CloudRain className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
-            <span className="truncate">ฝนสูงสุด 24 ชม.</span>
-          </span>
-          <span className="text-[9px] sm:text-[10px] text-slate-400 flex-shrink-0">สะสม</span>
+      {/* 4 Core Status Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 sm:gap-2">
+        {/* 1. จุดล้นตลิ่ง (Critical) */}
+        <div 
+          onClick={() => onFilterSeverity && onFilterSeverity('red')}
+          className={`p-2 sm:p-2.5 rounded-xl border transition-all cursor-pointer shadow-xs hover:shadow-md bg-white ${
+            overflowStations.length > 0 
+              ? 'border-red-300 hover:border-red-400' 
+              : 'border-slate-200 hover:border-slate-300'
+          }`}
+        >
+          <div className="flex items-center justify-between text-[11px] sm:text-xs text-slate-500">
+            <span className="font-semibold flex items-center gap-1 sm:gap-1.5 text-red-700 truncate">
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-red-600 animate-pulse flex-shrink-0"></span>
+              <span className="truncate">น้ำล้นตลิ่งวิกฤต</span>
+            </span>
+            <Waves className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600 flex-shrink-0" />
+          </div>
+          <div className="mt-0.5 sm:mt-1 flex items-baseline justify-between">
+            <span className="text-lg sm:text-xl font-black text-slate-900 leading-tight">
+              {overflowStations.length}
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500 ml-1">สถานี</span>
+            </span>
+            {overflowStations[0] && (
+              <span className="text-[9px] sm:text-[10px] font-bold text-red-700 truncate max-w-[70px] sm:max-w-[110px] bg-red-50 border border-red-200 px-1 sm:px-1.5 py-0.5 rounded">
+                {overflowStations[0].station_code}
+              </span>
+            )}
+          </div>
         </div>
-        <div className="mt-0.5 sm:mt-1 flex items-baseline justify-between">
-          <span className="text-lg sm:text-2xl font-black text-blue-900 leading-tight">
-            {highestRainStation?.rain_24h_mm ?? 0}
-            <span className="text-[10px] sm:text-xs font-semibold text-slate-500 ml-1">มม.</span>
-          </span>
-          <span className="text-[9px] sm:text-[10px] text-slate-500 truncate max-w-[70px]">
-            {highestRainStation?.district?.replace('อำเภอ', 'อ.') || 'ทับลาน'}
-          </span>
+
+        {/* 2. จุดจ่อล้น / เตือนภัย */}
+        <div 
+          onClick={() => onFilterSeverity && onFilterSeverity('orange')}
+          className="p-2 sm:p-2.5 rounded-xl bg-white border border-slate-200 hover:border-orange-300 transition-all cursor-pointer shadow-xs hover:shadow-md"
+        >
+          <div className="flex items-center justify-between text-[11px] sm:text-xs text-slate-500">
+            <span className="font-semibold text-orange-700 flex items-center gap-1 sm:gap-1.5 truncate">
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-orange-500 flex-shrink-0"></span>
+              <span className="truncate">จ่อล้น / เตือนภัย</span>
+            </span>
+            <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 flex-shrink-0" />
+          </div>
+          <div className="mt-0.5 sm:mt-1 flex items-baseline justify-between">
+            <span className="text-lg sm:text-xl font-black text-slate-900 leading-tight">
+              {warningStations.length}
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500 ml-1">จุด</span>
+            </span>
+            <span className="text-[9px] sm:text-[10px] text-slate-500 truncate max-w-[70px] sm:max-w-none">
+              อ.บ้านสร้าง/นาดี
+            </span>
+          </div>
+        </div>
+
+        {/* 3. ถนนถูกตัดขาด / รถเล็กผ่านไม่ได้ */}
+        <div 
+          onClick={() => onFilterRoad && onFilterRoad()}
+          className={`p-2 sm:p-2.5 rounded-xl border transition-all cursor-pointer shadow-xs hover:shadow-md bg-white ${
+            impassableRoads.length > 0 
+              ? 'border-amber-400 hover:border-amber-500' 
+              : 'border-slate-200 hover:border-slate-300'
+          }`}
+        >
+          <div className="flex items-center justify-between text-[11px] sm:text-xs text-slate-500">
+            <span className="font-semibold text-amber-900 flex items-center gap-1 sm:gap-1.5 truncate">
+              <Car className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+              <span className="truncate">ทางหลวงน้ำท่วม</span>
+            </span>
+            <span className="text-[9px] sm:text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-1 py-0.2 rounded flex-shrink-0">
+              DOH
+            </span>
+          </div>
+          <div className="mt-0.5 sm:mt-1 flex items-baseline justify-between">
+            <span className="text-lg sm:text-xl font-black text-slate-900 leading-tight">
+              {impassableRoads.length}
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500 ml-1">จุดทางขาด</span>
+            </span>
+            <span className="text-[9px] sm:text-[10px] font-bold text-red-600 truncate max-w-[70px]">
+              ทล. 304
+            </span>
+          </div>
+        </div>
+
+        {/* 4. อ่างเก็บน้ำห้วยโสมง / ฝนสะสม */}
+        <div 
+          onClick={() => mainDam && onOpenDam && onOpenDam(mainDam)}
+          className="p-2 sm:p-2.5 rounded-xl bg-white border border-slate-200 hover:border-cyan-300 transition-all cursor-pointer shadow-xs hover:shadow-md"
+        >
+          <div className="flex items-center justify-between text-[11px] sm:text-xs text-slate-500">
+            <span className="font-semibold text-cyan-800 flex items-center gap-1 sm:gap-1.5 truncate">
+              <Gauge className="w-3.5 h-3.5 text-cyan-600 flex-shrink-0" />
+              <span className="truncate">เขื่อนห้วยโสมง</span>
+            </span>
+            <span className="text-[9px] sm:text-[10px] text-cyan-700 bg-cyan-50 px-1 py-0.2 rounded font-bold flex-shrink-0">
+              {mainDam ? `${mainDam.capacity_percentage}%` : 'ชล.'}
+            </span>
+          </div>
+          <div className="mt-0.5 sm:mt-1 flex items-baseline justify-between">
+            <span className="text-lg sm:text-xl font-black text-cyan-950 leading-tight">
+              {mainDam?.current_storage_mcm ?? 0}
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500 ml-1">ล้าน ลบ.ม.</span>
+            </span>
+            <span className="text-[9px] sm:text-[10px] text-slate-500 truncate max-w-[70px]">
+              ระบาย {mainDam?.outflow_mcm_day ?? 0} ลบ.ม./วัน
+            </span>
+          </div>
         </div>
       </div>
     </div>

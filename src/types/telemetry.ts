@@ -94,9 +94,83 @@ export interface EmergencyContact {
   created_at?: string;
 }
 
+export interface DamReservoirInfo {
+  id: string;
+  name_th: string;
+  name_en: string;
+  district: string;
+  subdistrict: string;
+  latitude: number;
+  longitude: number;
+  capacity_storage_mcm: number;     // ความจุอ่าง (ล้าน ลบ.ม.)
+  current_storage_mcm: number;      // ปริมาตรน้ำปัจจุบัน (ล้าน ลบ.ม.)
+  capacity_percentage: number;      // % ความจุ
+  inflow_mcm_day: number;           // น้ำไหลลงอ่าง (ล้าน ลบ.ม./วัน)
+  outflow_mcm_day: number;          // การระบายน้ำ (ล้าน ลบ.ม./วัน)
+  severity: SeverityLevel;
+  status_label: string;
+  description: string;
+  observed_at: string;
+  agency: string;
+  source_url?: string;
+}
+
+export interface HighTideAlert {
+  date: string;
+  station_name: string;
+  location: string;
+  morning_peak_time: string;
+  morning_peak_m_msl: number;
+  evening_peak_time: string;
+  evening_peak_m_msl: number;
+  current_status: 'high_tide' | 'normal' | 'low_tide';
+  warning_title: string;
+  warning_detail: string;
+  affected_districts: string[];
+  observed_at: string;
+  agency: string;
+}
+
+export interface FlashFloodAlert {
+  id: string;
+  location_name: string;
+  mountain_range: string;           // เทือกเขา เช่น อุทยานฯ ทับลาน, เขาใหญ่
+  district: string;
+  subdistrict: string;
+  latitude: number;
+  longitude: number;
+  rain_mountain_24h_mm: number;     // ปริมาณฝนสะสมบนเขา
+  severity: SeverityLevel;
+  severity_label: string;
+  time_to_flood_hours: string;       // เช่น 2 - 4 ชั่วโมง
+  advisory: string;
+  observed_at: string;
+  agency: string;
+}
+
+export interface EvacuationShelter {
+  id: string;
+  name: string;
+  shelter_type: 'school' | 'temple' | 'hall' | 'parking';
+  district: string;
+  subdistrict: string;
+  latitude: number;
+  longitude: number;
+  capacity_persons: number;
+  current_occupancy: number;
+  status: 'open' | 'almost_full' | 'standby';
+  has_medical: boolean;
+  has_food_kitchen: boolean;
+  has_car_parking: boolean;
+  contact_name: string;
+  contact_phone: string;
+  address: string;
+  notes?: string;
+}
+
 export interface DashboardFilterState {
   district: string;
-  stationType: 'all' | 'water_level' | 'rain_telemetry' | 'highway_flood';
+  stationType: 'all' | 'water_level' | 'rain_telemetry' | 'highway_flood' | 'dam' | 'shelter' | 'flash_flood';
   severity: SeverityLevel | 'all';
   searchQuery: string;
 }
