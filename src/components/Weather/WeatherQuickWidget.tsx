@@ -7,18 +7,20 @@ import { fetchDistrictWeather } from '@/lib/weather-service';
 
 interface WeatherQuickWidgetProps {
   onOpenModal: () => void;
+  selectedProvince?: string;
   className?: string;
 }
 
 export const WeatherQuickWidget: React.FC<WeatherQuickWidgetProps> = ({
   onOpenModal,
+  selectedProvince = 'prachinburi',
   className = '',
 }) => {
   const [current, setCurrent] = useState<CurrentWeather | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    fetchDistrictWeather()
+    fetchDistrictWeather(undefined, selectedProvince)
       .then((data) => {
         if (isMounted) setCurrent(data.current);
       })
@@ -27,7 +29,7 @@ export const WeatherQuickWidget: React.FC<WeatherQuickWidgetProps> = ({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [selectedProvince]);
 
   if (!current) {
     return (

@@ -57,6 +57,7 @@ export interface GistdaFloodZone {
 
 export interface HighwayDisasterAlert {
   id: string;
+  province?: string;
   route_number: string;
   road_name: string;
   district: string;
@@ -86,6 +87,7 @@ export interface EmergencyContact {
   name: string;
   description: string;
   phone: string;
+  province?: string;
   district?: string;
   category: 'rescue' | 'hospital' | 'government' | 'dam_water';
   is_24h: boolean;
@@ -135,6 +137,7 @@ export interface HighTideAlert {
 
 export interface FlashFloodAlert {
   id: string;
+  province?: string;
   location_name: string;
   mountain_range: string;           // เทือกเขา เช่น อุทยานฯ ทับลาน, เขาใหญ่
   district: string;
@@ -152,6 +155,7 @@ export interface FlashFloodAlert {
 
 export interface EvacuationShelter {
   id: string;
+  province?: string;
   name: string;
   shelter_type: 'school' | 'temple' | 'hall' | 'parking';
   district: string;
