@@ -19,6 +19,8 @@ import {
 } from '@/types/telemetry';
 import { getAutomatedTelemetryData } from '@/lib/telemetry-service';
 import { MetricBanner } from '@/components/Dashboard/MetricBanner';
+import { THAILAND_PROVINCES } from '@/data/thailand-provinces';
+import { PRACHINBURI_DISTRICTS } from '@/data/prachinburi-locations';
 import { CheckCircle2 } from 'lucide-react';
 
 export default function HomePage() {
@@ -58,14 +60,32 @@ export default function HomePage() {
     setSelectedHighTide(null);
   }, []);
 
-  // Filter state
+  // Filter state - defaults to nationwide ('all')
   const [filter, setFilter] = useState<DashboardFilterState>({
-    province: 'prachinburi',
+    province: 'all',
     district: 'all',
     stationType: 'all',
     severity: 'all',
     searchQuery: '',
   });
+
+  // Calculate available districts for the selected province
+  const availableDistricts = useMemo(() => {
+    if (filter.province && filter.province !== 'all') {
+      const provStations = stations.filter(
+        (s) => (s.province || 'prachinburi') === filter.province
+      );
+      const districtSet = new Set<string>();
+      provStations.forEach((s) => {
+        if (s.district) districtSet.add(s.district);
+      });
+      if (filter.province === 'prachinburi') {
+        PRACHINBURI_DISTRICTS.forEach((d) => districtSet.add(d.name_th));
+      }
+      return Array.from(districtSet).sort();
+    }
+    return [];
+  }, [stations, filter.province]);
 
   // Fetch telemetry & multi-hazard data
   const fetchData = useCallback(async (isManual = false) => {
@@ -186,7 +206,24 @@ export default function HomePage() {
         const staProv = sta.province || 'prachinburi';
         if (staProv !== filter.province) return false;
       }
-      if (filter.district !== 'all' && sta.district !== filter.district) return false;
+
+      // District or Regional filter
+      if (filter.district !== 'all') {
+        if (filter.province === 'all') {
+          // In nationwide mode, filter.district can be a region (e.g. 'central', 'north')
+          const staProv = sta.province || 'prachinburi';
+          const provMeta = THAILAND_PROVINCES.find((p) => p.id === staProv);
+          if (provMeta && provMeta.region !== filter.district) {
+            return false;
+          }
+        } else {
+          // In specific province mode, filter by district name
+          const normSta = sta.district.replace(/^อ\./, '').trim();
+          const normFilter = filter.district.replace(/^อ\./, '').trim();
+          if (normSta !== normFilter) return false;
+        }
+      }
+
       if (filter.severity !== 'all' && sta.severity !== filter.severity) return false;
       if (filter.searchQuery.trim() !== '') {
         const query = filter.searchQuery.toLowerCase();
@@ -195,7 +232,8 @@ export default function HomePage() {
         const matchDistrict = sta.district.toLowerCase().includes(query);
         const matchSubdistrict = sta.subdistrict.toLowerCase().includes(query);
         const matchRiver = sta.river_name?.toLowerCase().includes(query) ?? false;
-        if (!matchName && !matchCode && !matchDistrict && !matchSubdistrict && !matchRiver) {
+        const matchProv = (sta.province || '').toLowerCase().includes(query);
+        if (!matchName && !matchCode && !matchDistrict && !matchSubdistrict && !matchRiver && !matchProv) {
           return false;
         }
       }
@@ -224,9 +262,9 @@ export default function HomePage() {
 
   const filteredHighwayAlerts = useMemo(() => {
     return highwayAlerts.filter((alert) => {
-      // Highway alerts are in Prachinburi; show when viewing Prachinburi or nationwide
-      if (filter.province && filter.province !== 'all' && filter.province !== 'prachinburi') {
-        return false;
+      if (filter.province && filter.province !== 'all') {
+        const prov = alert.province || 'prachinburi';
+        if (prov !== filter.province) return false;
       }
       if (filter.district !== 'all' && alert.district !== filter.district) return false;
       if (filter.searchQuery.trim() !== '') {
@@ -241,20 +279,24 @@ export default function HomePage() {
   }, [highwayAlerts, filter]);
 
   const filteredShelters = useMemo(() => {
-    if (filter.province && filter.province !== 'all' && filter.province !== 'prachinburi') {
-      return [];
-    }
     return shelters.filter((s) => {
+      if (filter.province && filter.province !== 'all') {
+        const prov = s.province || 'prachinburi';
+        if (prov !== filter.province) return false;
+      }
       if (filter.district !== 'all' && s.district !== filter.district) return false;
       return true;
     });
   }, [shelters, filter]);
 
   const filteredFlashFloodAlerts = useMemo(() => {
-    if (filter.province && filter.province !== 'all' && filter.province !== 'prachinburi') {
-      return [];
-    }
-    return flashFloodAlerts;
+    return flashFloodAlerts.filter((f) => {
+      if (filter.province && filter.province !== 'all') {
+        const prov = f.province || 'prachinburi';
+        if (prov !== filter.province) return false;
+      }
+      return true;
+    });
   }, [flashFloodAlerts, filter]);
 
   return (
@@ -276,6 +318,7 @@ export default function HomePage() {
         stations={stations}
         highwayAlerts={highwayAlerts}
         isAutoRefresh={isAutoRefresh}
+        selectedProvince={filter.province || 'all'}
       />
 
       {/* Main Content Area */}
@@ -293,6 +336,7 @@ export default function HomePage() {
                 onManualRefresh={() => fetchData(true)}
                 isRefreshing={isRefreshing}
                 lastUpdated={lastUpdated}
+                availableDistricts={availableDistricts}
               />
 
               {/* Compact Floating Alert Badges (Only shown if there's high tide or critical flash flood) */}
@@ -370,7 +414,7 @@ export default function HomePage() {
                   setSelectedShelter(s);
                 }}
                 selectedDistrict={filter.district}
-                selectedProvince={filter.province || 'prachinburi'}
+                selectedProvince={filter.province || 'all'}
                 onOpenWeatherModal={() => setIsWeatherModalOpen(true)}
               />
             </div>
@@ -387,6 +431,7 @@ export default function HomePage() {
               highTide={highTide ?? undefined}
               flashFloodAlerts={filteredFlashFloodAlerts}
               dams={filteredDams}
+              selectedProvince={filter.province || 'all'}
               onFilterSeverity={(sev) => setFilter({ ...filter, severity: sev as any })}
               onFilterRoad={() => {}}
               onOpenHighTide={() => {
@@ -413,6 +458,7 @@ export default function HomePage() {
               onManualRefresh={() => fetchData(true)}
               isRefreshing={isRefreshing}
               lastUpdated={lastUpdated}
+              availableDistricts={availableDistricts}
             />
 
             {/* Feed List Items */}

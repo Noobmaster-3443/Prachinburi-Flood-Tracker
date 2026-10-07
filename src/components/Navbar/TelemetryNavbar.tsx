@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { TelemetryStation, HighwayDisasterAlert } from '@/types/telemetry';
 import { WeatherQuickWidget } from '@/components/Weather/WeatherQuickWidget';
+import { THAILAND_PROVINCES } from '@/data/thailand-provinces';
 
 interface TelemetryNavbarProps {
   currentView: 'map' | 'list';
@@ -24,6 +25,7 @@ interface TelemetryNavbarProps {
   stations: TelemetryStation[];
   highwayAlerts: HighwayDisasterAlert[];
   isAutoRefresh: boolean;
+  selectedProvince?: string;
 }
 
 export const TelemetryNavbar: React.FC<TelemetryNavbarProps> = ({
@@ -34,10 +36,21 @@ export const TelemetryNavbar: React.FC<TelemetryNavbarProps> = ({
   stations,
   highwayAlerts,
   isAutoRefresh,
+  selectedProvince = 'all',
 }) => {
   const criticalCount = stations.filter((s) => s.severity === 'red').length;
   const warningCount = stations.filter((s) => s.severity === 'orange').length;
   const impassableRoads = highwayAlerts.filter((h) => !h.passable).length;
+
+  const currentProvinceObj = THAILAND_PROVINCES.find((p) => p.id === selectedProvince);
+  const titleText =
+    selectedProvince === 'all'
+      ? 'ข้อมูลน้ำและอุทกภัย (ทั่วประเทศ)'
+      : `ข้อมูลน้ำและอุทกภัย จ.${currentProvinceObj?.name_th || 'ปราจีนบุรี'}`;
+  const subtitleText =
+    selectedProvince === 'all'
+      ? '77 จังหวัดทั่วไทย • สสน. ThaiWater • กรมชลประทาน • กรมทางหลวง'
+      : `${currentProvinceObj?.region_th || 'ลุ่มน้ำปราจีนบุรี'} • สสน. ThaiWater • กรมชลประทาน • TMD`;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-30 bg-white border-b border-slate-200 shadow-xs transition-all font-sans">
@@ -50,7 +63,7 @@ export const TelemetryNavbar: React.FC<TelemetryNavbarProps> = ({
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <h1 className="font-bold text-sm sm:text-base tracking-tight text-slate-900 leading-tight whitespace-nowrap truncate">
-                ข้อมูลน้ำปราจีนบุรี
+                {titleText}
               </h1>
               <span className="hidden sm:inline-flex bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-300 items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-ping"></span>
@@ -58,7 +71,7 @@ export const TelemetryNavbar: React.FC<TelemetryNavbarProps> = ({
               </span>
             </div>
             <p className="text-[10px] sm:text-[11px] text-slate-500 hidden sm:block truncate">
-              ThaiWater (สสน.) • กรมชลประทาน • GISTDA • กรมทางหลวง
+              {subtitleText}
             </p>
           </div>
         </div>

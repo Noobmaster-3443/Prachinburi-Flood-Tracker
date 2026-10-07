@@ -26,6 +26,7 @@ import {
   EvacuationShelter,
   HighTideAlert,
 } from '@/types/telemetry';
+import { THAILAND_PROVINCES } from '@/data/thailand-provinces';
 
 interface TelemetryStationFeedListProps {
   stations: TelemetryStation[];
@@ -312,8 +313,13 @@ export const TelemetryStationFeedList: React.FC<TelemetryStationFeedListProps> =
                         <span>{sta.severity_label}</span>
                       </span>
                       <span className="text-[11px] text-slate-500 font-medium">
-                        อ.{sta.district}
+                        อ.{sta.district}{sta.province ? ` จ.${THAILAND_PROVINCES.find((p) => p.id === sta.province)?.name_th || sta.province}` : ''}
                       </span>
+                      {sta.basin_name && (
+                        <span className="text-[10px] text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded font-medium border border-blue-100 hidden sm:inline">
+                          ลุ่มน้ำ{sta.basin_name}
+                        </span>
+                      )}
                     </div>
 
                     <h3 className="font-bold text-sm sm:text-base text-slate-900 leading-snug">

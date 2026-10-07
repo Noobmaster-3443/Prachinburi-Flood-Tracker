@@ -15,6 +15,7 @@ interface TelemetryFilterBarProps {
   onManualRefresh: () => void;
   isRefreshing: boolean;
   lastUpdated: string;
+  availableDistricts?: string[];
 }
 
 export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
@@ -26,6 +27,7 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
   onManualRefresh,
   isRefreshing,
   lastUpdated,
+  availableDistricts = [],
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -117,20 +119,44 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
           </select>
         </div>
 
-        {/* District Selector (Visible when specific province is active) */}
-        {activeProvince === 'prachinburi' && (
+        {/* District or Region Selector */}
+        {activeProvince === 'all' ? (
           <div className="hidden md:block flex-shrink-0">
             <select
               value={filter.district}
               onChange={(e) => onFilterChange({ ...filter, district: e.target.value })}
               className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer transition-colors"
             >
-              <option value="all">📍 ทุกอำเภอ (7 อำเภอ)</option>
-              {PRACHINBURI_DISTRICTS.map((d) => (
-                <option key={d.id} value={d.name_th}>
-                  {d.name_th}
-                </option>
-              ))}
+              <option value="all">🌐 ทุกภูมิภาค (ทั่วประเทศ)</option>
+              <option value="central">ภาคกลาง</option>
+              <option value="north">ภาคเหนือ</option>
+              <option value="northeast">ภาคตะวันออกเฉียงเหนือ (อีสาน)</option>
+              <option value="east">ภาคตะวันออก</option>
+              <option value="south">ภาคใต้</option>
+              <option value="west">ภาคตะวันตก</option>
+            </select>
+          </div>
+        ) : (
+          <div className="hidden md:block flex-shrink-0">
+            <select
+              value={filter.district}
+              onChange={(e) => onFilterChange({ ...filter, district: e.target.value })}
+              className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer transition-colors"
+            >
+              <option value="all">📍 ทุกอำเภอ ({currentProvinceObj?.name_th || 'จังหวัดนี้'})</option>
+              {availableDistricts && availableDistricts.length > 0 ? (
+                availableDistricts.map((d) => (
+                  <option key={d} value={d}>
+                    {d.startsWith('อ.') ? d : `อ.${d}`}
+                  </option>
+                ))
+              ) : activeProvince === 'prachinburi' ? (
+                PRACHINBURI_DISTRICTS.map((d) => (
+                  <option key={d.id} value={d.name_th}>
+                    {d.name_th}
+                  </option>
+                ))
+              ) : null}
             </select>
           </div>
         )}
@@ -221,23 +247,45 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
       {/* Collapsible Detailed Filter Row (Shown when toggled or expanded) */}
       {isExpanded && (
         <div className="mt-2 pt-2 border-t border-slate-100 space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
-          {/* Mobile District Selector (when prachinburi is active and on small screens) */}
-          {activeProvince === 'prachinburi' && (
-            <div className="md:hidden">
+          {/* Mobile District or Region Selector */}
+          <div className="md:hidden">
+            {activeProvince === 'all' ? (
               <select
                 value={filter.district}
                 onChange={(e) => onFilterChange({ ...filter, district: e.target.value })}
                 className="w-full px-3 py-1.5 bg-slate-100 rounded-xl text-xs font-semibold text-slate-700 border border-slate-200 outline-none"
               >
-                <option value="all">📍 ทุกอำเภอ (7 อำเภอ)</option>
-                {PRACHINBURI_DISTRICTS.map((d) => (
-                  <option key={d.id} value={d.name_th}>
-                    {d.name_th}
-                  </option>
-                ))}
+                <option value="all">🌐 ทุกภูมิภาค (ทั่วประเทศ)</option>
+                <option value="central">ภาคกลาง</option>
+                <option value="north">ภาคเหนือ</option>
+                <option value="northeast">ภาคตะวันออกเฉียงเหนือ (อีสาน)</option>
+                <option value="east">ภาคตะวันออก</option>
+                <option value="south">ภาคใต้</option>
+                <option value="west">ภาคตะวันตก</option>
               </select>
-            </div>
-          )}
+            ) : (
+              <select
+                value={filter.district}
+                onChange={(e) => onFilterChange({ ...filter, district: e.target.value })}
+                className="w-full px-3 py-1.5 bg-slate-100 rounded-xl text-xs font-semibold text-slate-700 border border-slate-200 outline-none"
+              >
+                <option value="all">📍 ทุกอำเภอ ({currentProvinceObj?.name_th || 'จังหวัดนี้'})</option>
+                {availableDistricts && availableDistricts.length > 0 ? (
+                  availableDistricts.map((d) => (
+                    <option key={d} value={d}>
+                      {d.startsWith('อ.') ? d : `อ.${d}`}
+                    </option>
+                  ))
+                ) : activeProvince === 'prachinburi' ? (
+                  PRACHINBURI_DISTRICTS.map((d) => (
+                    <option key={d.id} value={d.name_th}>
+                      {d.name_th}
+                    </option>
+                  ))
+                ) : null}
+              </select>
+            )}
+          </div>
 
           {/* Quick Region Switcher Buttons */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 text-xs">

@@ -24,6 +24,7 @@ interface MetricBannerProps {
   highTide?: HighTideAlert;
   flashFloodAlerts?: FlashFloodAlert[];
   dams?: DamReservoirInfo[];
+  selectedProvince?: string;
   onFilterSeverity?: (severity: string) => void;
   onFilterRoad?: () => void;
   onOpenHighTide?: () => void;
@@ -37,6 +38,7 @@ export const MetricBanner: React.FC<MetricBannerProps> = ({
   highTide,
   flashFloodAlerts = [],
   dams = [],
+  selectedProvince = 'all',
   onFilterSeverity,
   onFilterRoad,
   onOpenHighTide,
@@ -53,12 +55,27 @@ export const MetricBanner: React.FC<MetricBannerProps> = ({
   )[0];
 
   const criticalFlash = flashFloodAlerts.find((f) => f.severity === 'red');
-  const mainDam = dams.find((d) => d.id === 'dam-narubodin');
+  
+  // Dynamically select dam based on province or fallback to major dam
+  const activeDam = 
+    (selectedProvince && selectedProvince !== 'all'
+      ? dams.find((d) => d.province === selectedProvince)
+      : undefined) ||
+    dams.find((d) => d.id === 'dam-narubodin') ||
+    dams[0];
+
+  const coastalProvinces = [
+    'all', 'bangkok', 'samutprakan', 'samutsakhon', 'samutsongkhram', 
+    'chachoengsao', 'prachinburi', 'nonthaburi', 'pathumthani', 'chonburi', 
+    'rayong', 'chanthaburi', 'trat', 'phetchaburi', 'prachuapkhirikhan', 
+    'chumphon', 'suratthani', 'nakhonsithammarat', 'songkhla', 'pattani', 'narathiwat'
+  ];
+  const shouldShowTide = highTide && coastalProvinces.includes(selectedProvince);
 
   return (
     <div className="space-y-1.5 font-sans select-none">
       {/* High-Priority Active Alert Ribbon (High Tide & Flash Flood) */}
-      {highTide && (
+      {shouldShowTide && (
         <div 
           onClick={onOpenHighTide}
           className="bg-gradient-to-r from-cyan-900 via-blue-900 to-indigo-950 text-white rounded-xl sm:rounded-2xl px-3 py-1.5 sm:py-2 shadow-md flex items-center justify-between gap-2 border border-cyan-500/30 cursor-pointer hover:shadow-lg transition-all"
@@ -68,7 +85,7 @@ export const MetricBanner: React.FC<MetricBannerProps> = ({
             <span className="text-[11px] sm:text-xs font-bold flex items-center gap-1.5 truncate">
               <Waves className="w-3.5 h-3.5 text-cyan-300 flex-shrink-0" />
               <span className="truncate">
-                น้ำทะเลหนุนสูง: +{highTide.morning_peak_m_msl} ม.รทก. ({highTide.morning_peak_time}) เฝ้าระวังน้ำดันย้อนตลิ่ง อ.บ้านสร้าง & อ.เมือง
+                น้ำทะเลหนุนสูง: +{highTide.morning_peak_m_msl} ม.รทก. ({highTide.morning_peak_time}) เฝ้าระวังน้ำดันย้อนตลิ่งพื้นที่ลุ่มต่ำริมแม่น้ำ
               </span>
             </span>
           </div>
@@ -151,7 +168,7 @@ export const MetricBanner: React.FC<MetricBannerProps> = ({
               <span className="text-[10px] sm:text-xs font-semibold text-slate-500 ml-1">จุด</span>
             </span>
             <span className="text-[9px] sm:text-[10px] text-slate-500 truncate max-w-[70px] sm:max-w-none">
-              อ.บ้านสร้าง/นาดี
+              {warningStations[0] ? `อ.${warningStations[0].district}` : 'เฝ้าระวัง'}
             </span>
           </div>
         </div>
@@ -180,32 +197,32 @@ export const MetricBanner: React.FC<MetricBannerProps> = ({
               <span className="text-[10px] sm:text-xs font-semibold text-slate-500 ml-1">จุดทางขาด</span>
             </span>
             <span className="text-[9px] sm:text-[10px] font-bold text-red-600 truncate max-w-[70px]">
-              ทล. 304
+              {impassableRoads[0] ? impassableRoads[0].route_number : (highwayAlerts[0] ? highwayAlerts[0].route_number : 'ปกติ')}
             </span>
           </div>
         </div>
 
-        {/* 4. อ่างเก็บน้ำห้วยโสมง / ฝนสะสม */}
+        {/* 4. เขื่อน / อ่างเก็บน้ำหลัก */}
         <div 
-          onClick={() => mainDam && onOpenDam && onOpenDam(mainDam)}
+          onClick={() => activeDam && onOpenDam && onOpenDam(activeDam)}
           className="p-2 sm:p-2.5 rounded-xl bg-white border border-slate-200 hover:border-cyan-300 transition-all cursor-pointer shadow-xs hover:shadow-md"
         >
           <div className="flex items-center justify-between text-[11px] sm:text-xs text-slate-500">
             <span className="font-semibold text-cyan-800 flex items-center gap-1 sm:gap-1.5 truncate">
               <Gauge className="w-3.5 h-3.5 text-cyan-600 flex-shrink-0" />
-              <span className="truncate">เขื่อนห้วยโสมง</span>
+              <span className="truncate">{activeDam ? activeDam.name_th : 'เขื่อนหลัก'}</span>
             </span>
             <span className="text-[9px] sm:text-[10px] text-cyan-700 bg-cyan-50 px-1 py-0.2 rounded font-bold flex-shrink-0">
-              {mainDam ? `${mainDam.capacity_percentage}%` : 'ชล.'}
+              {activeDam ? `${activeDam.capacity_percentage}%` : 'ชล.'}
             </span>
           </div>
           <div className="mt-0.5 sm:mt-1 flex items-baseline justify-between">
             <span className="text-lg sm:text-xl font-black text-cyan-950 leading-tight">
-              {mainDam?.current_storage_mcm ?? 0}
+              {activeDam?.current_storage_mcm ?? 0}
               <span className="text-[10px] sm:text-xs font-semibold text-slate-500 ml-1">ล้าน ลบ.ม.</span>
             </span>
             <span className="text-[9px] sm:text-[10px] text-slate-500 truncate max-w-[70px]">
-              ระบาย {mainDam?.outflow_mcm_day ?? 0} ลบ.ม./วัน
+              {activeDam ? `ระบาย ${activeDam.outflow_mcm_day} ลบ.ม./วัน` : 'ปกติ'}
             </span>
           </div>
         </div>
