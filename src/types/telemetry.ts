@@ -9,6 +9,7 @@ export interface TelemetryStation {
   name_en?: string;
   basin_name?: string;
   river_name?: string;
+  province?: string;
   district: string;
   subdistrict: string;
   latitude: number;
@@ -98,6 +99,7 @@ export interface DamReservoirInfo {
   id: string;
   name_th: string;
   name_en: string;
+  province?: string;
   district: string;
   subdistrict: string;
   latitude: number;
@@ -169,6 +171,7 @@ export interface EvacuationShelter {
 }
 
 export interface DashboardFilterState {
+  province?: string;
   district: string;
   stationType: 'all' | 'water_level' | 'rain_telemetry' | 'highway_flood' | 'dam' | 'shelter' | 'flash_flood';
   severity: SeverityLevel | 'all';

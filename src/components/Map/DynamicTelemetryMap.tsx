@@ -29,6 +29,7 @@ export interface DynamicTelemetryMapProps {
   onSelectFlashFlood?: (flashFlood: FlashFloodAlert | null) => void;
   onSelectShelter?: (shelter: EvacuationShelter | null) => void;
   selectedDistrict: string;
+  selectedProvince?: string;
   onOpenWeatherModal?: () => void;
 }
 

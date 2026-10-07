@@ -1,5 +1,6 @@
 import { DistrictWeatherData, CurrentWeather, HourlyForecastItem, DailyForecastItem, RadarFrameInfo } from '@/types/weather';
 import { PRACHINBURI_DISTRICTS, PRACHINBURI_CENTER } from '@/data/prachinburi-locations';
+import { THAILAND_PROVINCES, THAILAND_CENTER } from '@/data/thailand-provinces';
 
 export function interpretWeatherCode(code: number): { text: string; icon: string } {
   switch (code) {
@@ -58,14 +59,35 @@ export function degreesToDirectionThai(deg: number): string {
   return 'ตะวันตกเฉียงใต้ (SW)';
 }
 
-export async function fetchDistrictWeather(districtName?: string): Promise<DistrictWeatherData> {
-  const targetDistrict = PRACHINBURI_DISTRICTS.find(
-    (d) => d.name_th.includes(districtName || '') || d.id === districtName
-  );
+export async function fetchDistrictWeather(
+  districtName?: string,
+  provinceId?: string
+): Promise<DistrictWeatherData> {
+  let lat = PRACHINBURI_CENTER.lat;
+  let lng = PRACHINBURI_CENTER.lng;
+  let displayName = 'ปราจีนบุรี (ภาพรวมทั้งจังหวัด)';
 
-  const lat = targetDistrict ? targetDistrict.lat : PRACHINBURI_CENTER.lat;
-  const lng = targetDistrict ? targetDistrict.lng : PRACHINBURI_CENTER.lng;
-  const displayName = targetDistrict ? targetDistrict.name_th : 'ปราจีนบุรี (ภาพรวมทั้งจังหวัด)';
+  if (provinceId && provinceId !== 'prachinburi' && provinceId !== 'all') {
+    const prov = THAILAND_PROVINCES.find((p) => p.id === provinceId);
+    if (prov) {
+      lat = prov.lat;
+      lng = prov.lng;
+      displayName = `จ.${prov.name_th}`;
+    }
+  } else if (provinceId === 'all') {
+    lat = THAILAND_CENTER.lat;
+    lng = THAILAND_CENTER.lng;
+    displayName = 'ประเทศไทย (ภาพรวมทั่วประเทศ)';
+  } else {
+    const targetDistrict = PRACHINBURI_DISTRICTS.find(
+      (d) => d.name_th.includes(districtName || '') || d.id === districtName
+    );
+    if (targetDistrict) {
+      lat = targetDistrict.lat;
+      lng = targetDistrict.lng;
+      displayName = targetDistrict.name_th;
+    }
+  }
 
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m&hourly=temperature_2m,precipitation_probability,precipitation,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&timezone=Asia%2FBangkok&forecast_days=7`;

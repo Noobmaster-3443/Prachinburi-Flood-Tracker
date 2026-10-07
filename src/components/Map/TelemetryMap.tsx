@@ -11,6 +11,7 @@ import {
   EvacuationShelter,
 } from '@/types/telemetry';
 import { PRACHINBURI_CENTER, PRACHINBURI_DISTRICTS } from '@/data/prachinburi-locations';
+import { THAILAND_PROVINCES, THAILAND_CENTER } from '@/data/thailand-provinces';
 import prachinburiDistrictsGeoJson from '@/data/prachinburi-districts.json';
 import { 
   Navigation, 
@@ -57,6 +58,7 @@ interface TelemetryMapProps {
   onSelectFlashFlood?: (flashFlood: FlashFloodAlert | null) => void;
   onSelectShelter?: (shelter: EvacuationShelter | null) => void;
   selectedDistrict: string;
+  selectedProvince?: string;
   onOpenWeatherModal?: () => void;
 }
 
@@ -85,6 +87,7 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
   onSelectFlashFlood,
   onSelectShelter,
   selectedDistrict,
+  selectedProvince = 'prachinburi',
   onOpenWeatherModal,
 }) => {
   const [mapType, setMapType] = useState<'street' | 'satellite'>('street');
@@ -468,7 +471,7 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
     geojsonLayerRef.current.clearLayers();
     labelsLayerRef.current.clearLayers();
 
-    if (!showBoundaries) return;
+    if (!showBoundaries || (selectedProvince && selectedProvince !== 'prachinburi')) return;
 
     if (prachinburiDistrictsGeoJson) {
       geojsonLayerRef.current.addData(prachinburiDistrictsGeoJson as any);
@@ -486,7 +489,7 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         };
       });
     }
-  }, [showBoundaries, selectedDistrict]);
+  }, [showBoundaries, selectedDistrict, selectedProvince]);
 
   // GISTDA Satellite Flood Extent Layer
   useEffect(() => {
@@ -913,12 +916,47 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
     }
   }, [selectedStation, selectedHighwayAlert, selectedDam, selectedFlashFlood, selectedShelter]);
 
-  // Reset View to Prachinburi center
+  // Fly to province center or nationwide overview when selectedProvince changes
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    // Don't interrupt if user specifically clicked a station or dam
+    if (selectedStation || selectedHighwayAlert || selectedDam || selectedFlashFlood || selectedShelter) {
+      return;
+    }
+
+    if (selectedProvince === 'all') {
+      mapInstanceRef.current.flyTo([THAILAND_CENTER.lat, THAILAND_CENTER.lng], THAILAND_CENTER.zoom, {
+        duration: 1.5,
+      });
+    } else if (selectedProvince) {
+      const prov = THAILAND_PROVINCES.find((p) => p.id === selectedProvince);
+      if (prov) {
+        mapInstanceRef.current.flyTo([prov.lat, prov.lng], prov.zoom, {
+          duration: 1.2,
+        });
+      }
+    }
+  }, [selectedProvince]);
+
+  // Reset View to current province or nationwide center
   const handleResetCenter = () => {
     if (!mapInstanceRef.current) return;
-    mapInstanceRef.current.flyTo([PRACHINBURI_CENTER.lat, PRACHINBURI_CENTER.lng], PRACHINBURI_CENTER.zoom, {
-      duration: 1,
-    });
+    if (selectedProvince === 'all') {
+      mapInstanceRef.current.flyTo([THAILAND_CENTER.lat, THAILAND_CENTER.lng], THAILAND_CENTER.zoom, {
+        duration: 1,
+      });
+    } else if (selectedProvince && selectedProvince !== 'prachinburi') {
+      const prov = THAILAND_PROVINCES.find((p) => p.id === selectedProvince);
+      if (prov) {
+        mapInstanceRef.current.flyTo([prov.lat, prov.lng], prov.zoom, { duration: 1 });
+      } else {
+        mapInstanceRef.current.flyTo([PRACHINBURI_CENTER.lat, PRACHINBURI_CENTER.lng], PRACHINBURI_CENTER.zoom, { duration: 1 });
+      }
+    } else {
+      mapInstanceRef.current.flyTo([PRACHINBURI_CENTER.lat, PRACHINBURI_CENTER.lng], PRACHINBURI_CENTER.zoom, {
+        duration: 1,
+      });
+    }
   };
 
   return (

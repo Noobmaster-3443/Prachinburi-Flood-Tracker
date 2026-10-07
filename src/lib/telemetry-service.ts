@@ -7,14 +7,13 @@ import {
   EvacuationShelter,
 } from '@/types/telemetry';
 import {
-  OFFICIAL_PRACHINBURI_STATIONS,
   OFFICIAL_HIGHWAY_ALERTS,
   GISTDA_FLOOD_GEOJSON,
-  OFFICIAL_DAMS,
   OFFICIAL_HIGH_TIDE,
   OFFICIAL_FLASH_FLOOD_ALERTS,
   OFFICIAL_EVACUATION_SHELTERS,
 } from '@/data/open-data-telemetry';
+import { NATIONWIDE_KEY_STATIONS, NATIONWIDE_MAJOR_DAMS } from '@/data/nationwide-telemetry';
 
 export interface TelemetryDashboardData {
   stations: TelemetryStation[];
@@ -29,17 +28,17 @@ export interface TelemetryDashboardData {
 }
 
 /**
- * Fetch automated telemetry and multi-hazard data for Prachinburi Province.
+ * Fetch automated telemetry and multi-hazard data for Thailand (with Prachinburi & Nationwide coverage).
  * Covers: Telemetry River Stations, Highway Floods, Dams/Reservoirs, High Tide, Flash Floods, and Evacuation Shelters.
  */
 export async function getAutomatedTelemetryData(): Promise<TelemetryDashboardData> {
   const thaiwaterApiUrl = process.env.NEXT_PUBLIC_THAIWATER_API_URL;
   const gistdaApiUrl = process.env.NEXT_PUBLIC_GISTDA_API_URL;
 
-  let stations = [...OFFICIAL_PRACHINBURI_STATIONS];
+  let stations = [...NATIONWIDE_KEY_STATIONS];
   let highwayAlerts = [...OFFICIAL_HIGHWAY_ALERTS];
   let gistdaGeoJson = GISTDA_FLOOD_GEOJSON;
-  const dams = [...OFFICIAL_DAMS];
+  const dams = [...NATIONWIDE_MAJOR_DAMS];
   const highTide = { ...OFFICIAL_HIGH_TIDE };
   const flashFloodAlerts = [...OFFICIAL_FLASH_FLOOD_ALERTS];
   const shelters = [...OFFICIAL_EVACUATION_SHELTERS];

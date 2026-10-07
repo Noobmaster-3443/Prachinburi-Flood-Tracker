@@ -19,34 +19,59 @@ import {
 import { DistrictWeatherData } from '@/types/weather';
 import { fetchDistrictWeather } from '@/lib/weather-service';
 import { PRACHINBURI_DISTRICTS } from '@/data/prachinburi-locations';
+import { THAILAND_PROVINCES } from '@/data/thailand-provinces';
 
 interface WeatherForecastModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialDistrict?: string;
+  initialProvince?: string;
 }
 
 export const WeatherForecastModal: React.FC<WeatherForecastModalProps> = ({
   isOpen,
   onClose,
   initialDistrict = 'ปราจีนบุรี (ภาพรวมทั้งจังหวัด)',
+  initialProvince = 'prachinburi',
 }) => {
-  const [selectedDistrict, setSelectedDistrict] = useState<string>(initialDistrict);
+  const getInitialTarget = () => {
+    if (initialProvince && initialProvince !== 'prachinburi') {
+      return initialProvince === 'all' ? 'all' : `prov:${initialProvince}`;
+    }
+    return initialDistrict;
+  };
+
+  const [selectedTarget, setSelectedTarget] = useState<string>(getInitialTarget);
   const [weatherData, setWeatherData] = useState<DistrictWeatherData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<'hourly' | 'daily'>('hourly');
 
+  // Synchronize when opening or when initial props change
   useEffect(() => {
     if (isOpen) {
-      loadWeather(selectedDistrict);
+      const target = getInitialTarget();
+      setSelectedTarget(target);
+      loadWeather(target);
     }
-  }, [isOpen, selectedDistrict]);
+  }, [isOpen, initialProvince, initialDistrict]);
 
-  const loadWeather = async (district: string) => {
+  const loadWeather = async (target: string) => {
     setLoading(true);
     try {
-      const data = await fetchDistrictWeather(district === 'ปราจีนบุรี (ภาพรวมทั้งจังหวัด)' ? undefined : district);
-      setWeatherData(data);
+      if (target === 'all') {
+        const data = await fetchDistrictWeather(undefined, 'all');
+        setWeatherData(data);
+      } else if (target.startsWith('prov:')) {
+        const provId = target.replace('prov:', '');
+        const data = await fetchDistrictWeather(undefined, provId);
+        setWeatherData(data);
+      } else if (target === 'prachinburi' || target === 'ปราจีนบุรี (ภาพรวมทั้งจังหวัด)') {
+        const data = await fetchDistrictWeather(undefined, 'prachinburi');
+        setWeatherData(data);
+      } else {
+        const data = await fetchDistrictWeather(target, 'prachinburi');
+        setWeatherData(data);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -80,7 +105,7 @@ export const WeatherForecastModal: React.FC<WeatherForecastModalProps> = ({
 
           <div className="flex items-center gap-1.5">
             <button
-              onClick={() => loadWeather(selectedDistrict)}
+              onClick={() => loadWeather(selectedTarget)}
               disabled={loading}
               className="p-2 rounded-xl bg-white/15 hover:bg-white/25 text-white transition-all cursor-pointer"
               title="รีเฟรชข้อมูลสภาพอากาศ"
@@ -97,22 +122,35 @@ export const WeatherForecastModal: React.FC<WeatherForecastModalProps> = ({
           </div>
         </div>
 
-        {/* District Selector Filter */}
+        {/* District & Province Selector Filter */}
         <div className="px-5 py-2.5 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
           <span className="text-xs font-bold text-slate-600 whitespace-nowrap flex items-center gap-1">
-            📍 เลือกอำเภอ:
+            📍 เลือกพื้นที่:
           </span>
           <select
-            value={selectedDistrict}
-            onChange={(e) => setSelectedDistrict(e.target.value)}
+            value={selectedTarget}
+            onChange={(e) => {
+              setSelectedTarget(e.target.value);
+              loadWeather(e.target.value);
+            }}
             className="flex-1 max-w-xs px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 shadow-xs focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"
           >
-            <option value="ปราจีนบุรี (ภาพรวมทั้งจังหวัด)">📍 ภาพรวมทั้งจังหวัด (ศูนย์กลาง)</option>
-            {PRACHINBURI_DISTRICTS.map((d) => (
-              <option key={d.id} value={d.name_th}>
-                {d.name_th}
-              </option>
-            ))}
+            <option value="all">🇹🇭 ภาพรวมประเทศไทย (Open-Meteo)</option>
+            <optgroup label="📍 อำเภอในปราจีนบุรี">
+              <option value="ปราจีนบุรี (ภาพรวมทั้งจังหวัด)">จ.ปราจีนบุรี (ภาพรวมทั้งจังหวัด)</option>
+              {PRACHINBURI_DISTRICTS.map((d) => (
+                <option key={d.id} value={d.name_th}>
+                  {d.name_th}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="📍 จังหวัดอื่นๆ ทั่วประเทศ">
+              {THAILAND_PROVINCES.filter((p) => p.id !== 'prachinburi').map((p) => (
+                <option key={p.id} value={`prov:${p.id}`}>
+                  จ.{p.name_th} ({p.region_th})
+                </option>
+              ))}
+            </optgroup>
           </select>
         </div>
 

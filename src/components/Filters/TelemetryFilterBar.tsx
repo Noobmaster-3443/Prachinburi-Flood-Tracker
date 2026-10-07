@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, X, Check, Filter, RefreshCw, Radio, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import { Search, X, Check, Filter, RefreshCw, Radio, SlidersHorizontal, ChevronDown, Globe } from 'lucide-react';
 import { DashboardFilterState, SeverityLevel } from '@/types/telemetry';
 import { PRACHINBURI_DISTRICTS } from '@/data/prachinburi-locations';
+import { THAILAND_PROVINCES } from '@/data/thailand-provinces';
 
 interface TelemetryFilterBarProps {
   filter: DashboardFilterState;
@@ -28,6 +29,9 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const activeProvince = filter.province || 'prachinburi';
+  const currentProvinceObj = THAILAND_PROVINCES.find((p) => p.id === activeProvince);
+
   const severityOptions: { value: SeverityLevel | 'all'; label: string; dotColor: string }[] = [
     { value: 'all', label: 'ทั้งหมด', dotColor: 'bg-slate-400' },
     { value: 'red', label: 'วิกฤต/ล้นตลิ่ง', dotColor: 'bg-red-500' },
@@ -36,18 +40,111 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
     { value: 'green', label: 'ปกติ', dotColor: 'bg-emerald-500' },
   ];
 
-  const isFiltered = filter.district !== 'all' || filter.severity !== 'all' || filter.searchQuery.trim() !== '';
+  const isFiltered = 
+    (filter.province && filter.province !== 'prachinburi') ||
+    filter.district !== 'all' || 
+    filter.severity !== 'all' || 
+    filter.searchQuery.trim() !== '';
+
+  const handleProvinceChange = (newProvince: string) => {
+    onFilterChange({
+      ...filter,
+      province: newProvince,
+      district: 'all', // reset district on province change
+    });
+  };
 
   return (
-    <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-md border border-slate-200/90 p-1.5 sm:p-2 max-w-4xl mx-auto transition-all font-sans">
+    <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-md border border-slate-200/90 p-1.5 sm:p-2 max-w-5xl mx-auto transition-all font-sans">
       {/* Sleek Single Row Toolbar */}
       <div className="flex items-center gap-1.5 sm:gap-2">
+        {/* Province Selector (Desktop, Tablet & Mobile) */}
+        <div className="flex-shrink-0">
+          <select
+            value={activeProvince}
+            onChange={(e) => handleProvinceChange(e.target.value)}
+            className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold border outline-none cursor-pointer transition-all ${
+              activeProvince === 'all'
+                ? 'bg-gradient-to-r from-blue-700 to-indigo-700 text-white border-blue-700 shadow-xs'
+                : 'bg-blue-50 hover:bg-blue-100/80 text-blue-900 border-blue-200'
+            }`}
+          >
+            <option value="all" className="bg-slate-900 text-white font-bold">
+              🇹🇭 ทั่วประเทศ (77 จังหวัด)
+            </option>
+            <optgroup label="📍 ภาคตะวันออก" className="text-slate-800 font-semibold bg-white">
+              {THAILAND_PROVINCES.filter((p) => p.region === 'east').map((p) => (
+                <option key={p.id} value={p.id} className="text-slate-900">
+                  {p.name_th}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="📍 ภาคกลาง" className="text-slate-800 font-semibold bg-white">
+              {THAILAND_PROVINCES.filter((p) => p.region === 'central').map((p) => (
+                <option key={p.id} value={p.id} className="text-slate-900">
+                  {p.name_th}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="📍 ภาคเหนือ" className="text-slate-800 font-semibold bg-white">
+              {THAILAND_PROVINCES.filter((p) => p.region === 'north').map((p) => (
+                <option key={p.id} value={p.id} className="text-slate-900">
+                  {p.name_th}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="📍 ภาคตะวันออกเฉียงเหนือ (อีสาน)" className="text-slate-800 font-semibold bg-white">
+              {THAILAND_PROVINCES.filter((p) => p.region === 'northeast').map((p) => (
+                <option key={p.id} value={p.id} className="text-slate-900">
+                  {p.name_th}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="📍 ภาคใต้" className="text-slate-800 font-semibold bg-white">
+              {THAILAND_PROVINCES.filter((p) => p.region === 'south').map((p) => (
+                <option key={p.id} value={p.id} className="text-slate-900">
+                  {p.name_th}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="📍 ภาคตะวันตก" className="text-slate-800 font-semibold bg-white">
+              {THAILAND_PROVINCES.filter((p) => p.region === 'west').map((p) => (
+                <option key={p.id} value={p.id} className="text-slate-900">
+                  {p.name_th}
+                </option>
+              ))}
+            </optgroup>
+          </select>
+        </div>
+
+        {/* District Selector (Visible when specific province is active) */}
+        {activeProvince === 'prachinburi' && (
+          <div className="hidden md:block flex-shrink-0">
+            <select
+              value={filter.district}
+              onChange={(e) => onFilterChange({ ...filter, district: e.target.value })}
+              className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer transition-colors"
+            >
+              <option value="all">📍 ทุกอำเภอ (7 อำเภอ)</option>
+              {PRACHINBURI_DISTRICTS.map((d) => (
+                <option key={d.id} value={d.name_th}>
+                  {d.name_th}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Search Input */}
-        <div className="relative flex-1 min-w-[130px]">
+        <div className="relative flex-1 min-w-[120px]">
           <Search className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
           <input
             type="text"
-            placeholder="ค้นหาสถานี, คลอง, รหัส Kgt.3..."
+            placeholder={
+              activeProvince === 'all'
+                ? 'ค้นหาลุ่มน้ำ, เขื่อน, สถานี C.2, C.13 ทั่วประเทศ...'
+                : `ค้นหาสถานี, คลอง, จุดวัดน้ำใน จ.${currentProvinceObj?.name_th || 'นี้'}...`
+            }
             value={filter.searchQuery}
             onChange={(e) => onFilterChange({ ...filter, searchQuery: e.target.value })}
             className="w-full pl-8 sm:pl-9 pr-7 sm:pr-8 py-1.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-100/80 focus:bg-white text-xs sm:text-sm text-slate-900 placeholder-slate-400 border border-transparent focus:border-blue-500 focus:outline-none transition-all font-medium"
@@ -62,24 +159,8 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
           )}
         </div>
 
-        {/* District Selector (Desktop & Tablet) */}
-        <div className="hidden sm:block flex-shrink-0">
-          <select
-            value={filter.district}
-            onChange={(e) => onFilterChange({ ...filter, district: e.target.value })}
-            className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer transition-colors"
-          >
-            <option value="all">📍 ทุกอำเภอ (7 อำเภอ)</option>
-            {PRACHINBURI_DISTRICTS.map((d) => (
-              <option key={d.id} value={d.name_th}>
-                {d.name_th}
-              </option>
-            ))}
-          </select>
-        </div>
-
         {/* Severity Selector (Compact Dropdown on PC) */}
-        <div className="hidden md:block flex-shrink-0">
+        <div className="hidden lg:block flex-shrink-0">
           <select
             value={filter.severity}
             onChange={(e) => onFilterChange({ ...filter, severity: e.target.value as any })}
@@ -108,7 +189,7 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
           title="ตัวกรองสถานะละเอียด"
         >
           <SlidersHorizontal className="w-4 h-4" />
-          <span className="hidden lg:inline text-xs">ตัวกรอง</span>
+          <span className="hidden xl:inline text-xs">ตัวกรอง</span>
           {isFiltered && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
         </button>
 
@@ -140,20 +221,97 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
       {/* Collapsible Detailed Filter Row (Shown when toggled or expanded) */}
       {isExpanded && (
         <div className="mt-2 pt-2 border-t border-slate-100 space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
-          {/* Mobile District Selector (when expanded) */}
-          <div className="sm:hidden">
-            <select
-              value={filter.district}
-              onChange={(e) => onFilterChange({ ...filter, district: e.target.value })}
-              className="w-full px-3 py-1.5 bg-slate-100 rounded-xl text-xs font-semibold text-slate-700 border border-slate-200 outline-none"
+          {/* Mobile District Selector (when prachinburi is active and on small screens) */}
+          {activeProvince === 'prachinburi' && (
+            <div className="md:hidden">
+              <select
+                value={filter.district}
+                onChange={(e) => onFilterChange({ ...filter, district: e.target.value })}
+                className="w-full px-3 py-1.5 bg-slate-100 rounded-xl text-xs font-semibold text-slate-700 border border-slate-200 outline-none"
+              >
+                <option value="all">📍 ทุกอำเภอ (7 อำเภอ)</option>
+                {PRACHINBURI_DISTRICTS.map((d) => (
+                  <option key={d.id} value={d.name_th}>
+                    {d.name_th}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Quick Region Switcher Buttons */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 text-xs">
+            <span className="text-[11px] font-bold text-slate-400 mr-0.5 whitespace-nowrap">ทางลัดภูมิภาค:</span>
+            <button
+              onClick={() => handleProvinceChange('all')}
+              className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all ${
+                activeProvince === 'all'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+              }`}
             >
-              <option value="all">📍 ทุกอำเภอ (7 อำเภอ)</option>
-              {PRACHINBURI_DISTRICTS.map((d) => (
-                <option key={d.id} value={d.name_th}>
-                  {d.name_th}
-                </option>
-              ))}
-            </select>
+              🇹🇭 ทั่วประเทศ
+            </button>
+            <button
+              onClick={() => handleProvinceChange('prachinburi')}
+              className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all ${
+                activeProvince === 'prachinburi'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+              }`}
+            >
+              📍 ปราจีนบุรี
+            </button>
+            <button
+              onClick={() => handleProvinceChange('bangkok')}
+              className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all ${
+                activeProvince === 'bangkok'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+              }`}
+            >
+              📍 กทม.
+            </button>
+            <button
+              onClick={() => handleProvinceChange('ayutthaya')}
+              className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all ${
+                activeProvince === 'ayutthaya'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+              }`}
+            >
+              📍 อยุธยา
+            </button>
+            <button
+              onClick={() => handleProvinceChange('nakhonsawan')}
+              className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all ${
+                activeProvince === 'nakhonsawan'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+              }`}
+            >
+              📍 นครสวรรค์
+            </button>
+            <button
+              onClick={() => handleProvinceChange('chiangmai')}
+              className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all ${
+                activeProvince === 'chiangmai'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+              }`}
+            >
+              📍 เชียงใหม่
+            </button>
+            <button
+              onClick={() => handleProvinceChange('ubonratchathani')}
+              className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all ${
+                activeProvince === 'ubonratchathani'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+              }`}
+            >
+              📍 อุบลราชธานี
+            </button>
           </div>
 
           {/* Severity Filter Badges */}

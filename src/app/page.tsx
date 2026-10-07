@@ -60,6 +60,7 @@ export default function HomePage() {
 
   // Filter state
   const [filter, setFilter] = useState<DashboardFilterState>({
+    province: 'prachinburi',
     district: 'all',
     stationType: 'all',
     severity: 'all',
@@ -180,6 +181,11 @@ export default function HomePage() {
   // Filter logic
   const filteredStations = useMemo(() => {
     return stations.filter((sta) => {
+      // Province filter
+      if (filter.province && filter.province !== 'all') {
+        const staProv = sta.province || 'prachinburi';
+        if (staProv !== filter.province) return false;
+      }
       if (filter.district !== 'all' && sta.district !== filter.district) return false;
       if (filter.severity !== 'all' && sta.severity !== filter.severity) return false;
       if (filter.searchQuery.trim() !== '') {
@@ -197,8 +203,31 @@ export default function HomePage() {
     });
   }, [stations, filter]);
 
+  const filteredDams = useMemo(() => {
+    return dams.filter((dam) => {
+      // Province filter
+      if (filter.province && filter.province !== 'all') {
+        const damProv = dam.province || (dam.id.includes('narubodin') ? 'prachinburi' : '');
+        if (damProv && damProv !== filter.province) return false;
+      }
+      if (filter.severity !== 'all' && dam.severity !== filter.severity) return false;
+      if (filter.searchQuery.trim() !== '') {
+        const query = filter.searchQuery.toLowerCase();
+        const matchName = dam.name_th.toLowerCase().includes(query);
+        const matchEn = dam.name_en.toLowerCase().includes(query);
+        const matchDist = dam.district.toLowerCase().includes(query);
+        if (!matchName && !matchEn && !matchDist) return false;
+      }
+      return true;
+    });
+  }, [dams, filter]);
+
   const filteredHighwayAlerts = useMemo(() => {
     return highwayAlerts.filter((alert) => {
+      // Highway alerts are in Prachinburi; show when viewing Prachinburi or nationwide
+      if (filter.province && filter.province !== 'all' && filter.province !== 'prachinburi') {
+        return false;
+      }
       if (filter.district !== 'all' && alert.district !== filter.district) return false;
       if (filter.searchQuery.trim() !== '') {
         const query = filter.searchQuery.toLowerCase();
@@ -210,6 +239,23 @@ export default function HomePage() {
       return true;
     });
   }, [highwayAlerts, filter]);
+
+  const filteredShelters = useMemo(() => {
+    if (filter.province && filter.province !== 'all' && filter.province !== 'prachinburi') {
+      return [];
+    }
+    return shelters.filter((s) => {
+      if (filter.district !== 'all' && s.district !== filter.district) return false;
+      return true;
+    });
+  }, [shelters, filter]);
+
+  const filteredFlashFloodAlerts = useMemo(() => {
+    if (filter.province && filter.province !== 'all' && filter.province !== 'prachinburi') {
+      return [];
+    }
+    return flashFloodAlerts;
+  }, [flashFloodAlerts, filter]);
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-50 font-sans">
@@ -295,9 +341,9 @@ export default function HomePage() {
                 stations={filteredStations}
                 highwayAlerts={filteredHighwayAlerts}
                 gistdaGeoJson={gistdaGeoJson}
-                dams={dams}
-                flashFloodAlerts={flashFloodAlerts}
-                shelters={shelters}
+                dams={filteredDams}
+                flashFloodAlerts={filteredFlashFloodAlerts}
+                shelters={filteredShelters}
                 selectedStation={selectedStation}
                 selectedHighwayAlert={selectedHighwayAlert}
                 selectedDam={selectedDam}
@@ -324,6 +370,7 @@ export default function HomePage() {
                   setSelectedShelter(s);
                 }}
                 selectedDistrict={filter.district}
+                selectedProvince={filter.province || 'prachinburi'}
                 onOpenWeatherModal={() => setIsWeatherModalOpen(true)}
               />
             </div>
@@ -335,11 +382,11 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-sans">
             {/* Provincial Key Metrics */}
             <MetricBanner
-              stations={stations}
-              highwayAlerts={highwayAlerts}
+              stations={filteredStations}
+              highwayAlerts={filteredHighwayAlerts}
               highTide={highTide ?? undefined}
-              flashFloodAlerts={flashFloodAlerts}
-              dams={dams}
+              flashFloodAlerts={filteredFlashFloodAlerts}
+              dams={filteredDams}
               onFilterSeverity={(sev) => setFilter({ ...filter, severity: sev as any })}
               onFilterRoad={() => {}}
               onOpenHighTide={() => {
@@ -372,9 +419,9 @@ export default function HomePage() {
             <TelemetryStationFeedList
               stations={filteredStations}
               highwayAlerts={filteredHighwayAlerts}
-              dams={dams}
-              flashFloodAlerts={flashFloodAlerts}
-              shelters={shelters}
+              dams={filteredDams}
+              flashFloodAlerts={filteredFlashFloodAlerts}
+              shelters={filteredShelters}
               highTide={highTide ?? undefined}
               onSelectStation={(s) => {
                 clearAllSelections();
@@ -432,6 +479,7 @@ export default function HomePage() {
       <WeatherForecastModal
         isOpen={isWeatherModalOpen}
         onClose={() => setIsWeatherModalOpen(false)}
+        initialProvince={filter.province || 'prachinburi'}
       />
     </div>
   );
