@@ -7,6 +7,7 @@ import { TelemetryFilterBar } from '@/components/Filters/TelemetryFilterBar';
 import { TelemetryStationFeedList } from '@/components/Feed/TelemetryStationFeedList';
 import { TelemetryDetailDrawer } from '@/components/ReportDrawer/TelemetryDetailDrawer';
 import { EmergencyDrawer } from '@/components/Emergency/EmergencyDrawer';
+import { WeatherForecastModal } from '@/components/Weather/WeatherForecastModal';
 import { 
   TelemetryStation, 
   HighwayDisasterAlert, 
@@ -45,6 +46,7 @@ export default function HomePage() {
   const [selectedHighTide, setSelectedHighTide] = useState<HighTideAlert | null>(null);
 
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
+  const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const clearAllSelections = useCallback(() => {
@@ -224,6 +226,7 @@ export default function HomePage() {
         currentView={currentView}
         onViewChange={setCurrentView}
         onOpenEmergencyModal={() => setIsEmergencyModalOpen(true)}
+        onOpenWeatherModal={() => setIsWeatherModalOpen(true)}
         stations={stations}
         highwayAlerts={highwayAlerts}
         isAutoRefresh={isAutoRefresh}
@@ -321,6 +324,7 @@ export default function HomePage() {
                   setSelectedShelter(s);
                 }}
                 selectedDistrict={filter.district}
+                onOpenWeatherModal={() => setIsWeatherModalOpen(true)}
               />
             </div>
           </main>
@@ -422,6 +426,12 @@ export default function HomePage() {
       <EmergencyDrawer
         isOpen={isEmergencyModalOpen}
         onClose={() => setIsEmergencyModalOpen(false)}
+      />
+
+      {/* Weather Forecast Modal */}
+      <WeatherForecastModal
+        isOpen={isWeatherModalOpen}
+        onClose={() => setIsWeatherModalOpen(false)}
       />
     </div>
   );

@@ -14,11 +14,13 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { TelemetryStation, HighwayDisasterAlert } from '@/types/telemetry';
+import { WeatherQuickWidget } from '@/components/Weather/WeatherQuickWidget';
 
 interface TelemetryNavbarProps {
   currentView: 'map' | 'list';
   onViewChange: (view: 'map' | 'list') => void;
   onOpenEmergencyModal: () => void;
+  onOpenWeatherModal?: () => void;
   stations: TelemetryStation[];
   highwayAlerts: HighwayDisasterAlert[];
   isAutoRefresh: boolean;
@@ -28,6 +30,7 @@ export const TelemetryNavbar: React.FC<TelemetryNavbarProps> = ({
   currentView,
   onViewChange,
   onOpenEmergencyModal,
+  onOpenWeatherModal,
   stations,
   highwayAlerts,
   isAutoRefresh,
@@ -110,6 +113,11 @@ export const TelemetryNavbar: React.FC<TelemetryNavbarProps> = ({
               <span className="hidden xs:inline">รายการ</span>
             </button>
           </div>
+
+          {/* Weather Quick Widget */}
+          {onOpenWeatherModal && (
+            <WeatherQuickWidget onOpenModal={onOpenWeatherModal} />
+          )}
 
           {/* Area Overview Page */}
           <Link

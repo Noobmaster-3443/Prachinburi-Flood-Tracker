@@ -31,7 +31,13 @@ import {
   Gauge,
   Droplets,
   CloudLightning,
+  Wind,
+  CloudSun,
+  Cloud,
 } from 'lucide-react';
+import { RadarAnimationPlayer } from './RadarAnimationPlayer';
+import { fetchRainRadarFrames } from '@/lib/weather-service';
+import { RadarFrameInfo } from '@/types/weather';
 
 interface TelemetryMapProps {
   stations: TelemetryStation[];
@@ -51,6 +57,7 @@ interface TelemetryMapProps {
   onSelectFlashFlood?: (flashFlood: FlashFloodAlert | null) => void;
   onSelectShelter?: (shelter: EvacuationShelter | null) => void;
   selectedDistrict: string;
+  onOpenWeatherModal?: () => void;
 }
 
 const severityColors: Record<SeverityLevel, { hex: string; border: string; label: string }> = {
@@ -78,6 +85,7 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
   onSelectFlashFlood,
   onSelectShelter,
   selectedDistrict,
+  onOpenWeatherModal,
 }) => {
   const [mapType, setMapType] = useState<'street' | 'satellite'>('street');
   const [showBoundaries, setShowBoundaries] = useState<boolean>(true);
@@ -88,6 +96,12 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
   const [showFlashFloods, setShowFlashFloods] = useState<boolean>(true);
   const [showShelters, setShowShelters] = useState<boolean>(true);
   const [showRainRadar, setShowRainRadar] = useState<boolean>(false);
+  const [showWindLayer, setShowWindLayer] = useState<boolean>(false);
+  const [showCloudLayer, setShowCloudLayer] = useState<boolean>(false);
+  const [radarFrames, setRadarFrames] = useState<RadarFrameInfo[]>([]);
+  const [currentRadarIndex, setCurrentRadarIndex] = useState<number>(0);
+  const [isRadarPlaying, setIsRadarPlaying] = useState<boolean>(false);
+  const [radarHost, setRadarHost] = useState<string>('https://tilecache.rainviewer.com');
   const [isLayersOpen, setIsLayersOpen] = useState<boolean>(false);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -102,6 +116,8 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
   const flashFloodsLayerRef = useRef<L.LayerGroup | null>(null);
   const sheltersLayerRef = useRef<L.LayerGroup | null>(null);
   const radarTileLayerRef = useRef<L.TileLayer | null>(null);
+  const cloudLayerRef = useRef<L.TileLayer | null>(null);
+  const windLayerRef = useRef<L.LayerGroup | null>(null);
 
   // Initialize Leaflet Map
   useEffect(() => {
@@ -133,6 +149,7 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
     damsLayerRef.current = L.layerGroup().addTo(map);
     flashFloodsLayerRef.current = L.layerGroup().addTo(map);
     sheltersLayerRef.current = L.layerGroup().addTo(map);
+    windLayerRef.current = L.layerGroup().addTo(map);
 
     // Global Leaflet popupopen event listener to wire detail drawer buttons reliably
     map.on('popupopen', (e: L.PopupEvent) => {
@@ -274,7 +291,7 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
     }
   }, [mapType]);
 
-  // Live Rain Radar Layer (RainViewer Weather Radar Tile)
+  // Live Rain Radar Frames Fetch
   useEffect(() => {
     if (!mapInstanceRef.current) return;
     const map = mapInstanceRef.current;
@@ -284,47 +301,32 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
       radarTileLayerRef.current = null;
     }
 
-    if (!showRainRadar) return;
+    if (!showRainRadar) {
+      setIsRadarPlaying(false);
+      return;
+    }
 
     let isMounted = true;
 
-    const loadRadarLayer = async () => {
-      let host = 'https://tilecache.rainviewer.com';
-      let radarPath = '';
-
-      try {
-        const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-        if (res.ok) {
-          const data = await res.json();
-          host = data.host || host;
-          const frames = data.radar?.past || [];
-          if (frames.length > 0) {
-            radarPath = frames[frames.length - 1].path;
-          }
-        }
-      } catch (err) {
-        console.warn('Could not fetch latest radar timestamp, using fallback', err);
-      }
-
+    fetchRainRadarFrames().then(({ host, frames }) => {
       if (!isMounted || !mapInstanceRef.current) return;
+      setRadarHost(host);
+      setRadarFrames(frames);
 
-      // RainViewer Free Tier is limited to native zoom level 7.
-      // Setting maxNativeZoom: 7 instructs Leaflet to stop requesting higher zoom tiles from server
-      // and instead scale up the level 7 tiles, preventing the gray "Zoom Level Not Supported" tiles.
-      const tileUrl = radarPath
-        ? `${host}${radarPath}/256/{z}/{x}/{y}/2/1_1.png`
-        : 'https://tilecache.rainviewer.com/v2/radar/nowcast_0/256/{z}/{x}/{y}/2/1_1.png';
+      if (frames.length > 0) {
+        const lastIdx = frames.length - 1;
+        setCurrentRadarIndex(lastIdx);
 
-      radarTileLayerRef.current = L.tileLayer(tileUrl, {
-        opacity: 0.7,
-        zIndex: 350,
-        maxNativeZoom: 7,
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.rainviewer.com" target="_blank">RainViewer</a> / TMD Weather Radar',
-      }).addTo(mapInstanceRef.current);
-    };
-
-    loadRadarLayer();
+        const tileUrl = `${host}${frames[lastIdx].path}/256/{z}/{x}/{y}/2/1_1.png`;
+        radarTileLayerRef.current = L.tileLayer(tileUrl, {
+          opacity: 0.7,
+          zIndex: 350,
+          maxNativeZoom: 7,
+          maxZoom: 19,
+          attribution: '&copy; <a href="https://www.rainviewer.com" target="_blank">RainViewer</a> / TMD Weather Radar',
+        }).addTo(mapInstanceRef.current);
+      }
+    });
 
     return () => {
       isMounted = false;
@@ -334,6 +336,130 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
       }
     };
   }, [showRainRadar]);
+
+  // Rain Radar Animation Loop Timer
+  useEffect(() => {
+    if (!isRadarPlaying || radarFrames.length === 0) return;
+
+    const interval = setInterval(() => {
+      setCurrentRadarIndex((prev) => (prev + 1) % radarFrames.length);
+    }, 850);
+
+    return () => clearInterval(interval);
+  }, [isRadarPlaying, radarFrames.length]);
+
+  // Update Radar Tile when scrubber / frame index changes
+  useEffect(() => {
+    if (!mapInstanceRef.current || !showRainRadar || radarFrames.length === 0) return;
+
+    const activeFrame = radarFrames[currentRadarIndex];
+    if (!activeFrame) return;
+
+    const tileUrl = `${radarHost}${activeFrame.path}/256/{z}/{x}/{y}/2/1_1.png`;
+    if (radarTileLayerRef.current) {
+      radarTileLayerRef.current.setUrl(tileUrl);
+    } else {
+      radarTileLayerRef.current = L.tileLayer(tileUrl, {
+        opacity: 0.7,
+        zIndex: 350,
+        maxNativeZoom: 7,
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.rainviewer.com" target="_blank">RainViewer</a> / TMD Weather Radar',
+      }).addTo(mapInstanceRef.current);
+    }
+  }, [currentRadarIndex, radarFrames, showRainRadar, radarHost]);
+
+  // Live Satellite Cloud Cover Layer (NASA GIBS)
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    const map = mapInstanceRef.current;
+
+    if (cloudLayerRef.current) {
+      map.removeLayer(cloudLayerRef.current);
+      cloudLayerRef.current = null;
+    }
+
+    if (!showCloudLayer) return;
+
+    cloudLayerRef.current = L.tileLayer(
+      'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/default/GoogleMapsCompatible_Level9/{z}/{x}/{y}.jpg',
+      {
+        opacity: 0.65,
+        zIndex: 320,
+        maxNativeZoom: 8,
+        maxZoom: 19,
+        attribution: '&copy; NASA GIBS / EOSDIS Cloud Imagery',
+      }
+    ).addTo(map);
+
+    return () => {
+      if (cloudLayerRef.current && mapInstanceRef.current) {
+        mapInstanceRef.current.removeLayer(cloudLayerRef.current);
+        cloudLayerRef.current = null;
+      }
+    };
+  }, [showCloudLayer]);
+
+  // Wind Flow & Monsoon Layer
+  useEffect(() => {
+    if (!windLayerRef.current || !mapInstanceRef.current) return;
+    windLayerRef.current.clearLayers();
+
+    if (!showWindLayer) return;
+
+    const windPoints = [
+      { name: 'อ.เมืองปราจีนบุรี', lat: 14.0509, lng: 101.3716, speed: 14, dirDeg: 230, label: 'ลมมรสุม SW' },
+      { name: 'อ.กบินทร์บุรี', lat: 13.9936, lng: 101.7183, speed: 16, dirDeg: 235, label: 'ลมมรสุม SW' },
+      { name: 'อ.บ้านสร้าง', lat: 13.9878, lng: 101.2158, speed: 18, dirDeg: 220, label: 'ลมทะเล/มรสุม SW' },
+      { name: 'อ.นาดี (ช่องเขา)', lat: 14.1378, lng: 101.8903, speed: 20, dirDeg: 240, label: 'ลมช่องเขา SW' },
+      { name: 'อ.ประจันตคาม (ธารเขาใหญ่)', lat: 14.1483, lng: 101.5303, speed: 15, dirDeg: 230, label: 'ลมเทือกเขา SW' },
+      { name: 'อ.ศรีมหาโพธิ', lat: 13.8822, lng: 101.5122, speed: 14, dirDeg: 225, label: 'ลมมรสุม SW' },
+      { name: 'อ.ศรีมโหสถ', lat: 13.8550, lng: 101.4258, speed: 13, dirDeg: 220, label: 'ลมมรสุม SW' },
+      { name: 'อุทยานฯ เขาใหญ่ (ตอนบน)', lat: 14.2800, lng: 101.4500, speed: 24, dirDeg: 245, label: 'ลมยอดเขา SW' },
+      { name: 'อุทยานฯ ทับลาน (ตอนบน)', lat: 14.2900, lng: 101.8800, speed: 22, dirDeg: 240, label: 'ลมยอดเขา SW' },
+    ];
+
+    windPoints.forEach((wp) => {
+      const iconHtml = `
+        <div class="relative flex flex-col items-center pointer-events-auto cursor-pointer group select-none">
+          <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-900/90 hover:bg-cyan-950 text-white shadow-lg backdrop-blur-md border border-cyan-400/50 transition-all">
+            <div style="transform: rotate(${wp.dirDeg}deg);" class="transition-transform duration-500 flex-shrink-0">
+              <svg class="w-4 h-4 text-cyan-300 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5"></line>
+                <polyline points="5 12 12 5 19 12"></polyline>
+              </svg>
+            </div>
+            <span class="text-[11px] font-black text-cyan-200 tracking-wide">${wp.speed}</span>
+            <span class="text-[9px] text-cyan-300">กม./ชม.</span>
+          </div>
+          <div class="text-[10px] font-bold text-slate-800 bg-white/90 px-1.5 py-0.2 rounded-md shadow-xs border border-slate-200/80 -mt-0.5 whitespace-nowrap">
+            ${wp.name.replace('อำเภอ', 'อ.').replace('อุทยานฯ ', '')}
+          </div>
+        </div>
+      `;
+
+      const icon = L.divIcon({
+        className: 'wind-marker',
+        html: iconHtml,
+        iconSize: [95, 42],
+        iconAnchor: [47, 21],
+      });
+
+      const marker = L.marker([wp.lat, wp.lng], { icon });
+      marker.bindPopup(`
+        <div class="p-1 font-sans text-xs">
+          <div class="font-bold text-slate-900 text-sm">${wp.name}</div>
+          <div class="text-cyan-700 font-bold mt-1">💨 ความเร็วลม: ${wp.speed} กม./ชม.</div>
+          <div class="text-slate-600 mt-0.5">ทิศทาง: <b>${wp.label} (${wp.dirDeg}°)</b></div>
+          <div class="text-[11px] text-slate-500 mt-1.5 border-t border-slate-100 pt-1">
+            กระแสลมมรสุมตะวันตกเฉียงใต้พัดนำความชื้นและกลุ่มเมฆฝนเข้าสู่พื้นที่
+          </div>
+        </div>
+      `, { offset: [0, -15], autoPan: true });
+
+      marker.addTo(windLayerRef.current!);
+    });
+  }, [showWindLayer]);
 
   // District Boundaries Layer
   useEffect(() => {
@@ -846,6 +972,55 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
               {showRainRadar ? <Eye className="w-3.5 h-3.5 text-white" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
             </button>
 
+            {/* Toggle Wind Flow */}
+            <button
+              onClick={() => setShowWindLayer(!showWindLayer)}
+              className={`w-full flex items-center justify-between px-2 py-1.5 rounded-xl transition-all ${
+                showWindLayer
+                  ? 'bg-cyan-600 text-white font-semibold shadow-xs'
+                  : 'hover:bg-slate-100 text-slate-700'
+              }`}
+            >
+              <span className="flex items-center gap-1.5">
+                <Wind className="w-3.5 h-3.5" />
+                <span>กระแสลมมรสุม (Wind Flow)</span>
+              </span>
+              {showWindLayer ? <Eye className="w-3.5 h-3.5 text-white" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
+            </button>
+
+            {/* Toggle Satellite Cloud Cover */}
+            <button
+              onClick={() => setShowCloudLayer(!showCloudLayer)}
+              className={`w-full flex items-center justify-between px-2 py-1.5 rounded-xl transition-all ${
+                showCloudLayer
+                  ? 'bg-sky-700 text-white font-semibold shadow-xs'
+                  : 'hover:bg-slate-100 text-slate-700'
+              }`}
+            >
+              <span className="flex items-center gap-1.5">
+                <Cloud className="w-3.5 h-3.5" />
+                <span>ภาพถ่ายดาวเทียมกลุ่มเมฆ (NASA)</span>
+              </span>
+              {showCloudLayer ? <Eye className="w-3.5 h-3.5 text-white" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
+            </button>
+
+            {/* Open Weather Forecast Modal Launcher */}
+            {onOpenWeatherModal && (
+              <button
+                onClick={() => {
+                  setIsLayersOpen(false);
+                  onOpenWeatherModal();
+                }}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-900 border border-blue-200/80 font-bold transition-all cursor-pointer text-left"
+              >
+                <span className="flex items-center gap-1.5">
+                  <CloudSun className="w-3.5 h-3.5 text-blue-600" />
+                  <span>พยากรณ์อากาศ 7 วัน</span>
+                </span>
+                <span className="text-blue-600 text-[10px]">ดูเพิ่ม &gt;</span>
+              </button>
+            )}
+
             {/* Toggle Dams */}
             <button
               onClick={() => setShowDams(!showDams)}
@@ -972,7 +1147,7 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
           <Layers className="w-4 h-4 text-blue-500" />
           <span>ชั้นข้อมูล</span>
           <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded-full font-bold ml-0.5">
-            {[mapType === 'satellite', showRainRadar, showDams, showFlashFloods, showShelters, showGistdaLayer, showRoadAlerts, showBoundaries].filter(Boolean).length}
+            {[mapType === 'satellite', showRainRadar, showWindLayer, showCloudLayer, showDams, showFlashFloods, showShelters, showGistdaLayer, showRoadAlerts, showBoundaries].filter(Boolean).length}
           </span>
         </button>
 
@@ -985,6 +1160,19 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
           <Navigation className="w-4 h-4 text-blue-600" />
         </button>
       </div>
+
+      {/* Radar Animation Player (Appears when Rain Radar is active) */}
+      {showRainRadar && radarFrames.length > 0 && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[400] w-[92%] sm:w-auto max-w-sm sm:max-w-md pointer-events-auto">
+          <RadarAnimationPlayer
+            frames={radarFrames}
+            currentIndex={currentRadarIndex}
+            onSelectFrame={(idx) => setCurrentRadarIndex(idx)}
+            isPlaying={isRadarPlaying}
+            onTogglePlay={() => setIsRadarPlaying(!isRadarPlaying)}
+          />
+        </div>
+      )}
 
       {/* Map Legend (Bottom Left) */}
       <div className="absolute bottom-6 left-4 z-[400] bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-slate-200/90 p-3 max-w-xs hidden sm:block text-xs space-y-2">

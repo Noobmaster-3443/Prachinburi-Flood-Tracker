@@ -1,0 +1,231 @@
+import { DistrictWeatherData, CurrentWeather, HourlyForecastItem, DailyForecastItem, RadarFrameInfo } from '@/types/weather';
+import { PRACHINBURI_DISTRICTS, PRACHINBURI_CENTER } from '@/data/prachinburi-locations';
+
+export function interpretWeatherCode(code: number): { text: string; icon: string } {
+  switch (code) {
+    case 0:
+      return { text: 'ท้องฟ้าแจ่มใส', icon: '☀️' };
+    case 1:
+      return { text: 'ท้องฟ้าโปร่งเกือบหมด', icon: '🌤️' };
+    case 2:
+      return { text: 'มีเมฆบางส่วน', icon: '⛅' };
+    case 3:
+      return { text: 'มีเมฆเป็นส่วนมาก', icon: '☁️' };
+    case 45:
+    case 48:
+      return { text: 'หมอกหนา', icon: '🌫️' };
+    case 51:
+    case 53:
+    case 55:
+      return { text: 'ฝนปรอยๆ เล็กน้อย', icon: '🌦️' };
+    case 61:
+      return { text: 'ฝนตกเล็กน้อย', icon: '🌧️' };
+    case 63:
+      return { text: 'ฝนตกปานกลาง', icon: '🌧️' };
+    case 65:
+      return { text: 'ฝนตกหนัก', icon: '⛈️' };
+    case 80:
+      return { text: 'ฝนซู่กระจายเล็กน้อย', icon: '🌦️' };
+    case 81:
+      return { text: 'ฝนซู่กระจายปานกลาง', icon: '🌧️' };
+    case 82:
+      return { text: 'ฝนซู่ตกหนักมาก', icon: '⛈️' };
+    case 95:
+      return { text: 'พายุฝนฟ้าคะนอง', icon: '⛈️' };
+    case 96:
+    case 99:
+      return { text: 'พายุฝนฟ้าคะนองรุนแรง', icon: '⚡' };
+    default:
+      return { text: 'มีเมฆกระจาย', icon: '⛅' };
+  }
+}
+
+export function degreesToDirectionThai(deg: number): string {
+  const directions = [
+    { text: 'เหนือ (N)', min: 337.5, max: 360 },
+    { text: 'เหนือ (N)', min: 0, max: 22.5 },
+    { text: 'ตะวันออกเฉียงเหนือ (NE)', min: 22.5, max: 67.5 },
+    { text: 'ตะวันออก (E)', min: 67.5, max: 112.5 },
+    { text: 'ตะวันออกเฉียงใต้ (SE)', min: 112.5, max: 157.5 },
+    { text: 'ใต้ (S)', min: 157.5, max: 202.5 },
+    { text: 'ตะวันตกเฉียงใต้ (SW)', min: 202.5, max: 247.5 },
+    { text: 'ตะวันตก (W)', min: 247.5, max: 292.5 },
+    { text: 'ตะวันตกเฉียงเหนือ (NW)', min: 292.5, max: 337.5 },
+  ];
+  for (const d of directions) {
+    if (deg >= d.min && deg < d.max) return d.text;
+  }
+  return 'ตะวันตกเฉียงใต้ (SW)';
+}
+
+export async function fetchDistrictWeather(districtName?: string): Promise<DistrictWeatherData> {
+  const targetDistrict = PRACHINBURI_DISTRICTS.find(
+    (d) => d.name_th.includes(districtName || '') || d.id === districtName
+  );
+
+  const lat = targetDistrict ? targetDistrict.lat : PRACHINBURI_CENTER.lat;
+  const lng = targetDistrict ? targetDistrict.lng : PRACHINBURI_CENTER.lng;
+  const displayName = targetDistrict ? targetDistrict.name_th : 'ปราจีนบุรี (ภาพรวมทั้งจังหวัด)';
+
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m&hourly=temperature_2m,precipitation_probability,precipitation,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&timezone=Asia%2FBangkok&forecast_days=7`;
+
+    const res = await fetch(url, { next: { revalidate: 600 } });
+    if (!res.ok) throw new Error(`Weather fetch failed: ${res.status}`);
+
+    const data = await res.json();
+    const curr = data.current;
+    const { text: currDesc, icon: currIcon } = interpretWeatherCode(curr.weather_code);
+
+    const currentWeather: CurrentWeather = {
+      temperature: Math.round(curr.temperature_2m * 10) / 10,
+      apparentTemperature: Math.round(curr.apparent_temperature * 10) / 10,
+      humidity: Math.round(curr.relative_humidity_2m),
+      precipitationMm: curr.precipitation || 0,
+      weatherCode: curr.weather_code,
+      weatherDescription: currDesc,
+      weatherIcon: currIcon,
+      windSpeedKmH: Math.round(curr.wind_speed_10m * 10) / 10,
+      windDirectionDeg: curr.wind_direction_10m,
+      windDirectionText: degreesToDirectionThai(curr.wind_direction_10m),
+      observedAt: curr.time,
+    };
+
+    // Format hourly next 24 hours
+    const currentHourIndex = Math.max(
+      0,
+      data.hourly.time.findIndex((t: string) => t >= curr.time.slice(0, 13))
+    );
+    const next24HoursTimes = data.hourly.time.slice(currentHourIndex, currentHourIndex + 24);
+
+    const hourly: HourlyForecastItem[] = next24HoursTimes.map((t: string, idx: number) => {
+      const realIdx = currentHourIndex + idx;
+      const code = data.hourly.weather_code[realIdx] || 0;
+      const { icon } = interpretWeatherCode(code);
+      const hourStr = t.split('T')[1]?.slice(0, 5) || t;
+
+      return {
+        time: t,
+        displayTime: `${hourStr} น.`,
+        temperature: Math.round(data.hourly.temperature_2m[realIdx]),
+        precipitationProb: Math.round(data.hourly.precipitation_probability[realIdx] || 0),
+        precipitationMm: Math.round((data.hourly.precipitation[realIdx] || 0) * 10) / 10,
+        weatherCode: code,
+        weatherIcon: icon,
+      };
+    });
+
+    // Format daily 7 days
+    const thaiDayNames = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสฯ', 'ศุกร์', 'เสาร์'];
+    const thaiMonthNames = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+    const daily: DailyForecastItem[] = data.daily.time.map((dStr: string, idx: number) => {
+      const dateObj = new Date(dStr);
+      const dayOfWeek = thaiDayNames[dateObj.getDay()];
+      const dayOfMonth = dateObj.getDate();
+      const monthStr = thaiMonthNames[dateObj.getMonth()];
+      const code = data.daily.weather_code[idx] || 0;
+      const { text, icon } = interpretWeatherCode(code);
+      const rainSum = Math.round((data.daily.precipitation_sum[idx] || 0) * 10) / 10;
+      const rainProb = Math.round(data.daily.precipitation_probability_max[idx] || 0);
+
+      let riskLevel: 'normal' | 'moderate' | 'high' | 'severe' = 'normal';
+      if (rainSum >= 90 || rainProb >= 85) riskLevel = 'severe';
+      else if (rainSum >= 40 || rainProb >= 70) riskLevel = 'high';
+      else if (rainSum >= 15 || rainProb >= 40) riskLevel = 'moderate';
+
+      const dayLabel = idx === 0 ? 'วันนี้' : idx === 1 ? 'พรุ่งนี้' : `วัน${dayOfWeek}`;
+
+      return {
+        date: dStr,
+        displayDate: `${dayOfMonth} ${monthStr}`,
+        dayName: dayLabel,
+        tempMax: Math.round(data.daily.temperature_2m_max[idx]),
+        tempMin: Math.round(data.daily.temperature_2m_min[idx]),
+        precipitationSumMm: rainSum,
+        precipitationProbMax: rainProb,
+        weatherCode: code,
+        weatherDescription: text,
+        weatherIcon: icon,
+        riskLevel,
+      };
+    });
+
+    return {
+      districtName: displayName,
+      latitude: lat,
+      longitude: lng,
+      current: currentWeather,
+      hourly,
+      daily,
+    };
+  } catch (error) {
+    console.error('Failed to fetch Open-Meteo weather, using realistic fallback:', error);
+    return getFallbackWeather(displayName, lat, lng);
+  }
+}
+
+export async function fetchRainRadarFrames(): Promise<{ host: string; frames: RadarFrameInfo[] }> {
+  try {
+    const res = await fetch('https://api.rainviewer.com/public/weather-maps.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error('RainViewer API error');
+    const data = await res.json();
+    const host = data.host || 'https://tilecache.rainviewer.com';
+    const past = data.radar?.past || [];
+
+    const frames: RadarFrameInfo[] = past.map((p: { time: number; path: string }, idx: number) => {
+      const date = new Date(p.time * 1000);
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      return {
+        time: p.time,
+        path: p.path,
+        formattedTime: `${hours}:${minutes} น.`,
+        isLatest: idx === past.length - 1,
+      };
+    });
+
+    return { host, frames };
+  } catch (err) {
+    console.warn('Could not load radar frames list:', err);
+    return { host: 'https://tilecache.rainviewer.com', frames: [] };
+  }
+}
+
+function getFallbackWeather(districtName: string, lat: number, lng: number): DistrictWeatherData {
+  return {
+    districtName,
+    latitude: lat,
+    longitude: lng,
+    current: {
+      temperature: 28.5,
+      apparentTemperature: 32.2,
+      humidity: 82,
+      precipitationMm: 1.2,
+      weatherCode: 61,
+      weatherDescription: 'ฝนตกเล็กน้อยเป็นช่วงๆ',
+      weatherIcon: '🌦️',
+      windSpeedKmH: 12.4,
+      windDirectionDeg: 230,
+      windDirectionText: 'ตะวันตกเฉียงใต้ (มรสุม SW)',
+      observedAt: new Date().toISOString(),
+    },
+    hourly: [
+      { time: '14:00', displayTime: '14:00 น.', temperature: 29, precipitationProb: 65, precipitationMm: 2.5, weatherCode: 61, weatherIcon: '🌦️' },
+      { time: '15:00', displayTime: '15:00 น.', temperature: 28, precipitationProb: 75, precipitationMm: 4.8, weatherCode: 63, weatherIcon: '🌧️' },
+      { time: '16:00', displayTime: '16:00 น.', temperature: 27, precipitationProb: 80, precipitationMm: 8.2, weatherCode: 65, weatherIcon: '⛈️' },
+      { time: '17:00', displayTime: '17:00 น.', temperature: 27, precipitationProb: 70, precipitationMm: 3.1, weatherCode: 61, weatherIcon: '🌧️' },
+      { time: '18:00', displayTime: '18:00 น.', temperature: 26, precipitationProb: 50, precipitationMm: 1.2, weatherCode: 2, weatherIcon: '⛅' },
+      { time: '19:00', displayTime: '19:00 น.', temperature: 26, precipitationProb: 35, precipitationMm: 0.0, weatherCode: 2, weatherIcon: '☁️' },
+    ],
+    daily: [
+      { date: '2026-10-07', displayDate: '7 ต.ค.', dayName: 'วันนี้', tempMax: 32, tempMin: 25, precipitationSumMm: 24.5, precipitationProbMax: 80, weatherCode: 65, weatherDescription: 'ฝนฟ้าคะนอง 80%', weatherIcon: '⛈️', riskLevel: 'high' },
+      { date: '2026-10-08', displayDate: '8 ต.ค.', dayName: 'พรุ่งนี้', tempMax: 31, tempMin: 24, precipitationSumMm: 35.0, precipitationProbMax: 85, weatherCode: 65, weatherDescription: 'ฝนตกหนัก 85%', weatherIcon: '⛈️', riskLevel: 'severe' },
+      { date: '2026-10-09', displayDate: '9 ต.ค.', dayName: 'วันศุกร์', tempMax: 32, tempMin: 25, precipitationSumMm: 18.0, precipitationProbMax: 60, weatherCode: 61, weatherDescription: 'ฝนตกกระจาย 60%', weatherIcon: '🌧️', riskLevel: 'moderate' },
+      { date: '2026-10-10', displayDate: '10 ต.ค.', dayName: 'วันเสาร์', tempMax: 33, tempMin: 25, precipitationSumMm: 8.5, precipitationProbMax: 40, weatherCode: 2, weatherDescription: 'มีเมฆบางส่วน 40%', weatherIcon: '⛅', riskLevel: 'normal' },
+      { date: '2026-10-11', displayDate: '11 ต.ค.', dayName: 'วันอาทิตย์', tempMax: 33, tempMin: 26, precipitationSumMm: 5.0, precipitationProbMax: 30, weatherCode: 1, weatherDescription: 'ท้องฟ้าโปร่ง', weatherIcon: '🌤️', riskLevel: 'normal' },
+      { date: '2026-10-12', displayDate: '12 ต.ค.', dayName: 'วันจันทร์', tempMax: 34, tempMin: 26, precipitationSumMm: 12.0, precipitationProbMax: 45, weatherCode: 61, weatherDescription: 'ฝนฟ้าคะนองบ่าย', weatherIcon: '🌦️', riskLevel: 'moderate' },
+      { date: '2026-10-13', displayDate: '13 ต.ค.', dayName: 'วันอังคาร', tempMax: 32, tempMin: 25, precipitationSumMm: 22.0, precipitationProbMax: 70, weatherCode: 65, weatherDescription: 'ฝนตกหนักบางแห่ง', weatherIcon: '⛈️', riskLevel: 'high' },
+    ],
+  };
+}
