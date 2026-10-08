@@ -126,8 +126,16 @@ async function runTests() {
   assert(staleRes.observedAt === '2026-10-08T12:00:00Z', 'Cache retains original observedAt on stale fallback');
 
   console.log('\n--- 6. Testing Admin Authentication & HMAC Tokens ---');
-  // Use default or configured PIN
-  assert(validateAdminPin('PrachinAdmin#2026!') === true, 'Admin PIN validation passes for correct PIN');
+  // 1. Verify safe failure when ADMIN_PIN is unset
+  delete process.env.ADMIN_PIN;
+  delete process.env.ADMIN_JWT_SECRET;
+  assert(validateAdminPin('any-pin-when-unset') === false, 'Admin validation safely fails when ADMIN_PIN is missing');
+  assert(verifyAdminSessionToken('any-token') === false, 'Session token validation safely fails when secret is missing');
+
+  // 2. Set test environment PIN
+  process.env.ADMIN_PIN = 'TestPin#9988!';
+  process.env.ADMIN_JWT_SECRET = 'test-secret-key-32-chars-long!!';
+  assert(validateAdminPin('TestPin#9988!') === true, 'Admin PIN validation passes when ADMIN_PIN matches');
   assert(validateAdminPin('wrong-pin') === false, 'Admin PIN validation rejects invalid PIN');
   const token = generateAdminSessionToken();
   assert(typeof token === 'string' && token.length > 20, 'Admin session token generated successfully');

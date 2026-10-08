@@ -5,20 +5,31 @@
 
 import crypto from 'crypto';
 
-const ADMIN_SECRET = process.env.ADMIN_JWT_SECRET || process.env.ADMIN_PIN || (process.env.NODE_ENV === 'production' ? '' : 'dev-secret-key-2026');
-const ADMIN_PIN = process.env.ADMIN_PIN || (process.env.NODE_ENV === 'production' ? '' : 'PrachinAdmin#2026!');
+function getAdminPin(): string | undefined {
+  return process.env.ADMIN_PIN;
+}
+
+function getAdminSecret(): string | undefined {
+  return process.env.ADMIN_JWT_SECRET || process.env.ADMIN_PIN;
+}
 
 export function validateAdminPin(inputPin: string): boolean {
-  if (!inputPin || !ADMIN_PIN) return false;
-  // Constant-time comparison to prevent timing attacks
+  const configuredPin = getAdminPin();
+  // Both production and development require process.env.ADMIN_PIN.
+  // If missing from environment variables, admin authentication fails safely.
+  if (!inputPin || !configuredPin) return false;
+
   const a = Buffer.from(inputPin.trim());
-  const b = Buffer.from(ADMIN_PIN.trim());
+  const b = Buffer.from(configuredPin.trim());
   if (a.length !== b.length) return false;
   return crypto.timingSafeEqual(a, b);
 }
 
 export function generateAdminSessionToken(): string {
-  const secret = ADMIN_SECRET || 'fallback-secret-key';
+  const secret = getAdminSecret();
+  if (!secret) {
+    throw new Error('ADMIN_PIN or ADMIN_JWT_SECRET must be configured in environment variables.');
+  }
   const expiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
   const payload = `admin:${expiresAt}`;
   const hmac = crypto.createHmac('sha256', secret).update(payload).digest('hex');
@@ -26,7 +37,8 @@ export function generateAdminSessionToken(): string {
 }
 
 export function verifyAdminSessionToken(token?: string | null): boolean {
-  if (!token) return false;
+  const secret = getAdminSecret();
+  if (!token || !secret) return false;
   try {
     const [encodedPayload, signature] = token.split('.');
     if (!encodedPayload || !signature) return false;
@@ -38,7 +50,7 @@ export function verifyAdminSessionToken(token?: string | null): boolean {
     const expiresAt = Number(expiresStr);
     if (isNaN(expiresAt) || expiresAt < Date.now()) return false;
 
-    const expectedSig = crypto.createHmac('sha256', ADMIN_SECRET).update(payload).digest('hex');
+    const expectedSig = crypto.createHmac('sha256', secret).update(payload).digest('hex');
     const sigA = Buffer.from(signature);
     const sigB = Buffer.from(expectedSig);
     if (sigA.length !== sigB.length) return false;
