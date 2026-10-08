@@ -175,6 +175,6 @@ export async function getAggregatedNationwideData(): Promise<NationwideAggregate
     tmdWarnings,
     provinceStatuses,
     coverage,
-    lastUpdated: wlData?.observedAt || damsData?.observedAt || new Date().toISOString(),
+    lastUpdated: wlData?.observedAt || damsData?.observedAt || '2024-10-06T07:00:00Z',
   };
 }

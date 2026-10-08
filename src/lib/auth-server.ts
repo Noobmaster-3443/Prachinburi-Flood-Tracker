@@ -5,11 +5,11 @@
 
 import crypto from 'crypto';
 
-const ADMIN_SECRET = process.env.ADMIN_JWT_SECRET || process.env.ADMIN_PIN || 'prachin-admin-secret-key-2026';
-const ADMIN_PIN = process.env.ADMIN_PIN || 'PrachinAdmin#2026!';
+const ADMIN_SECRET = process.env.ADMIN_JWT_SECRET || process.env.ADMIN_PIN || (process.env.NODE_ENV === 'production' ? '' : 'dev-secret-key-2026');
+const ADMIN_PIN = process.env.ADMIN_PIN || (process.env.NODE_ENV === 'production' ? '' : 'PrachinAdmin#2026!');
 
 export function validateAdminPin(inputPin: string): boolean {
-  if (!inputPin) return false;
+  if (!inputPin || !ADMIN_PIN) return false;
   // Constant-time comparison to prevent timing attacks
   const a = Buffer.from(inputPin.trim());
   const b = Buffer.from(ADMIN_PIN.trim());
@@ -18,9 +18,10 @@ export function validateAdminPin(inputPin: string): boolean {
 }
 
 export function generateAdminSessionToken(): string {
+  const secret = ADMIN_SECRET || 'fallback-secret-key';
   const expiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
   const payload = `admin:${expiresAt}`;
-  const hmac = crypto.createHmac('sha256', ADMIN_SECRET).update(payload).digest('hex');
+  const hmac = crypto.createHmac('sha256', secret).update(payload).digest('hex');
   return `${Buffer.from(payload).toString('base64url')}.${hmac}`;
 }
 

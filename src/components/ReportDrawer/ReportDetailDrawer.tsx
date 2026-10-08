@@ -132,19 +132,40 @@ export const ReportDetailDrawer: React.FC<ReportDetailDrawerProps> = ({
 
   const handleDeleteReport = async () => {
     if (!onDeleteReport || !report) return;
-    const isAuth = typeof window !== 'undefined' && sessionStorage.getItem('prachinburi_admin_auth_v1') === 'true';
-    if (!isAuth) {
+    let token = typeof window !== 'undefined' ? sessionStorage.getItem('prachinburi_admin_token_v1') : null;
+    if (!token) {
       const pin = window.prompt('กรุณากรอกรหัสผ่านผู้ดูแลระบบ (Admin PIN) เพื่อลบรายงานนี้:');
-      const expectedPin = process.env.NEXT_PUBLIC_ADMIN_PIN || 'admin8888';
-      if (pin !== expectedPin) {
-        alert('รหัสผ่านไม่ถูกต้อง');
+      if (!pin) return;
+      try {
+        const authRes = await fetch('/api/admin/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin }),
+        });
+        const authData = await authRes.json();
+        if (authRes.ok && authData.token) {
+          token = authData.token;
+          if (token) sessionStorage.setItem('prachinburi_admin_token_v1', token);
+        } else {
+          alert('รหัสผ่านผู้ดูแลระบบไม่ถูกต้อง');
+          return;
+        }
+      } catch {
+        alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
         return;
       }
-      sessionStorage.setItem('prachinburi_admin_auth_v1', 'true');
     }
 
     const confirmed = window.confirm(`คุณแน่ใจว่าต้องการลบการรายงาน "${report.location_name}" หรือไม่?`);
     if (confirmed) {
+      try {
+        await fetch(`/api/admin/reports?id=${encodeURIComponent(report.id)}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } catch (e) {
+        console.warn('Server delete call failed:', e);
+      }
       await onDeleteReport(report.id);
       onClose();
     }
