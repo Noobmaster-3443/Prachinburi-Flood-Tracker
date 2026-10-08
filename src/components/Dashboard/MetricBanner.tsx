@@ -56,13 +56,11 @@ export const MetricBanner: React.FC<MetricBannerProps> = ({
 
   const criticalFlash = flashFloodAlerts.find((f) => f.severity === 'red');
   
-  // Dynamically select dam based on province or fallback to major dam
+  // Dynamically select dam based on province or highest % nationwide
   const activeDam = 
-    (selectedProvince && selectedProvince !== 'all'
+    selectedProvince && selectedProvince !== 'all'
       ? dams.find((d) => d.province === selectedProvince)
-      : undefined) ||
-    dams.find((d) => d.id === 'dam-narubodin') ||
-    dams[0];
+      : [...dams].sort((a, b) => b.capacity_percentage - a.capacity_percentage)[0];
 
   const coastalProvinces = [
     'all', 'bangkok', 'samutprakan', 'samutsakhon', 'samutsongkhram', 
@@ -205,21 +203,25 @@ export const MetricBanner: React.FC<MetricBannerProps> = ({
         {/* 4. เขื่อน / อ่างเก็บน้ำหลัก */}
         <div 
           onClick={() => activeDam && onOpenDam && onOpenDam(activeDam)}
-          className="p-2 sm:p-2.5 rounded-xl bg-white border border-slate-200 hover:border-cyan-300 transition-all cursor-pointer shadow-xs hover:shadow-md"
+          className={`p-2 sm:p-2.5 rounded-xl bg-white border transition-all shadow-xs ${
+            activeDam ? 'border-slate-200 hover:border-cyan-300 cursor-pointer hover:shadow-md' : 'border-slate-100 opacity-80 cursor-default'
+          }`}
         >
           <div className="flex items-center justify-between text-[11px] sm:text-xs text-slate-500">
             <span className="font-semibold text-cyan-800 flex items-center gap-1 sm:gap-1.5 truncate">
               <Gauge className="w-3.5 h-3.5 text-cyan-600 flex-shrink-0" />
-              <span className="truncate">{activeDam ? activeDam.name_th : 'เขื่อนหลัก'}</span>
+              <span className="truncate">{activeDam ? activeDam.name_th : 'เขื่อนในพื้นที่'}</span>
             </span>
             <span className="text-[9px] sm:text-[10px] text-cyan-700 bg-cyan-50 px-1 py-0.2 rounded font-bold flex-shrink-0">
-              {activeDam ? `${activeDam.capacity_percentage}%` : 'ชล.'}
+              {activeDam ? `${activeDam.capacity_percentage}%` : 'RID'}
             </span>
           </div>
           <div className="mt-0.5 sm:mt-1 flex items-baseline justify-between">
             <span className="text-lg sm:text-xl font-black text-cyan-950 leading-tight">
-              {activeDam?.current_storage_mcm ?? 0}
-              <span className="text-[10px] sm:text-xs font-semibold text-slate-500 ml-1">ล้าน ลบ.ม.</span>
+              {activeDam ? activeDam.current_storage_mcm : '-'}
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500 ml-1">
+                {activeDam ? 'ล้าน ลบ.ม.' : 'ไม่มีเขื่อนใหญ่'}
+              </span>
             </span>
             <span className="text-[9px] sm:text-[10px] text-slate-500 truncate max-w-[70px]">
               {activeDam ? `ระบาย ${activeDam.outflow_mcm_day} ลบ.ม./วัน` : 'ปกติ'}

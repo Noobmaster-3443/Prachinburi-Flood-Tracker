@@ -33,14 +33,14 @@ import { getReports, deleteReport, toggleVerifyReport, clearAllReports } from '@
 import { getEmergencyContacts, approveEmergencyContact, deleteEmergencyContact } from '@/lib/contacts-store';
 import { PRACHINBURI_DISTRICTS } from '@/data/prachinburi-locations';
 
-const DEFAULT_PIN = process.env.NEXT_PUBLIC_ADMIN_PIN || 'PrachinAdmin#2026!';
-const ADMIN_STORAGE_KEY = 'prachinburi_admin_auth_v1';
+const ADMIN_TOKEN_KEY = 'prachinburi_admin_token_v1';
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [pinInput, setPinInput] = useState<string>('');
   const [showPin, setShowPin] = useState<boolean>(false);
   const [pinError, setPinError] = useState<string>('');
+  const [isSubmittingAuth, setIsSubmittingAuth] = useState<boolean>(false);
 
   // Active admin tab: 'reports' or 'contacts'
   const [activeTab, setActiveTab] = useState<'reports' | 'contacts'>('reports');
@@ -60,8 +60,8 @@ export default function AdminPage() {
   // Check auth session
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const isAuth = sessionStorage.getItem(ADMIN_STORAGE_KEY);
-      if (isAuth === 'true') {
+      const token = sessionStorage.getItem(ADMIN_TOKEN_KEY);
+      if (token) {
         setIsAuthenticated(true);
       }
     }
@@ -90,20 +90,36 @@ export default function AdminPage() {
     }
   }, [isAuthenticated]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pinInput.trim() === DEFAULT_PIN) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem(ADMIN_STORAGE_KEY, 'true');
-      setPinError('');
-    } else {
-      setPinError('รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง');
+    setIsSubmittingAuth(true);
+    setPinError('');
+
+    try {
+      const res = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: pinInput }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.token) {
+        sessionStorage.setItem(ADMIN_TOKEN_KEY, data.token);
+        setIsAuthenticated(true);
+        setPinError('');
+      } else {
+        setPinError(data.error || 'รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง');
+      }
+    } catch (err: any) {
+      setPinError('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์');
+    } finally {
+      setIsSubmittingAuth(false);
     }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    sessionStorage.removeItem(ADMIN_STORAGE_KEY);
+    sessionStorage.removeItem(ADMIN_TOKEN_KEY);
     setPinInput('');
   };
 
@@ -119,6 +135,16 @@ export default function AdminPage() {
     );
     if (!confirmDelete) return;
 
+    const token = typeof window !== 'undefined' ? sessionStorage.getItem(ADMIN_TOKEN_KEY) : null;
+    try {
+      await fetch(`/api/admin/reports?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (e) {
+      console.warn('Server delete call failed, falling back locally', e);
+    }
+
     const ok = await deleteReport(id);
     if (ok) {
       setReports((prev) => prev.filter((r) => r.id !== id));
@@ -131,6 +157,20 @@ export default function AdminPage() {
   // Toggle report verify status
   const handleToggleVerify = async (id: string, currentStatus: boolean) => {
     const nextStatus = !currentStatus;
+    const token = typeof window !== 'undefined' ? sessionStorage.getItem(ADMIN_TOKEN_KEY) : null;
+    try {
+      await fetch('/api/admin/reports', {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ id, is_verified: nextStatus }),
+      });
+    } catch (e) {
+      console.warn('Server verify update call failed, falling back locally', e);
+    }
+
     const ok = await toggleVerifyReport(id, nextStatus);
     if (ok) {
       setReports((prev) =>
@@ -154,6 +194,20 @@ export default function AdminPage() {
 
   // Approve Contact
   const handleApproveContact = async (id: string, name: string) => {
+    const token = typeof window !== 'undefined' ? sessionStorage.getItem(ADMIN_TOKEN_KEY) : null;
+    try {
+      await fetch('/api/admin/contacts', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ id, is_approved: true }),
+      });
+    } catch (e) {
+      console.warn('Server contact approve call failed, falling back locally', e);
+    }
+
     const ok = await approveEmergencyContact(id);
     if (ok) {
       setContacts((prev) =>
@@ -167,6 +221,16 @@ export default function AdminPage() {
   const handleDeleteContact = async (id: string, name: string) => {
     const confirmDelete = window.confirm(`คุณต้องการลบเบอร์โทร "${name}" หรือไม่?`);
     if (!confirmDelete) return;
+
+    const token = typeof window !== 'undefined' ? sessionStorage.getItem(ADMIN_TOKEN_KEY) : null;
+    try {
+      await fetch(`/api/admin/contacts?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (e) {
+      console.warn('Server contact delete call failed, falling back locally', e);
+    }
 
     const ok = await deleteEmergencyContact(id);
     if (ok) {

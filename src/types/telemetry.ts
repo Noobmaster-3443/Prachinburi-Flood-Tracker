@@ -37,7 +37,9 @@ export interface TelemetryStation {
   severity_label: string;
   status_text: string;
   observed_at: string;
-  source_agency: 'HII' | 'RID' | 'TMD' | 'DOH' | 'GISTDA';
+  fetched_at?: string;
+  data_status?: 'LIVE' | 'STALE' | 'STATIC' | 'UNAVAILABLE';
+  source_agency: 'HII' | 'RID' | 'TMD' | 'DOH' | 'GISTDA' | 'DWR' | 'BMA' | string;
   source_name_th: string;
   source_url?: string;
 }
@@ -70,6 +72,7 @@ export interface HighwayDisasterAlert {
   longitude: number;
   updated_at: string;
   source_name_th: string;
+  data_status?: 'LIVE' | 'STALE' | 'STATIC' | 'UNAVAILABLE';
 }
 
 export interface DistrictInfo {
@@ -117,6 +120,7 @@ export interface DamReservoirInfo {
   observed_at: string;
   agency: string;
   source_url?: string;
+  data_status?: 'LIVE' | 'STALE' | 'STATIC' | 'UNAVAILABLE';
 }
 
 export interface HighTideAlert {
@@ -133,6 +137,7 @@ export interface HighTideAlert {
   affected_districts: string[];
   observed_at: string;
   agency: string;
+  data_status?: 'LIVE' | 'STALE' | 'STATIC' | 'UNAVAILABLE';
 }
 
 export interface FlashFloodAlert {
@@ -151,6 +156,7 @@ export interface FlashFloodAlert {
   advisory: string;
   observed_at: string;
   agency: string;
+  data_status?: 'LIVE' | 'STALE' | 'STATIC' | 'UNAVAILABLE';
 }
 
 export interface EvacuationShelter {
@@ -172,6 +178,7 @@ export interface EvacuationShelter {
   contact_phone: string;
   address: string;
   notes?: string;
+  data_status?: 'LIVE' | 'STALE' | 'STATIC' | 'UNAVAILABLE';
 }
 
 export interface DashboardFilterState {

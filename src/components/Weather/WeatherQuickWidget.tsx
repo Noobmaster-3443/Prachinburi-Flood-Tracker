@@ -22,7 +22,7 @@ export const WeatherQuickWidget: React.FC<WeatherQuickWidgetProps> = ({
     let isMounted = true;
     fetchDistrictWeather(undefined, selectedProvince)
       .then((data) => {
-        if (isMounted) setCurrent(data.current);
+        if (isMounted && data) setCurrent(data.current);
       })
       .catch((err) => console.warn('Widget weather fetch error:', err));
 

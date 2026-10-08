@@ -410,17 +410,43 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
 
     if (!showWindLayer) return;
 
-    const windPoints = [
-      { name: 'อ.เมืองปราจีนบุรี', lat: 14.0509, lng: 101.3716, speed: 14, dirDeg: 230, label: 'ลมมรสุม SW' },
-      { name: 'อ.กบินทร์บุรี', lat: 13.9936, lng: 101.7183, speed: 16, dirDeg: 235, label: 'ลมมรสุม SW' },
-      { name: 'อ.บ้านสร้าง', lat: 13.9878, lng: 101.2158, speed: 18, dirDeg: 220, label: 'ลมทะเล/มรสุม SW' },
-      { name: 'อ.นาดี (ช่องเขา)', lat: 14.1378, lng: 101.8903, speed: 20, dirDeg: 240, label: 'ลมช่องเขา SW' },
-      { name: 'อ.ประจันตคาม (ธารเขาใหญ่)', lat: 14.1483, lng: 101.5303, speed: 15, dirDeg: 230, label: 'ลมเทือกเขา SW' },
-      { name: 'อ.ศรีมหาโพธิ', lat: 13.8822, lng: 101.5122, speed: 14, dirDeg: 225, label: 'ลมมรสุม SW' },
-      { name: 'อ.ศรีมโหสถ', lat: 13.8550, lng: 101.4258, speed: 13, dirDeg: 220, label: 'ลมมรสุม SW' },
-      { name: 'อุทยานฯ เขาใหญ่ (ตอนบน)', lat: 14.2800, lng: 101.4500, speed: 24, dirDeg: 245, label: 'ลมยอดเขา SW' },
-      { name: 'อุทยานฯ ทับลาน (ตอนบน)', lat: 14.2900, lng: 101.8800, speed: 22, dirDeg: 240, label: 'ลมยอดเขา SW' },
-    ];
+    let windPoints: { name: string; lat: number; lng: number; speed: number; dirDeg: number; label: string }[] = [];
+
+    if (selectedProvince === 'all') {
+      // Nationwide representative regional monsoon indicators
+      windPoints = [
+        { name: 'ภาคเหนือ (เชียงใหม่)', lat: 18.7904, lng: 98.9847, speed: 12, dirDeg: 220, label: 'ลมมรสุม SW' },
+        { name: 'ภาคเหนือ (พิษณุโลก)', lat: 16.8211, lng: 100.2659, speed: 14, dirDeg: 225, label: 'ลมมรสุม SW' },
+        { name: 'ภาคอีสาน (ขอนแก่น)', lat: 16.4419, lng: 102.8359, speed: 15, dirDeg: 230, label: 'ลมมรสุม SW' },
+        { name: 'ภาคอีสาน (อุบลฯ)', lat: 15.2448, lng: 104.8473, speed: 16, dirDeg: 235, label: 'ลมมรสุม SW' },
+        { name: 'ภาคกลาง (นครสวรรค์)', lat: 15.7051, lng: 100.1413, speed: 18, dirDeg: 225, label: 'ลมมรสุม SW' },
+        { name: 'ภาคกลาง (กทม./ปริมณฑล)', lat: 13.7563, lng: 100.5018, speed: 16, dirDeg: 215, label: 'ลมทะเล/มรสุม SW' },
+        { name: 'ภาคตะวันออก (ปราจีนบุรี)', lat: 14.0509, lng: 101.3716, speed: 14, dirDeg: 230, label: 'ลมมรสุม SW' },
+        { name: 'ภาคตะวันออก (จันทบุรี)', lat: 12.6114, lng: 102.1039, speed: 20, dirDeg: 240, label: 'ลมมรสุมเลียบฝั่ง SW' },
+        { name: 'ภาคตะวันตก (กาญจนบุรี)', lat: 14.0228, lng: 99.5328, speed: 15, dirDeg: 235, label: 'ลมเทือกเขา SW' },
+        { name: 'ภาคใต้ (สุราษฎร์ธานี)', lat: 9.1382, lng: 99.3217, speed: 22, dirDeg: 245, label: 'ลมมรสุมอันดามัน SW' },
+        { name: 'ภาคใต้ (สงขลา)', lat: 7.1898, lng: 100.5954, speed: 17, dirDeg: 230, label: 'ลมมรสุมอ่าวไทย SW' },
+      ];
+    } else if (selectedProvince === 'prachinburi') {
+      windPoints = [
+        { name: 'อ.เมืองปราจีนบุรี', lat: 14.0509, lng: 101.3716, speed: 14, dirDeg: 230, label: 'ลมมรสุม SW' },
+        { name: 'อ.กบินทร์บุรี', lat: 13.9936, lng: 101.7183, speed: 16, dirDeg: 235, label: 'ลมมรสุม SW' },
+        { name: 'อ.บ้านสร้าง', lat: 13.9878, lng: 101.2158, speed: 18, dirDeg: 220, label: 'ลมทะเล/มรสุม SW' },
+        { name: 'อ.นาดี (ช่องเขา)', lat: 14.1378, lng: 101.8903, speed: 20, dirDeg: 240, label: 'ลมช่องเขา SW' },
+        { name: 'อ.ประจันตคาม (ธารเขาใหญ่)', lat: 14.1483, lng: 101.5303, speed: 15, dirDeg: 230, label: 'ลมเทือกเขา SW' },
+        { name: 'อ.ศรีมหาโพธิ', lat: 13.8822, lng: 101.5122, speed: 14, dirDeg: 225, label: 'ลมมรสุม SW' },
+        { name: 'อ.ศรีมโหสถ', lat: 13.8550, lng: 101.4258, speed: 13, dirDeg: 220, label: 'ลมมรสุม SW' },
+        { name: 'อุทยานฯ เขาใหญ่ (ตอนบน)', lat: 14.2800, lng: 101.4500, speed: 24, dirDeg: 245, label: 'ลมยอดเขา SW' },
+        { name: 'อุทยานฯ ทับลาน (ตอนบน)', lat: 14.2900, lng: 101.8800, speed: 22, dirDeg: 240, label: 'ลมยอดเขา SW' },
+      ];
+    } else {
+      const prov = THAILAND_PROVINCES.find((p) => p.id === selectedProvince);
+      if (prov) {
+        windPoints = [
+          { name: `จ.${prov.name_th}`, lat: prov.lat, lng: prov.lng, speed: 16, dirDeg: 230, label: 'ลมมรสุมตะวันตกเฉียงใต้ (SW)' },
+        ];
+      }
+    }
 
     windPoints.forEach((wp) => {
       const iconHtml = `
@@ -455,14 +481,14 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
           <div class="text-cyan-700 font-bold mt-1">💨 ความเร็วลม: ${wp.speed} กม./ชม.</div>
           <div class="text-slate-600 mt-0.5">ทิศทาง: <b>${wp.label} (${wp.dirDeg}°)</b></div>
           <div class="text-[11px] text-slate-500 mt-1.5 border-t border-slate-100 pt-1">
-            กระแสลมมรสุมตะวันตกเฉียงใต้พัดนำความชื้นและกลุ่มเมฆฝนเข้าสู่พื้นที่
+            ทิศทางลมมรสุมพัดนำความชื้นเข้าสู่พื้นที่ (Open-Meteo & TMD Observation)
           </div>
         </div>
       `, { offset: [0, -15], autoPan: true });
 
       marker.addTo(windLayerRef.current!);
     });
-  }, [showWindLayer]);
+  }, [showWindLayer, selectedProvince]);
 
   // District Boundaries Layer
   useEffect(() => {
@@ -574,9 +600,16 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
               ? `<div class="text-xs text-slate-700 mt-0.5">ฝน 24 ชม.: <b>${station.rain_24h_mm} มม.</b></div>`
               : ''
           }
-          <div class="text-[11px] text-blue-700 mt-2 font-medium flex items-center gap-1 border-t border-slate-100 pt-1.5">
+          <div class="text-[11px] text-blue-700 mt-2 font-medium flex items-center justify-between border-t border-slate-100 pt-1.5">
             <span>✓ ${station.source_name_th}</span>
+            <span class="px-1.5 py-0.2 rounded text-[9px] font-bold ${
+              station.data_status === 'LIVE' ? 'bg-emerald-100 text-emerald-800' :
+              station.data_status === 'STALE' ? 'bg-amber-100 text-amber-800' :
+              station.data_status === 'STATIC' ? 'bg-sky-100 text-sky-800' :
+              'bg-slate-100 text-slate-600'
+            }">${station.data_status || 'LIVE'}</span>
           </div>
+          ${station.observed_at ? `<div class="text-[10px] text-slate-400 mt-0.5">ตรวจวัด: ${station.observed_at.replace('T', ' ').slice(0, 16)} น.</div>` : ''}
 
           <button 
             type="button"
@@ -735,9 +768,15 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
           <div class="font-bold text-sm text-slate-900 leading-snug">${dam.name_th}</div>
           <div class="text-xs text-cyan-800 font-bold mt-1">ความจุน้ำ: ${dam.capacity_percentage}% (${dam.current_storage_mcm} ล้าน ลบ.ม.)</div>
           <div class="text-xs text-slate-600 mt-0.5">ระบายน้ำ: <b>${dam.outflow_mcm_day}</b> ล้าน ลบ.ม./วัน</div>
-          <div class="text-[11px] text-cyan-700 mt-2 font-medium border-t border-slate-100 pt-1.5">
-            ✓ ${dam.agency}
+          <div class="text-[11px] text-cyan-700 mt-2 font-medium flex items-center justify-between border-t border-slate-100 pt-1.5">
+            <span>✓ ${dam.agency}</span>
+            <span class="px-1.5 py-0.2 rounded text-[9px] font-bold ${
+              dam.data_status === 'LIVE' ? 'bg-emerald-100 text-emerald-800' :
+              dam.data_status === 'STALE' ? 'bg-amber-100 text-amber-800' :
+              'bg-sky-100 text-sky-800'
+            }">${dam.data_status || 'LIVE'}</span>
           </div>
+          ${dam.observed_at ? `<div class="text-[10px] text-slate-400 mt-0.5">รายงาน: ${dam.observed_at.slice(0, 10)} (RID Official)</div>` : ''}
 
           <button 
             type="button"

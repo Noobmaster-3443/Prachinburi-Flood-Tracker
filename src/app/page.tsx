@@ -17,8 +17,10 @@ import {
   FlashFloodAlert,
   EvacuationShelter,
 } from '@/types/telemetry';
+import { ProvinceStatusReport, NationwideCoverageSummary } from '@/lib/providers/types';
 import { getAutomatedTelemetryData } from '@/lib/telemetry-service';
 import { MetricBanner } from '@/components/Dashboard/MetricBanner';
+import { ProvinceStatusCard } from '@/components/Dashboard/ProvinceStatusCard';
 import { THAILAND_PROVINCES } from '@/data/thailand-provinces';
 import { PRACHINBURI_DISTRICTS } from '@/data/prachinburi-locations';
 import { CheckCircle2 } from 'lucide-react';
@@ -31,10 +33,12 @@ export default function HomePage() {
   const [highTide, setHighTide] = useState<HighTideAlert | null>(null);
   const [flashFloodAlerts, setFlashFloodAlerts] = useState<FlashFloodAlert[]>([]);
   const [shelters, setShelters] = useState<EvacuationShelter[]>([]);
+  const [provinceStatuses, setProvinceStatuses] = useState<ProvinceStatusReport[]>([]);
+  const [coverage, setCoverage] = useState<NationwideCoverageSummary | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<string>(new Date().toISOString());
+  const [lastUpdated, setLastUpdated] = useState<string>('');
   const [isAutoRefresh, setIsAutoRefresh] = useState<boolean>(true);
 
   const [currentView, setCurrentView] = useState<'map' | 'list'>('map');
@@ -60,9 +64,9 @@ export default function HomePage() {
     setSelectedHighTide(null);
   }, []);
 
-  // Filter state - defaults to nationwide ('all')
+  // Filter state - Prachinburi is the default initial province as required, but nationwide and all 77 provinces are supported
   const [filter, setFilter] = useState<DashboardFilterState>({
-    province: 'all',
+    province: 'prachinburi',
     district: 'all',
     stationType: 'all',
     severity: 'all',
@@ -73,7 +77,7 @@ export default function HomePage() {
   const availableDistricts = useMemo(() => {
     if (filter.province && filter.province !== 'all') {
       const provStations = stations.filter(
-        (s) => (s.province || 'prachinburi') === filter.province
+        (s) => s.province === filter.province
       );
       const districtSet = new Set<string>();
       provStations.forEach((s) => {
@@ -99,10 +103,12 @@ export default function HomePage() {
       setHighTide(data.highTide);
       setFlashFloodAlerts(data.flashFloodAlerts);
       setShelters(data.shelters);
+      if (data.provinceStatuses) setProvinceStatuses(data.provinceStatuses);
+      if (data.coverage) setCoverage(data.coverage);
       setLastUpdated(data.lastUpdated);
 
       if (isManual) {
-        setToastMessage('อัปเดตข้อมูลโทรมาตร, เขื่อน, น้ำหนุน และศูนย์พักพิงเรียบร้อย');
+        setToastMessage('อัปเดตข้อมูลโทรมาตร 77 จังหวัด, เขื่อน, และศูนย์พักพิงเรียบร้อย');
         setTimeout(() => setToastMessage(null), 3000);
       }
     } catch (err) {
@@ -127,7 +133,7 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, [isAutoRefresh, fetchData]);
 
-  // Global Detail Drawer Openers - connects map popups & feed list items directly to drawer state
+  // Global Detail Drawer Openers
   useEffect(() => {
     (window as any).__openTelemetryStationById = (stationId: string) => {
       const st = stations.find((s) => s.id === stationId);
@@ -210,14 +216,12 @@ export default function HomePage() {
       // District or Regional filter
       if (filter.district !== 'all') {
         if (filter.province === 'all') {
-          // In nationwide mode, filter.district can be a region (e.g. 'central', 'north')
           const staProv = sta.province || 'prachinburi';
           const provMeta = THAILAND_PROVINCES.find((p) => p.id === staProv);
           if (provMeta && provMeta.region !== filter.district) {
             return false;
           }
         } else {
-          // In specific province mode, filter by district name
           const normSta = sta.district.replace(/^อ\./, '').trim();
           const normFilter = filter.district.replace(/^อ\./, '').trim();
           if (normSta !== normFilter) return false;
@@ -243,9 +247,8 @@ export default function HomePage() {
 
   const filteredDams = useMemo(() => {
     return dams.filter((dam) => {
-      // Province filter
       if (filter.province && filter.province !== 'all') {
-        const damProv = dam.province || (dam.id.includes('narubodin') ? 'prachinburi' : '');
+        const damProv = dam.province;
         if (damProv && damProv !== filter.province) return false;
       }
       if (filter.severity !== 'all' && dam.severity !== filter.severity) return false;
@@ -263,8 +266,8 @@ export default function HomePage() {
   const filteredHighwayAlerts = useMemo(() => {
     return highwayAlerts.filter((alert) => {
       if (filter.province && filter.province !== 'all') {
-        const prov = alert.province || 'prachinburi';
-        if (prov !== filter.province) return false;
+        const prov = alert.province;
+        if (prov && prov !== filter.province) return false;
       }
       if (filter.district !== 'all' && alert.district !== filter.district) return false;
       if (filter.searchQuery.trim() !== '') {
@@ -281,8 +284,8 @@ export default function HomePage() {
   const filteredShelters = useMemo(() => {
     return shelters.filter((s) => {
       if (filter.province && filter.province !== 'all') {
-        const prov = s.province || 'prachinburi';
-        if (prov !== filter.province) return false;
+        const prov = s.province;
+        if (prov && prov !== filter.province) return false;
       }
       if (filter.district !== 'all' && s.district !== filter.district) return false;
       return true;
@@ -292,12 +295,20 @@ export default function HomePage() {
   const filteredFlashFloodAlerts = useMemo(() => {
     return flashFloodAlerts.filter((f) => {
       if (filter.province && filter.province !== 'all') {
-        const prov = f.province || 'prachinburi';
-        if (prov !== filter.province) return false;
+        const prov = f.province;
+        if (prov && prov !== filter.province) return false;
       }
       return true;
     });
   }, [flashFloodAlerts, filter]);
+
+  // Province status report for selected province
+  const activeProvinceStatusReport = useMemo(() => {
+    if (!filter.province || filter.province === 'all') return undefined;
+    return provinceStatuses.find((p) => p.provinceId === filter.province);
+  }, [provinceStatuses, filter.province]);
+
+  const activeProvince = filter.province || 'prachinburi';
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-50 font-sans">
@@ -315,10 +326,10 @@ export default function HomePage() {
         onViewChange={setCurrentView}
         onOpenEmergencyModal={() => setIsEmergencyModalOpen(true)}
         onOpenWeatherModal={() => setIsWeatherModalOpen(true)}
-        stations={stations}
-        highwayAlerts={highwayAlerts}
+        stations={activeProvince === 'all' ? stations : filteredStations}
+        highwayAlerts={activeProvince === 'all' ? highwayAlerts : filteredHighwayAlerts}
         isAutoRefresh={isAutoRefresh}
-        selectedProvince={filter.province || 'all'}
+        selectedProvince={activeProvince}
       />
 
       {/* Main Content Area */}
@@ -339,10 +350,10 @@ export default function HomePage() {
                 availableDistricts={availableDistricts}
               />
 
-              {/* Compact Floating Alert Badges (Only shown if there's high tide or critical flash flood) */}
+              {/* Compact Floating Alert Badges (High Tide & Critical Flash Floods) */}
               {(highTide || flashFloodAlerts.some((f) => f.severity === 'red')) && (
                 <div className="flex items-center justify-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-                  {highTide && (
+                  {highTide && (activeProvince === 'all' || activeProvince === 'prachinburi' || activeProvince === 'bangkok') && (
                     <button
                       type="button"
                       onClick={() => {
@@ -357,7 +368,7 @@ export default function HomePage() {
                     </button>
                   )}
                   {flashFloodAlerts
-                    .filter((f) => f.severity === 'red')
+                    .filter((f) => f.severity === 'red' && (activeProvince === 'all' || f.province === activeProvince))
                     .slice(0, 1)
                     .map((flash) => (
                       <button
@@ -414,14 +425,14 @@ export default function HomePage() {
                   setSelectedShelter(s);
                 }}
                 selectedDistrict={filter.district}
-                selectedProvince={filter.province || 'all'}
+                selectedProvince={activeProvince}
                 onOpenWeatherModal={() => setIsWeatherModalOpen(true)}
               />
             </div>
           </main>
         </>
       ) : (
-        /* List View: Natural clean scrolling without floating overlap */
+        /* List View: Clean Natural Scrolling */
         <main className="flex-1 w-full h-full pt-14 sm:pt-16 overflow-y-auto bg-slate-50">
           <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-sans">
             {/* Provincial Key Metrics */}
@@ -431,7 +442,7 @@ export default function HomePage() {
               highTide={highTide ?? undefined}
               flashFloodAlerts={filteredFlashFloodAlerts}
               dams={filteredDams}
-              selectedProvince={filter.province || 'all'}
+              selectedProvince={activeProvince}
               onFilterSeverity={(sev) => setFilter({ ...filter, severity: sev as any })}
               onFilterRoad={() => {}}
               onOpenHighTide={() => {
@@ -446,6 +457,13 @@ export default function HomePage() {
                 clearAllSelections();
                 setSelectedDam(d);
               }}
+            />
+
+            {/* Province Status & Evidence / Nationwide Coverage Card */}
+            <ProvinceStatusCard
+              selectedProvince={activeProvince}
+              report={activeProvinceStatusReport}
+              coverage={coverage ?? undefined}
             />
 
             {/* Filter Bar */}
@@ -525,7 +543,7 @@ export default function HomePage() {
       <WeatherForecastModal
         isOpen={isWeatherModalOpen}
         onClose={() => setIsWeatherModalOpen(false)}
-        initialProvince={filter.province || 'prachinburi'}
+        initialProvince={activeProvince}
       />
     </div>
   );
