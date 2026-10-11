@@ -70,8 +70,34 @@ export async function getAggregatedNationwideData(): Promise<NationwideAggregate
 
   if (liveWlStations.length > 0) {
     combinedStations = [...liveWlStations];
-    // Add top rain stations (sample or limit per province to prevent oversized payload)
-    combinedStations.push(...liveRainStations.slice(0, 300));
+
+    // Intelligently select live rain telemetry stations:
+    // 1. Keep ALL live rain stations for metropolitan/priority flood areas (Bangkok, Prachinburi)
+    // 2. Select the top rain stations (sorted by 24h rainfall) for every other province so no province is omitted
+    const rainByProvince = new Map<string, TelemetryStation[]>();
+    liveRainStations.forEach((station) => {
+      const p = station.province || 'unknown';
+      if (!rainByProvince.has(p)) {
+        rainByProvince.set(p, []);
+      }
+      rainByProvince.get(p)!.push(station);
+    });
+
+    const selectedRainStations: TelemetryStation[] = [];
+    rainByProvince.forEach((provStations, provId) => {
+      // Sort by highest 24h rainfall first
+      provStations.sort((a, b) => (b.rain_24h_mm || 0) - (a.rain_24h_mm || 0));
+
+      // For Bangkok and Prachinburi, include all stations to ensure 100% full coverage
+      if (provId === 'bangkok' || provId === 'prachinburi') {
+        selectedRainStations.push(...provStations);
+      } else {
+        // For other provinces, take the top 8 rainfall monitoring points
+        selectedRainStations.push(...provStations.slice(0, 8));
+      }
+    });
+
+    combinedStations.push(...selectedRainStations);
   } else {
     // If live ThaiWater is unavailable, use verified static dataset marked as STATIC with actual dates
     combinedStations = NATIONWIDE_ALL_STATIONS.map((s) => ({
