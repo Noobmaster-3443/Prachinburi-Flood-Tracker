@@ -20,11 +20,13 @@ import {
   PRACHINBURI_CENTER,
   WATER_DEPTH_PRESETS,
 } from '@/data/prachinburi-locations';
+import { THAILAND_PROVINCES } from '@/data/thailand-provinces';
 import { compressImage, formatFileSize } from '@/lib/storage';
 
 interface ReportFormModalProps {
   isOpen: boolean;
   onClose: () => void;
+  selectedProvince?: string;
   onSubmit: (
     report: Omit<FloodReport, 'id' | 'created_at' | 'upvotes'>,
     imageBlob?: Blob
@@ -34,8 +36,12 @@ interface ReportFormModalProps {
 export const ReportFormModal: React.FC<ReportFormModalProps> = ({
   isOpen,
   onClose,
+  selectedProvince = 'prachinburi',
   onSubmit,
 }) => {
+  const [provinceId, setProvinceId] = useState<string>(
+    selectedProvince && selectedProvince !== 'all' ? selectedProvince : 'prachinburi'
+  );
   const [district, setDistrict] = useState(PRACHINBURI_DISTRICTS[1].name_th); // Default Kabin Buri
   const [subdistrict, setSubdistrict] = useState(PRACHINBURI_DISTRICTS[1].subdistricts[0]);
   const [locationName, setLocationName] = useState('');
@@ -62,17 +68,58 @@ export const ReportFormModal: React.FC<ReportFormModalProps> = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Update subdistricts when district changes
-  const selectedDistrictData = PRACHINBURI_DISTRICTS.find((d) => d.name_th === district);
+  // Sync province on open
+  useEffect(() => {
+    if (isOpen) {
+      const activeP = selectedProvince && selectedProvince !== 'all' ? selectedProvince : 'prachinburi';
+      setProvinceId(activeP);
+      if (activeP === 'prachinburi') {
+        setDistrict(PRACHINBURI_DISTRICTS[1].name_th);
+        setSubdistrict(PRACHINBURI_DISTRICTS[1].subdistricts[0]);
+        setLatitude(PRACHINBURI_DISTRICTS[1].lat);
+        setLongitude(PRACHINBURI_DISTRICTS[1].lng);
+      } else {
+        const prov = THAILAND_PROVINCES.find((p) => p.id === activeP);
+        if (prov) {
+          setDistrict('เมือง');
+          setSubdistrict('');
+          setLatitude(prov.lat);
+          setLongitude(prov.lng);
+        }
+      }
+    }
+  }, [isOpen, selectedProvince]);
+
+  const handleProvinceChange = (newP: string) => {
+    setProvinceId(newP);
+    if (newP === 'prachinburi') {
+      setDistrict(PRACHINBURI_DISTRICTS[1].name_th);
+      setSubdistrict(PRACHINBURI_DISTRICTS[1].subdistricts[0]);
+      setLatitude(PRACHINBURI_DISTRICTS[1].lat);
+      setLongitude(PRACHINBURI_DISTRICTS[1].lng);
+    } else {
+      const prov = THAILAND_PROVINCES.find((p) => p.id === newP);
+      if (prov) {
+        setDistrict('เมือง');
+        setSubdistrict('');
+        setLatitude(prov.lat);
+        setLongitude(prov.lng);
+      }
+    }
+  };
+
+  // Update subdistricts when district changes for Prachinburi
+  const isPrachinburi = provinceId === 'prachinburi';
+  const selectedDistrictData = isPrachinburi ? PRACHINBURI_DISTRICTS.find((d) => d.name_th === district) : undefined;
   const subdistrictsList = selectedDistrictData ? selectedDistrictData.subdistricts : [];
 
   useEffect(() => {
-    if (selectedDistrictData && !selectedDistrictData.subdistricts.includes(subdistrict)) {
+    if (isPrachinburi && selectedDistrictData && !selectedDistrictData.subdistricts.includes(subdistrict)) {
       setSubdistrict(selectedDistrictData.subdistricts[0] || '');
       setLatitude(selectedDistrictData.lat);
       setLongitude(selectedDistrictData.lng);
     }
-  }, [district, selectedDistrictData, subdistrict]);
+  }, [district, selectedDistrictData, subdistrict, isPrachinburi]);
 
   // Sync passability default with severity
   useEffect(() => {
@@ -174,7 +221,7 @@ export const ReportFormModal: React.FC<ReportFormModalProps> = ({
     try {
       await onSubmit(
         {
-          district,
+          district: isPrachinburi ? district : `${district} (จ.${THAILAND_PROVINCES.find((p) => p.id === provinceId)?.name_th || provinceId})`,
           subdistrict,
           location_name: locationName.trim(),
           latitude,
@@ -258,7 +305,9 @@ export const ReportFormModal: React.FC<ReportFormModalProps> = ({
             </div>
             <div>
               <h2 className="font-bold text-base text-slate-900">แจ้งสถานการณ์น้ำท่วม</h2>
-              <p className="text-xs text-slate-500">ข้อมูลชุมชนเพื่อช่วยเหลือชาวปราจีนบุรี</p>
+              <p className="text-xs text-slate-500">
+                ข้อมูลชุมชนเพื่อช่วยเหลือประชาชน จ.{THAILAND_PROVINCES.find((p) => p.id === provinceId)?.name_th || 'ปราจีนบุรี'}
+              </p>
             </div>
           </div>
           <button
@@ -283,35 +332,72 @@ export const ReportFormModal: React.FC<ReportFormModalProps> = ({
             <label className="block font-semibold text-slate-800 text-xs tracking-wide">
               1. สถานที่และพิกัด <span className="text-red-500">*</span>
             </label>
+
+            {/* Province selector */}
+            <div>
+              <label className="text-[11px] text-slate-500 block mb-1">จังหวัด</label>
+              <select
+                value={provinceId}
+                onChange={(e) => handleProvinceChange(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none"
+              >
+                {THAILAND_PROVINCES.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    จ.{p.name_th} ({p.region_th})
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-[11px] text-slate-500 block mb-1">อำเภอ</label>
-                <select
-                  value={district}
-                  onChange={(e) => setDistrict(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  {PRACHINBURI_DISTRICTS.map((d) => (
-                    <option key={d.id} value={d.name_th}>
-                      {d.name_th}
-                    </option>
-                  ))}
-                </select>
+                {isPrachinburi ? (
+                  <select
+                    value={district}
+                    onChange={(e) => setDistrict(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                  >
+                    {PRACHINBURI_DISTRICTS.map((d) => (
+                      <option key={d.id} value={d.name_th}>
+                        {d.name_th}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={district}
+                    onChange={(e) => setDistrict(e.target.value)}
+                    placeholder="เช่น เมือง, แม่ริม, หาดใหญ่"
+                    className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                )}
               </div>
 
               <div>
                 <label className="text-[11px] text-slate-500 block mb-1">ตำบล</label>
-                <select
-                  value={subdistrict}
-                  onChange={(e) => setSubdistrict(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  {subdistrictsList.map((sub) => (
-                    <option key={sub} value={sub}>
-                      ตำบล{sub}
-                    </option>
-                  ))}
-                </select>
+                {isPrachinburi ? (
+                  <select
+                    value={subdistrict}
+                    onChange={(e) => setSubdistrict(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                  >
+                    {subdistrictsList.map((sub) => (
+                      <option key={sub} value={sub}>
+                        ตำบล{sub}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={subdistrict}
+                    onChange={(e) => setSubdistrict(e.target.value)}
+                    placeholder="ตำบล (ถ้ามี)"
+                    className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                )}
               </div>
             </div>
 

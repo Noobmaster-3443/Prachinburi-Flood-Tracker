@@ -98,7 +98,7 @@ export const WeatherForecastModal: React.FC<WeatherForecastModalProps> = ({
               </div>
               <p className="text-xs text-sky-100 flex items-center gap-1 mt-0.5">
                 <MapPin className="w-3 h-3 text-sky-300" />
-                <span>จังหวัดปราจีนบุรี • อัปเดตรายชั่วโมง</span>
+                <span>{weatherData?.districtName || 'ทั่วประเทศ'} • อัปเดตรายชั่วโมง</span>
               </p>
             </div>
           </div>

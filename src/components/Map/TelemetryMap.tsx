@@ -998,6 +998,12 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
     }
   };
 
+  const currentProvObj = THAILAND_PROVINCES.find((p) => p.id === selectedProvince);
+  const resetCenterTitle =
+    selectedProvince === 'all'
+      ? 'จัดมุมมองศูนย์กลางประเทศไทย'
+      : `จัดมุมมองศูนย์กลาง จ.${currentProvObj?.name_th || 'ปราจีนบุรี'}`;
+
   return (
     <div className="w-full h-full relative font-sans">
       <div ref={mapContainerRef} className="w-full h-full z-0" />
@@ -1194,21 +1200,23 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
               {showRoadAlerts ? <Eye className="w-3.5 h-3.5 text-amber-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
             </button>
 
-            {/* Toggle District Boundaries */}
-            <button
-              onClick={() => setShowBoundaries(!showBoundaries)}
-              className={`w-full flex items-center justify-between px-2 py-1.5 rounded-xl transition-all ${
-                showBoundaries
-                  ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-200'
-                  : 'hover:bg-slate-100 text-slate-600'
-              }`}
-            >
-              <span className="flex items-center gap-1.5">
-                <Grid className="w-3.5 h-3.5 text-blue-600" />
-                <span>เส้นขอบเขต 7 อำเภอ</span>
-              </span>
-              {showBoundaries ? <Eye className="w-3.5 h-3.5 text-blue-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
-            </button>
+            {/* Toggle District Boundaries (Prachinburi only) */}
+            {selectedProvince === 'prachinburi' && (
+              <button
+                onClick={() => setShowBoundaries(!showBoundaries)}
+                className={`w-full flex items-center justify-between px-2 py-1.5 rounded-xl transition-all ${
+                  showBoundaries
+                    ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-200'
+                    : 'hover:bg-slate-100 text-slate-600'
+                }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  <Grid className="w-3.5 h-3.5 text-blue-600" />
+                  <span>เส้นขอบเขต 7 อำเภอ</span>
+                </span>
+                {showBoundaries ? <Eye className="w-3.5 h-3.5 text-blue-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
+              </button>
+            )}
           </div>
         )}
 
@@ -1232,7 +1240,7 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         <button
           onClick={handleResetCenter}
           className="p-2.5 rounded-xl sm:rounded-2xl bg-white hover:bg-slate-50 text-slate-700 shadow-md border border-slate-200 transition-all flex items-center justify-center cursor-pointer"
-          title="จัดมุมมองศูนย์กลางปราจีนบุรี"
+          title={resetCenterTitle}
         >
           <Navigation className="w-4 h-4 text-blue-600" />
         </button>

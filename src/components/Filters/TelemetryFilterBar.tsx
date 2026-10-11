@@ -244,9 +244,9 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
         </button>
       </div>
 
-      {/* Collapsible Detailed Filter Row (Shown when toggled or expanded) */}
+      {/* Collapsible Detailed Filter Row (Shown when toggled or expanded) (M-5) */}
       {isExpanded && (
-        <div className="mt-2 pt-2 border-t border-slate-100 space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+        <div className="mt-2 pt-2 border-t border-slate-100 space-y-2 animate-in fade-in slide-in-from-top-1 duration-200 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto pr-1">
           {/* Mobile District or Region Selector */}
           <div className="md:hidden">
             {activeProvince === 'all' ? (
@@ -383,7 +383,7 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
             </div>
 
             <div className="text-[11px] text-slate-400 w-full sm:w-auto text-right">
-              ข้อมูลสด สสน. • อัปเดต {new Date(lastUpdated).toLocaleTimeString('th-TH')} น.
+              ข้อมูลสด สสน. • อัปเดต {lastUpdated ? new Date(lastUpdated).toLocaleTimeString('th-TH') : '-'} น.
             </div>
           </div>
         </div>

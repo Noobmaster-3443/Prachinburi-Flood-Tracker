@@ -103,7 +103,7 @@ export const TelemetryNavbar: React.FC<TelemetryNavbarProps> = ({
           <div className="bg-slate-100/90 p-1 rounded-xl flex items-center border border-slate-300/80 shadow-xs">
             <button
               onClick={() => onViewChange('map')}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
+              className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
                 currentView === 'map'
                   ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-700/20'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
@@ -111,11 +111,11 @@ export const TelemetryNavbar: React.FC<TelemetryNavbarProps> = ({
               title="มุมมองแผนที่"
             >
               <MapIcon className="w-3.5 h-3.5" />
-              <span className="hidden xs:inline">แผนที่</span>
+              <span className="hidden sm:inline">แผนที่</span>
             </button>
             <button
               onClick={() => onViewChange('list')}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
+              className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
                 currentView === 'list'
                   ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-700/20'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
@@ -123,33 +123,38 @@ export const TelemetryNavbar: React.FC<TelemetryNavbarProps> = ({
               title="มุมมองรายการสถานี"
             >
               <LayoutList className="w-3.5 h-3.5" />
-              <span className="hidden xs:inline">รายการ</span>
+              <span className="hidden sm:inline">รายการ</span>
             </button>
           </div>
 
-          {/* Weather Quick Widget */}
+          {/* Weather Quick Widget - Passes selectedProvince (H-1) */}
           {onOpenWeatherModal && (
-            <WeatherQuickWidget onOpenModal={onOpenWeatherModal} />
+            <WeatherQuickWidget 
+              onOpenModal={onOpenWeatherModal} 
+              selectedProvince={selectedProvince}
+            />
           )}
 
-          {/* Area Overview Page */}
-          <Link
-            href="/area"
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-white hover:bg-blue-50 text-blue-700 border-2 border-blue-400/80 hover:border-blue-500 shadow-xs hover:shadow-sm transition-all active:scale-95"
-            title="พื้นที่ของฉัน (เจาะลึก 7 อำเภอ)"
-          >
-            <MapPin className="w-3.5 h-3.5 text-blue-600" />
-            <span className="hidden xs:inline">7 อำเภอ</span>
-          </Link>
+          {/* Area Overview Page - Only for Prachinburi (M-3) */}
+          {selectedProvince === 'prachinburi' && (
+            <Link
+              href="/area"
+              className="flex items-center gap-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-white hover:bg-blue-50 text-blue-700 border-2 border-blue-400/80 hover:border-blue-500 shadow-xs hover:shadow-sm transition-all active:scale-95"
+              title="พื้นที่ของฉัน (เจาะลึก 7 อำเภอ ปราจีนบุรี)"
+            >
+              <MapPin className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+              <span className="hidden sm:inline">7 อำเภอ</span>
+            </Link>
+          )}
 
-          {/* Emergency Hotline Button (1784/1669/1586) */}
+          {/* Emergency Hotline Button - Compact on mobile (M-2) */}
           <button
             onClick={onOpenEmergencyModal}
-            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 text-white shadow-md hover:shadow-lg transition-all active:scale-95 border border-red-500 cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 text-white shadow-md hover:shadow-lg transition-all active:scale-95 border border-red-500 cursor-pointer flex-shrink-0"
           >
             <PhoneCall className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white animate-pulse" />
             <span className="hidden sm:inline">สายด่วน ปภ. 1784</span>
-            <span className="sm:hidden font-black">1784 / 1669</span>
+            <span className="sm:hidden font-black">1784</span>
           </button>
         </div>
       </div>

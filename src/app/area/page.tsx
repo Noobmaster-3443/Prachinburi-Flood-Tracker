@@ -63,16 +63,25 @@ export default function AreaPage() {
     return PRACHINBURI_DISTRICTS.find((d) => d.id === selectedDistrictId) || null;
   }, [selectedDistrictId]);
 
+  // Prachinburi-scoped stations & highway alerts (H-2: prevent nationwide leak on /area)
+  const prachinburiStations = useMemo(() => {
+    return stations.filter((s) => s.province === 'prachinburi');
+  }, [stations]);
+
+  const prachinburiHighwayAlerts = useMemo(() => {
+    return highwayAlerts.filter((h) => h.province === 'prachinburi');
+  }, [highwayAlerts]);
+
   // District stations & highway alerts
   const districtStations = useMemo(() => {
-    if (!selectedDistrict) return stations;
-    return stations.filter((s) => s.district === selectedDistrict.name_th);
-  }, [stations, selectedDistrict]);
+    if (!selectedDistrict) return prachinburiStations;
+    return prachinburiStations.filter((s) => s.district === selectedDistrict.name_th);
+  }, [prachinburiStations, selectedDistrict]);
 
   const districtHighwayAlerts = useMemo(() => {
-    if (!selectedDistrict) return highwayAlerts;
-    return highwayAlerts.filter((h) => h.district === selectedDistrict.name_th);
-  }, [highwayAlerts, selectedDistrict]);
+    if (!selectedDistrict) return prachinburiHighwayAlerts;
+    return prachinburiHighwayAlerts.filter((h) => h.district === selectedDistrict.name_th);
+  }, [prachinburiHighwayAlerts, selectedDistrict]);
 
   // Severity stats
   const stats = useMemo(() => {
@@ -301,6 +310,7 @@ export default function AreaPage() {
               onSelectStation={setSelectedStation}
               onSelectHighwayAlert={setSelectedHighwayAlert}
               selectedDistrict={selectedDistrict ? selectedDistrict.name_th : 'all'}
+              selectedProvince="prachinburi"
             />
           </div>
         </section>

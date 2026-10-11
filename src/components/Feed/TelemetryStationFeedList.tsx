@@ -35,6 +35,7 @@ interface TelemetryStationFeedListProps {
   flashFloodAlerts?: FlashFloodAlert[];
   shelters?: EvacuationShelter[];
   highTide?: HighTideAlert;
+  selectedProvince?: string;
   onSelectStation: (station: TelemetryStation) => void;
   onSelectHighwayAlert: (alert: HighwayDisasterAlert) => void;
   onSelectDam?: (dam: DamReservoirInfo) => void;
@@ -80,6 +81,7 @@ export const TelemetryStationFeedList: React.FC<TelemetryStationFeedListProps> =
   flashFloodAlerts = [],
   shelters = [],
   highTide,
+  selectedProvince = 'all',
   onSelectStation,
   onSelectHighwayAlert,
   onSelectDam,
@@ -87,6 +89,9 @@ export const TelemetryStationFeedList: React.FC<TelemetryStationFeedListProps> =
   onSelectShelter,
   onSelectHighTide,
 }) => {
+  const provObj = THAILAND_PROVINCES.find((p) => p.id === selectedProvince);
+  const activeProvName = selectedProvince === 'all' ? 'ทั่วประเทศ' : provObj ? `จ.${provObj.name_th}` : 'ปราจีนบุรี';
+
   const formatTimeThai = (isoDate: string) => {
     try {
       const date = new Date(isoDate);
@@ -135,7 +140,7 @@ export const TelemetryStationFeedList: React.FC<TelemetryStationFeedListProps> =
           <div className="flex items-center justify-between px-1">
             <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
               <Mountain className="w-4 h-4 text-rose-600" />
-              <span>เตือนภัยน้ำป่าไหลหลาก & ดินโคลนถล่ม (ยอดเขาใหญ่-ทับลาน)</span>
+              <span>เตือนภัยน้ำป่าไหลหลาก & ดินโคลนถล่ม {selectedProvince === 'prachinburi' ? '(ยอดเขาใหญ่-ทับลาน)' : `(${activeProvName})`}</span>
             </span>
             <span className="text-[11px] text-rose-700 font-semibold bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
               พบ {flashFloodAlerts.length} จุดเสี่ยง
@@ -232,7 +237,7 @@ export const TelemetryStationFeedList: React.FC<TelemetryStationFeedListProps> =
 
       {/* 4. Highway Flood Alerts Section */}
       {highwayAlerts.length > 0 && (
-        <div className="space-y-2.5">
+        <div id="highway-flood-alerts" className="space-y-2.5 scroll-mt-20">
           <div className="flex items-center justify-between px-1">
             <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
               <Car className="w-4 h-4 text-amber-600" />
@@ -286,13 +291,18 @@ export const TelemetryStationFeedList: React.FC<TelemetryStationFeedListProps> =
         <div className="flex items-center justify-between px-1">
           <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
             <Waves className="w-4 h-4 text-blue-600" />
-            <span>สถานีวัดระดับน้ำ & โทรมาตรลุ่มน้ำปราจีนบุรี (สสน./กรมชลฯ)</span>
+            <span>สถานีวัดระดับน้ำ & โทรมาตร {selectedProvince === 'prachinburi' ? 'ลุ่มน้ำปราจีนบุรี' : `(${activeProvName})`} (สสน./กรมชลฯ)</span>
           </span>
           <span className="text-xs text-slate-500">พบ {stations.length} สถานี</span>
         </div>
 
-        <div className="grid grid-cols-1 gap-2.5">
-          {stations.map((sta) => {
+        {stations.length === 0 ? (
+          <div className="p-8 text-center bg-white rounded-2xl border border-slate-200/90 text-slate-500 text-xs font-medium">
+            ไม่พบสถานีตรวจวัดระดับน้ำในพื้นที่หรือตามเงื่อนไขที่เลือก
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-2.5">
+            {stations.map((sta) => {
             const cfg = severityConfig[sta.severity] || severityConfig.yellow;
             const isWater = sta.station_type === 'water_level';
 
@@ -376,7 +386,8 @@ export const TelemetryStationFeedList: React.FC<TelemetryStationFeedListProps> =
             );
           })}
         </div>
-      </div>
+      )}
+    </div>
 
       {/* 6. Evacuation Shelters Section */}
       {shelters.length > 0 && (
@@ -384,7 +395,7 @@ export const TelemetryStationFeedList: React.FC<TelemetryStationFeedListProps> =
           <div className="flex items-center justify-between px-1">
             <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
               <Home className="w-4 h-4 text-emerald-600" />
-              <span>ศูนย์พักพิง & จุดอพยพชั่วคราว (ปภ. ปราจีนบุรี)</span>
+              <span>ศูนย์พักพิง & จุดอพยพชั่วคราว (ปภ. {selectedProvince === 'prachinburi' ? 'ปราจีนบุรี' : activeProvName})</span>
             </span>
             <span className="text-[11px] text-emerald-800 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
               {shelters.length} ศูนย์
