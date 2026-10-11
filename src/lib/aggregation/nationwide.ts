@@ -13,6 +13,7 @@ import { fetchTmdWarnings, TmdWarningAlert } from '../providers/tmd';
 import { fetchHighwayDisasterAlerts } from '../providers/highway';
 import { fetchNavyTide } from '../providers/tide';
 import { fetchEvacuationShelters } from '../providers/shelter';
+import { fetchBmaRoadFloods } from '../providers/bma';
 import { THAILAND_PROVINCES } from '@/data/thailand-provinces';
 import { calculateProvinceStatus } from './province-status';
 import { NATIONWIDE_ALL_STATIONS, NATIONWIDE_FLASH_FLOOD_ALERTS } from '@/data/nationwide-telemetry';
@@ -42,6 +43,7 @@ export async function getAggregatedNationwideData(): Promise<NationwideAggregate
     highwayResult,
     tideResult,
     shelterResult,
+    bmaResult,
   ] = await Promise.allSettled([
     getWithCache('thaiwater_wl', () => fetchThaiWaterWaterLevels(), { ttlSeconds: 300 }),
     getWithCache('thaiwater_rain', () => fetchThaiWaterRainfall(), { ttlSeconds: 300 }),
@@ -51,6 +53,7 @@ export async function getAggregatedNationwideData(): Promise<NationwideAggregate
     getWithCache('highway_alerts', () => fetchHighwayDisasterAlerts('all'), { ttlSeconds: 600 }),
     getWithCache('navy_tide', () => fetchNavyTide('all'), { ttlSeconds: 3600 }),
     getWithCache('shelters', () => fetchEvacuationShelters('all'), { ttlSeconds: 3600 }),
+    getWithCache('bma_road_floods', () => fetchBmaRoadFloods(), { ttlSeconds: 180 }),
   ]);
 
   // Extract results safely
@@ -62,6 +65,7 @@ export async function getAggregatedNationwideData(): Promise<NationwideAggregate
   const highwayData = highwayResult.status === 'fulfilled' ? highwayResult.value : null;
   const tideData = tideResult.status === 'fulfilled' ? tideResult.value : null;
   const shelterData = shelterResult.status === 'fulfilled' ? shelterResult.value : null;
+  const bmaData = bmaResult.status === 'fulfilled' ? bmaResult.value : null;
 
   // 2. Combine water stations: prefer live ThaiWater stations
   let combinedStations: TelemetryStation[] = [];
@@ -104,6 +108,11 @@ export async function getAggregatedNationwideData(): Promise<NationwideAggregate
       ...s,
       data_status: 'STATIC' as DataStatus,
     }));
+  }
+
+  // 3. Append live BMA DDS road flood monitoring stations (Bangkok 254 sensors)
+  if (bmaData?.data && bmaData.data.length > 0) {
+    combinedStations.push(...bmaData.data);
   }
 
   // Dams list

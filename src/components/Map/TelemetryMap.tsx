@@ -561,9 +561,12 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
       const col = severityColors[station.severity] || severityColors.yellow;
       const isSelected = selectedStation?.id === station.id;
       const isWater = station.station_type === 'water_level';
+      const isRoad = station.station_type === 'highway_flood';
 
       const iconSvg = isWater 
         ? `<svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918"/></svg>`
+        : isRoad
+        ? `<svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.948c0-.621-.504-1.125-1.125-1.125H4.125C3.504 5.5 3 6.004 3 6.625v8.25"/></svg>`
         : `<svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"/></svg>`;
 
       const isCritical = station.severity === 'red';
@@ -607,6 +610,11 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
           ${
             station.rain_24h_mm
               ? `<div class="text-xs text-slate-700 mt-0.5">ฝน 24 ชม.: <b>${station.rain_24h_mm} มม.</b></div>`
+              : ''
+          }
+          ${
+            station.water_depth_cm !== undefined
+              ? `<div class="text-xs text-slate-700 mt-0.5">น้ำท่วมผิวจราจร: <b>${station.water_depth_cm} ซม.</b> (${station.passable_for_vehicles ? 'สัญจรได้' : 'ห้ามรถเล็กผ่าน'})</div>`
               : ''
           }
           <div class="text-[11px] text-blue-700 mt-2 font-medium flex items-center justify-between border-t border-slate-100 pt-1.5">

@@ -130,8 +130,8 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           <div className="p-3 rounded-2xl bg-blue-50/70 border border-blue-200 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                สสน.
+              <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] shadow-xs px-1 text-center">
+                {station.source_agency || 'สสน.'}
               </div>
               <div>
                 <div className="text-xs font-bold text-blue-950 flex items-center gap-1">
@@ -154,8 +154,36 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
             )}
           </div>
 
-          {/* Key Hydrological Metrics */}
-          {isWater ? (
+          {/* Key Hydrological or Road Metrics */}
+          {station.station_type === 'highway_flood' ? (
+            <div className="grid grid-cols-2 gap-2.5">
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-center">
+                <span className="text-xs text-slate-500 block">ระดับน้ำท่วมผิวจราจร</span>
+                <span className="text-2xl font-black text-slate-900 mt-0.5 block">
+                  {station.water_depth_cm ?? 0} <span className="text-xs font-normal text-slate-600">ซม.</span>
+                </span>
+                <span className="text-[11px] text-slate-500 mt-1 block">
+                  {station.water_depth_cm && station.water_depth_cm > 0 ? (
+                    <b className="text-red-600">มีน้ำท่วมขังบนผิวถนน</b>
+                  ) : (
+                    <b className="text-emerald-700">ผิวจราจรแห้งปกติ</b>
+                  )}
+                </span>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-center">
+                <span className="text-xs text-slate-500 block">สถานะการสัญจร</span>
+                <span className={`text-2xl font-black mt-0.5 block ${
+                  station.passable_for_vehicles ? 'text-emerald-700' : 'text-red-600'
+                }`}>
+                  {station.passable_for_vehicles ? 'สัญจรได้' : 'ห้ามรถเล็ก'}
+                </span>
+                <span className="text-[11px] text-slate-500 mt-1 block truncate">
+                  {station.route_number || 'ถนนสายหลัก'}
+                </span>
+              </div>
+            </div>
+          ) : isWater ? (
             <div className="grid grid-cols-2 gap-2.5">
               <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-center">
                 <span className="text-xs text-slate-500 block">ระดับน้ำปัจจุบัน</span>
@@ -202,7 +230,9 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
                 <span className="text-2xl font-black text-slate-900 mt-0.5 block">
                   {station.rain_today_mm ?? 0} <span className="text-xs font-normal text-slate-600">มม.</span>
                 </span>
-                <span className="text-[11px] text-slate-500 mt-1 block">สถานีต้นน้ำเขาใหญ่-ทับลาน</span>
+                <span className="text-[11px] text-slate-500 mt-1 block">
+                  {station.province === 'bangkok' ? 'สถานีวัดน้ำฝน กทม.' : 'สถานีโทรมาตรวัดน้ำฝน'}
+                </span>
               </div>
             </div>
           )}

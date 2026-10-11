@@ -8,6 +8,7 @@ import { TelemetryStationFeedList } from '@/components/Feed/TelemetryStationFeed
 import { TelemetryDetailDrawer } from '@/components/ReportDrawer/TelemetryDetailDrawer';
 import { EmergencyDrawer } from '@/components/Emergency/EmergencyDrawer';
 import { WeatherForecastModal } from '@/components/Weather/WeatherForecastModal';
+import { BmaRadarModal } from '@/components/Radar/BmaRadarModal';
 import { 
   TelemetryStation, 
   HighwayDisasterAlert, 
@@ -53,6 +54,7 @@ export default function HomePage() {
 
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
+  const [isBmaRadarModalOpen, setIsBmaRadarModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const clearAllSelections = useCallback(() => {
@@ -326,6 +328,7 @@ export default function HomePage() {
         onViewChange={setCurrentView}
         onOpenEmergencyModal={() => setIsEmergencyModalOpen(true)}
         onOpenWeatherModal={() => setIsWeatherModalOpen(true)}
+        onOpenBmaRadarModal={() => setIsBmaRadarModalOpen(true)}
         stations={activeProvince === 'all' ? stations : filteredStations}
         highwayAlerts={activeProvince === 'all' ? highwayAlerts : filteredHighwayAlerts}
         isAutoRefresh={isAutoRefresh}
@@ -552,6 +555,12 @@ export default function HomePage() {
         isOpen={isWeatherModalOpen}
         onClose={() => setIsWeatherModalOpen(false)}
         initialProvince={activeProvince}
+      />
+
+      {/* BMA DDS Live Radar Modal */}
+      <BmaRadarModal
+        isOpen={isBmaRadarModalOpen}
+        onClose={() => setIsBmaRadarModalOpen(false)}
       />
     </div>
   );

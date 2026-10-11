@@ -22,6 +22,7 @@ interface TelemetryNavbarProps {
   onViewChange: (view: 'map' | 'list') => void;
   onOpenEmergencyModal: () => void;
   onOpenWeatherModal?: () => void;
+  onOpenBmaRadarModal?: () => void;
   stations: TelemetryStation[];
   highwayAlerts: HighwayDisasterAlert[];
   isAutoRefresh: boolean;
@@ -33,6 +34,7 @@ export const TelemetryNavbar: React.FC<TelemetryNavbarProps> = ({
   onViewChange,
   onOpenEmergencyModal,
   onOpenWeatherModal,
+  onOpenBmaRadarModal,
   stations,
   highwayAlerts,
   isAutoRefresh,
@@ -139,20 +141,17 @@ export const TelemetryNavbar: React.FC<TelemetryNavbarProps> = ({
             />
           )}
 
-          {/* Bangkok DDS Live Radar Quick Link */}
+          {/* Bangkok DDS Live Radar Quick Viewer */}
           {selectedProvince === 'bangkok' && (
-            <a
-              href="https://weather.bangkok.go.th/radar"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-2 border-indigo-300 hover:border-indigo-400 shadow-xs transition-all active:scale-95"
-              title="เรดาร์ตรวจฝน กทม. สด (สำนักการระบายน้ำ หนองจอก/หนองแขม)"
+            <button
+              onClick={onOpenBmaRadarModal ? onOpenBmaRadarModal : () => window.open('https://weather.bangkok.go.th/radar', '_blank')}
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-2 border-indigo-300 hover:border-indigo-400 shadow-xs transition-all active:scale-95 cursor-pointer"
+              title="เรดาร์ตรวจฝน กทม. สด (สำนักการระบายน้ำ หนองจอก)"
             >
               <Radio className="w-3.5 h-3.5 text-indigo-600 animate-pulse flex-shrink-0" />
               <span className="hidden sm:inline">เรดาร์ กทม. (DDS)</span>
               <span className="sm:hidden font-black">เรดาร์</span>
-              <ExternalLink className="w-3 h-3 text-indigo-400 hidden sm:inline" />
-            </a>
+            </button>
           )}
 
           {/* Area Overview Page - Only for Prachinburi (M-3) */}
