@@ -905,13 +905,17 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
         icon: customIcon,
       });
 
+      const shelterProvObj = THAILAND_PROVINCES.find((p) => p.id === shelter.province);
+      const shelterProvName = shelterProvObj ? `จ.${shelterProvObj.name_th}` : shelter.district || 'พื้นที่';
+
       const popupHtml = `
         <div class="p-1 font-sans min-w-[240px] text-slate-800 select-text">
           <div class="font-bold text-sm text-slate-900 leading-snug">${shelter.name}</div>
           <div class="text-xs text-emerald-700 font-bold mt-1">✓ เปิดรองรับผู้อพยพ (${shelter.current_occupancy}/${shelter.capacity_persons} คน)</div>
           <div class="text-xs text-slate-600 mt-0.5">โทร: <b>${shelter.contact_phone}</b></div>
-          <div class="text-[11px] text-emerald-800 mt-2 font-medium border-t border-slate-100 pt-1.5">
-            ✓ ศูนย์พักพิง ปภ.ปราจีนบุรี
+          <div class="text-[11px] text-emerald-800 mt-2 font-medium border-t border-slate-100 pt-1.5 flex items-center justify-between">
+            <span>✓ ศูนย์พักพิง ปภ. (${shelterProvName})</span>
+            <span class="text-[10px] text-slate-500">${shelter.district || ''}</span>
           </div>
 
           <button 
