@@ -195,6 +195,7 @@ export async function getAggregatedNationwideData(): Promise<NationwideAggregate
       doh: highwayData?.status || 'STATIC',
       navyTide: tideData?.status || 'STATIC',
       shelters: shelterData?.status || 'STATIC',
+      bma: bmaData?.status || 'UNAVAILABLE',
     },
     lastCheckedAt: new Date().toISOString(),
   };

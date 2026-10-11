@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, RefreshCw, Radio, ExternalLink, ShieldCheck, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
+import { X, RefreshCw, Radio, ExternalLink, ShieldCheck, ZoomIn, ZoomOut, Maximize2, AlertTriangle } from 'lucide-react';
 
 interface BmaRadarModalProps {
   isOpen: boolean;
@@ -13,11 +13,14 @@ export const BmaRadarModal: React.FC<BmaRadarModalProps> = ({ isOpen, onClose })
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   if (!isOpen) return null;
 
   const handleRefresh = () => {
     setIsRefreshing(true);
+    setHasError(false);
+    setIsLoaded(false);
     setRefreshKey(Date.now());
     setTimeout(() => setIsRefreshing(false), 1200);
   };
@@ -80,26 +83,56 @@ export const BmaRadarModal: React.FC<BmaRadarModalProps> = ({ isOpen, onClose })
 
         {/* Radar Image Viewer Area */}
         <div className="flex-1 overflow-auto p-2 sm:p-4 bg-slate-950 flex flex-col items-center justify-center relative min-h-[380px] sm:min-h-[500px]">
-          {!isLoaded && (
+          {!isLoaded && !hasError && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-950/90 z-10">
               <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
               <span className="text-xs text-slate-400 font-medium">กำลังโหลดภาพเรดาร์ กทม. สด...</span>
             </div>
           )}
 
-          <div 
-            className="relative transition-transform duration-200 ease-out select-none"
-            style={{ transform: `scale(${zoomLevel})` }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              key={refreshKey}
-              src={`/api/bma/radar?t=${refreshKey}`}
-              alt="เรดาร์ตรวจฝนหนองจอก สำนักการระบายน้ำ กทม."
-              onLoad={() => setIsLoaded(true)}
-              className="max-h-[70vh] w-auto rounded-2xl shadow-2xl border border-slate-800 object-contain mx-auto"
-            />
-          </div>
+          {hasError ? (
+            <div className="flex flex-col items-center justify-center gap-4 text-center px-6">
+              <div className="w-14 h-14 rounded-2xl bg-amber-600/20 border border-amber-500/40 flex items-center justify-center">
+                <AlertTriangle className="w-7 h-7 text-amber-400" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white">ไม่สามารถโหลดภาพเรดาร์ได้ชั่วคราว</p>
+                <p className="text-xs text-slate-400 mt-1">เซิร์ฟเวอร์ต้นทาง BMA/TMD อาจปิดให้บริการชั่วคราว</p>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center gap-2 mt-2">
+                <button
+                  onClick={handleRefresh}
+                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors cursor-pointer"
+                >
+                  ลองโหลดใหม่
+                </button>
+                <a
+                  href="https://weather.bangkok.go.th/radar"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 transition-colors flex items-center gap-1.5"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  ดูบนเว็บ DDS ทางการ
+                </a>
+              </div>
+            </div>
+          ) : (
+            <div 
+              className="relative transition-transform duration-200 ease-out select-none"
+              style={{ transform: `scale(${zoomLevel})` }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                key={refreshKey}
+                src={`/api/bma/radar?t=${refreshKey}`}
+                alt="เรดาร์ตรวจฝนหนองจอก สำนักการระบายน้ำ กทม."
+                onLoad={() => setIsLoaded(true)}
+                onError={() => setHasError(true)}
+                className="max-h-[70vh] w-auto rounded-2xl shadow-2xl border border-slate-800 object-contain mx-auto"
+              />
+            </div>
+          )}
 
           {/* Floating Zoom Controls */}
           <div className="absolute bottom-4 right-4 z-20 flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-md px-2 py-1 rounded-2xl border border-slate-700 shadow-xl">

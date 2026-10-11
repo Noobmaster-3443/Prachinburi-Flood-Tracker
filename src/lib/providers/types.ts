@@ -69,6 +69,7 @@ export interface NationwideCoverageSummary {
     doh: DataStatus;
     navyTide: DataStatus;
     shelters: DataStatus;
+    bma: DataStatus;
   };
   lastCheckedAt: string;
 }
