@@ -12,17 +12,25 @@ const THAIWATER_WATERLEVEL_URL = 'https://api-v3.thaiwater.net/api/v1/thaiwater3
 const THAIWATER_RAIN_URL = 'https://api-v3.thaiwater.net/api/v1/thaiwater30/public/rain_24h';
 
 function determineSeverity(level?: number, diffText?: string, storagePercent?: number): { severity: SeverityLevel; label: string } {
-  if (diffText && diffText.includes('ล้นตลิ่ง')) {
+  // 1. Explicit overflow text or storage >= 100% or Level 5 (ThaiWater: น้ำล้นตลิ่ง >100%)
+  if ((diffText && diffText.includes('ล้นตลิ่ง')) || level === 5 || (storagePercent !== undefined && storagePercent >= 100)) {
     return { severity: 'red', label: 'วิกฤต (ล้นตลิ่ง)' };
   }
-  if (level === 5 || level === 4 || (storagePercent && storagePercent >= 100)) {
-    return { severity: 'red', label: 'วิกฤต (ล้นตลิ่ง)' };
+  // 2. High water / nearing bank: Level 4 (ThaiWater: น้ำมาก >70%) or storage >= 85%
+  if (level === 4 || (storagePercent !== undefined && storagePercent >= 85)) {
+    return { severity: 'orange', label: 'เฝ้าระวังสูง (น้ำมาก)' };
   }
-  if (level === 3 || (storagePercent && storagePercent >= 90)) {
-    return { severity: 'orange', label: 'เตือนภัย (จ่อล้นตลิ่ง)' };
+  // 3. Moderate water / normal seasonal: Level 3 (ThaiWater: น้ำปกติ >30%)
+  if (level === 3) {
+    return { severity: 'green', label: 'ระดับน้ำปกติ' };
   }
-  if (level === 2 || (storagePercent && storagePercent >= 80)) {
-    return { severity: 'yellow', label: 'เฝ้าระวัง' };
+  // 4. Low water: Level 2 (ThaiWater: น้ำน้อย >10%)
+  if (level === 2) {
+    return { severity: 'yellow', label: 'ระดับน้ำน้อย' };
+  }
+  // 5. Critical low: Level 1 (ThaiWater: น้ำน้อยวิกฤติ <=10%)
+  if (level === 1) {
+    return { severity: 'yellow', label: 'น้ำน้อยวิกฤติ' };
   }
   return { severity: 'green', label: 'ระดับน้ำปกติ' };
 }
@@ -108,9 +116,15 @@ export async function fetchThaiWaterWaterLevels(timeoutMs: number = 8000): Promi
           ? Number(item.storage_percent)
           : undefined;
 
-        const diffFromBank = item.diff_wl_bank !== null && item.diff_wl_bank !== undefined
-          ? Number(item.diff_wl_bank)
-          : undefined;
+        // Parse diff_wl_bank with correct sign:
+        // When diff_wl_bank_text contains 'ล้นตลิ่ง', water level is above bank (+).
+        // When it contains 'ต่ำกว่าตลิ่ง', water level is below bank (-).
+        let diffFromBank: number | undefined = undefined;
+        if (item.diff_wl_bank !== null && item.diff_wl_bank !== undefined) {
+          const rawDiff = Math.abs(Number(item.diff_wl_bank));
+          const isOverflow = item.diff_wl_bank_text && item.diff_wl_bank_text.includes('ล้นตลิ่ง');
+          diffFromBank = isOverflow ? rawDiff : -rawDiff;
+        }
 
         const { severity, label } = determineSeverity(
           item.situation_level,
@@ -128,7 +142,8 @@ export async function fetchThaiWaterWaterLevels(timeoutMs: number = 8000): Promi
 
         let statusText = `ระดับน้ำ ${waterLevelMsl !== undefined ? `${waterLevelMsl.toFixed(2)} ม.รทก.` : 'ปกติ'}`;
         if (item.diff_wl_bank_text && diffFromBank !== undefined) {
-          statusText += ` (${item.diff_wl_bank_text} ${Math.abs(diffFromBank).toFixed(2)} ม.)`;
+          const clearanceLabel = diffFromBank > 0 ? 'ล้นตลิ่ง' : 'ต่ำกว่าตลิ่ง';
+          statusText += ` (${clearanceLabel} ${Math.abs(diffFromBank).toFixed(2)} ม.)`;
         }
         if (storagePercent !== undefined) {
           statusText += ` ความจุลำน้ำ ${storagePercent.toFixed(0)}%`;

@@ -175,10 +175,12 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
                   {station.capacity_percentage ?? '-'}%
                 </span>
                 <span className="text-[11px] text-slate-500 mt-1 block">
-                  {station.diff_from_bank && station.diff_from_bank > 0 ? (
-                    <b className="text-red-600">สูงกว่าตลิ่ง {station.diff_from_bank.toFixed(2)} ม.</b>
+                  {station.diff_from_bank !== undefined && station.diff_from_bank > 0 ? (
+                    <b className="text-red-600">สูงกว่าตลิ่ง +{station.diff_from_bank.toFixed(2)} ม.</b>
+                  ) : station.diff_from_bank !== undefined && station.diff_from_bank < 0 ? (
+                    <b className="text-emerald-700">ต่ำกว่าตลิ่ง {Math.abs(station.diff_from_bank).toFixed(2)} ม.</b>
                   ) : (
-                    <b className="text-emerald-700">ต่ำกว่าตลิ่ง {Math.abs(station.diff_from_bank || 0).toFixed(2)} ม.</b>
+                    <b className="text-slate-600">ระดับเสมอริมตลิ่ง</b>
                   )}
                 </span>
               </div>

@@ -23,9 +23,6 @@ import { MetricBanner } from '@/components/Dashboard/MetricBanner';
 import { ProvinceStatusCard } from '@/components/Dashboard/ProvinceStatusCard';
 import { THAILAND_PROVINCES } from '@/data/thailand-provinces';
 import { PRACHINBURI_DISTRICTS } from '@/data/prachinburi-locations';
-import { FloatingActionButton } from '@/components/ReportModal/FloatingActionButton';
-import { ReportFormModal } from '@/components/ReportModal/ReportFormModal';
-import { createReport } from '@/lib/reports-store';
 import { CheckCircle2 } from 'lucide-react';
 
 export default function HomePage() {
@@ -56,18 +53,7 @@ export default function HomePage() {
 
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  const handleCreateReport = async (reportData: any, imageBlob?: Blob) => {
-    try {
-      await createReport(reportData, imageBlob);
-      setToastMessage('ส่งรายงานสถานการณ์น้ำเรียบร้อย ขอบคุณสำหรับข้อมูลชุมชน');
-      setTimeout(() => setToastMessage(null), 3500);
-    } catch (err) {
-      console.error('Failed to submit report:', err);
-    }
-  };
 
   const clearAllSelections = useCallback(() => {
     setSelectedStation(null);
@@ -540,17 +526,6 @@ export default function HomePage() {
           </div>
         </main>
       )}
-
-      {/* Citizen Report Floating Action Button (H-4) */}
-      <FloatingActionButton onClick={() => setIsReportModalOpen(true)} />
-
-      {/* Citizen Report Form Modal (H-4) */}
-      <ReportFormModal
-        isOpen={isReportModalOpen}
-        onClose={() => setIsReportModalOpen(false)}
-        selectedProvince={activeProvince}
-        onSubmit={handleCreateReport}
-      />
 
       {/* Detail Slide Drawer */}
       <TelemetryDetailDrawer

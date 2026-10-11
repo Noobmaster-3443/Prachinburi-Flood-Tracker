@@ -28,11 +28,12 @@ export function calculateProvinceStatus(input: StatusInput): ProvinceStatusRepor
   const provHighways = highways.filter((h) => h.province === province.id);
 
   // 1. Water level metrics
+  // Genuine overflow requires: severity is 'red' OR diff_from_bank is strictly positive (> 0)
   const overflowStations = provStations.filter(
-    (s) => s.severity === 'red' || (s.diff_from_bank && s.diff_from_bank > 0)
+    (s) => s.severity === 'red' || (s.diff_from_bank !== undefined && s.diff_from_bank > 0)
   );
   const warningStations = provStations.filter(
-    (s) => s.severity === 'orange' || (s.capacity_percentage && s.capacity_percentage >= 90)
+    (s) => s.severity === 'orange' || (s.capacity_percentage !== undefined && s.capacity_percentage >= 85)
   );
   const watchStations = provStations.filter((s) => s.severity === 'yellow');
 

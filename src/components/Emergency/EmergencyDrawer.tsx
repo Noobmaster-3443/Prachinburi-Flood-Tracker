@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   X,
   PhoneCall,
@@ -12,7 +12,7 @@ import {
   MapPin,
 } from 'lucide-react';
 import { EmergencyContact } from '@/types';
-import { getEmergencyContacts } from '@/lib/contacts-store';
+import { DEFAULT_OFFICIAL_CONTACTS } from '@/data/emergency-contacts';
 
 interface EmergencyDrawerProps {
   isOpen: boolean;
@@ -23,20 +23,8 @@ export const EmergencyDrawer: React.FC<EmergencyDrawerProps> = ({
   isOpen,
   onClose,
 }) => {
-  const [contacts, setContacts] = useState<EmergencyContact[]>([]);
+  const [contacts] = useState<EmergencyContact[]>(DEFAULT_OFFICIAL_CONTACTS);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-
-  // Load contacts
-  useEffect(() => {
-    if (isOpen) {
-      loadContacts();
-    }
-  }, [isOpen]);
-
-  const loadContacts = async () => {
-    const list = await getEmergencyContacts(false); // Only approved
-    setContacts(list);
-  };
 
   if (!isOpen) return null;
 

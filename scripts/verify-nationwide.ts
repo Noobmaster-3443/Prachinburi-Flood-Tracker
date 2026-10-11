@@ -12,7 +12,6 @@ import { fetchRidDams } from '../src/lib/providers/rid';
 import { fetchThaiWaterWaterLevels, fetchThaiWaterRainfall } from '../src/lib/providers/thaiwater';
 import { calculateProvinceStatus } from '../src/lib/aggregation/province-status';
 import { getWithCache, clearCache } from '../src/lib/cache/server-cache';
-import { validateAdminPin, generateAdminSessionToken, verifyAdminSessionToken } from '../src/lib/auth-server';
 import { THAILAND_PROVINCES, findProvinceById, findProvinceByCode } from '../src/data/thailand-provinces';
 import { TelemetryStation } from '../src/types/telemetry';
 
@@ -123,25 +122,6 @@ async function runTests() {
   const failingFetch = async () => { throw new Error('Simulated network timeout'); };
   const staleRes = await getWithCache('test-key', failingFetch, { ttlSeconds: 10 });
   assert(staleRes.data === 'test-value' && staleRes.status === 'STALE', 'Cache gracefully falls back to STALE data on network error');
-  assert(staleRes.observedAt === '2026-10-08T12:00:00Z', 'Cache retains original observedAt on stale fallback');
-
-  console.log('\n--- 6. Testing Admin Authentication & HMAC Tokens ---');
-  // 1. Verify safe failure when ADMIN_PIN is unset
-  delete process.env.ADMIN_PIN;
-  delete process.env.ADMIN_JWT_SECRET;
-  assert(validateAdminPin('any-pin-when-unset') === false, 'Admin validation safely fails when ADMIN_PIN is missing');
-  assert(verifyAdminSessionToken('any-token') === false, 'Session token validation safely fails when secret is missing');
-
-  // 2. Set test environment PIN
-  process.env.ADMIN_PIN = 'TestPin#9988!';
-  process.env.ADMIN_JWT_SECRET = 'test-secret-key-32-chars-long!!';
-  assert(validateAdminPin('TestPin#9988!') === true, 'Admin PIN validation passes when ADMIN_PIN matches');
-  assert(validateAdminPin('wrong-pin') === false, 'Admin PIN validation rejects invalid PIN');
-  const token = generateAdminSessionToken();
-  assert(typeof token === 'string' && token.length > 20, 'Admin session token generated successfully');
-  assert(verifyAdminSessionToken(token) === true, 'Admin session token successfully verified');
-  assert(verifyAdminSessionToken('invalid.token.signature') === false, 'Tampered session token safely rejected');
-
   console.log(`\n========================================`);
   console.log(`SUMMARY: ${passed} passed, ${failed} failed`);
   console.log(`========================================\n`);

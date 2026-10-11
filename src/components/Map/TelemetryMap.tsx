@@ -559,17 +559,16 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
       const isCritical = station.severity === 'red';
 
       const markerHtml = `
-        <div class="relative flex flex-col items-center cursor-pointer group transition-transform ${isSelected ? 'scale-115 z-50' : 'hover:scale-105'}">
-          ${isCritical ? `<div class="absolute -top-1 w-6 h-6 rounded-full animate-ping opacity-75" style="background-color: ${col.hex};"></div>` : ''}
-          <div class="flex items-center gap-1.5 px-2 py-1 rounded-full bg-slate-900/95 text-white shadow-xl border border-white/25 backdrop-blur-md">
-            <div class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 shadow-xs" style="background-color: ${col.hex};">
+        <div class="relative flex flex-col items-center cursor-pointer group transition-transform ${isSelected ? 'scale-110 z-50' : 'hover:scale-105'}">
+          <div class="flex items-center gap-1.5 px-2 py-1 rounded-full bg-slate-900/95 text-white shadow-md border border-white/20">
+            <div class="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: ${col.hex};">
               ${iconSvg}
             </div>
             <span class="text-[11px] font-bold tracking-tight text-white leading-none whitespace-nowrap">
               ${station.station_code}
             </span>
           </div>
-          <div class="w-2 h-2 -mt-1 bg-slate-900/95 rotate-45 border-r border-b border-white/20"></div>
+          <div class="w-1.5 h-1.5 -mt-0.5 bg-slate-900/95 rotate-45 border-r border-b border-white/20"></div>
         </div>
       `;
 
