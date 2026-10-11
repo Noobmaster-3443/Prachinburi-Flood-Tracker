@@ -31,7 +31,7 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const activeProvince = filter.province || 'prachinburi';
+  const activeProvince = filter.province || 'all';
   const currentProvinceObj = THAILAND_PROVINCES.find((p) => p.id === activeProvince);
 
   const severityOptions: { value: SeverityLevel | 'all'; label: string; dotColor: string }[] = [
@@ -43,7 +43,7 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
   ];
 
   const isFiltered = 
-    (filter.province && filter.province !== 'prachinburi') ||
+    (filter.province && filter.province !== 'all') ||
     filter.district !== 'all' || 
     filter.severity !== 'all' || 
     filter.searchQuery.trim() !== '';

@@ -87,7 +87,7 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
   onSelectFlashFlood,
   onSelectShelter,
   selectedDistrict,
-  selectedProvince = 'prachinburi',
+  selectedProvince = 'all',
   onOpenWeatherModal,
 }) => {
   const [mapType, setMapType] = useState<'street' | 'satellite'>('street');
@@ -127,8 +127,8 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
     const map = L.map(mapContainerRef.current, {
-      center: [PRACHINBURI_CENTER.lat, PRACHINBURI_CENTER.lng],
-      zoom: PRACHINBURI_CENTER.zoom,
+      center: [THAILAND_CENTER.lat, THAILAND_CENTER.lng],
+      zoom: THAILAND_CENTER.zoom,
       zoomControl: false,
       attributionControl: true,
     });

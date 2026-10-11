@@ -15,13 +15,13 @@ interface WeatherQuickWidgetProps {
 
 export const WeatherQuickWidget: React.FC<WeatherQuickWidgetProps> = ({
   onOpenModal,
-  selectedProvince = 'prachinburi',
+  selectedProvince = 'all',
   className = '',
 }) => {
   const [current, setCurrent] = useState<CurrentWeather | null>(null);
 
   const provObj = THAILAND_PROVINCES.find((p) => p.id === selectedProvince);
-  const provName = selectedProvince === 'all' ? 'ทั่วประเทศ' : provObj ? `จ.${provObj.name_th}` : 'ปราจีนบุรี';
+  const provName = selectedProvince === 'all' ? 'ประเทศไทย' : provObj ? `จ.${provObj.name_th}` : 'ประเทศไทย';
 
   useEffect(() => {
     let isMounted = true;

@@ -64,9 +64,9 @@ export default function HomePage() {
     setSelectedHighTide(null);
   }, []);
 
-  // Filter state - Prachinburi is the default initial province as required, but nationwide and all 77 provinces are supported
+  // Filter state - Defaults to nationwide ('all') across Thailand 77 provinces
   const [filter, setFilter] = useState<DashboardFilterState>({
-    province: 'prachinburi',
+    province: 'all',
     district: 'all',
     stationType: 'all',
     severity: 'all',
@@ -308,7 +308,7 @@ export default function HomePage() {
     return provinceStatuses.find((p) => p.provinceId === filter.province);
   }, [provinceStatuses, filter.province]);
 
-  const activeProvince = filter.province || 'prachinburi';
+  const activeProvince = filter.province || 'all';
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-50 font-sans">
