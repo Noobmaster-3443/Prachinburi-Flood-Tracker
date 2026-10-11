@@ -45,54 +45,54 @@ export const TelemetryNavbar: React.FC<TelemetryNavbarProps> = ({
   const currentProvinceObj = THAILAND_PROVINCES.find((p) => p.id === selectedProvince);
   const titleText =
     selectedProvince === 'all'
-      ? 'ข้อมูลน้ำและอุทกภัย (ทั่วประเทศ)'
+      ? 'ข้อมูลน้ำและอุทกภัยทั่วประเทศ'
       : `ข้อมูลน้ำและอุทกภัย จ.${currentProvinceObj?.name_th || 'ปราจีนบุรี'}`;
   const subtitleText =
     selectedProvince === 'all'
-      ? '77 จังหวัดทั่วไทย • สสน. ThaiWater • กรมชลประทาน • กรมทางหลวง'
-      : `${currentProvinceObj?.region_th || 'ลุ่มน้ำปราจีนบุรี'} • สสน. ThaiWater • กรมชลประทาน • TMD`;
+      ? 'ครอบคลุม 77 จังหวัด • สสน. ThaiWater • กรมชลประทาน • กรมทางหลวง'
+      : `${currentProvinceObj?.region_th || 'ลุ่มน้ำ'} • สสน. ThaiWater • กรมชลประทาน • TMD`;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-30 bg-white border-b border-slate-200 shadow-xs transition-all font-sans">
-      <div className="max-w-7xl mx-auto px-2.5 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
+    <header className="fixed top-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-xs transition-all font-sans">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2.5">
         {/* Brand */}
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-cyan-500 flex items-center justify-center text-white shadow-xs shadow-blue-500/20 flex-shrink-0">
-            <Waves className="w-4 h-4 sm:w-6 sm:h-6 animate-pulse" />
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-shrink-0 min-w-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-cyan-500 flex items-center justify-center text-white shadow-sm shadow-blue-500/25 flex-shrink-0">
+            <Waves className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex flex-col justify-center">
             <div className="flex items-center gap-1.5">
-              <h1 className="font-bold text-sm sm:text-base tracking-tight text-slate-900 leading-tight whitespace-nowrap truncate">
+              <h1 className="font-extrabold text-xs sm:text-base tracking-tight text-slate-900 leading-tight whitespace-nowrap">
                 {titleText}
               </h1>
-              <span className="hidden sm:inline-flex bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-300 items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-ping"></span>
+              <span className="hidden xl:inline-flex bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-300 items-center gap-1 select-none">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                 <span>OPEN DATA</span>
               </span>
             </div>
-            <p className="text-[10px] sm:text-[11px] text-slate-500 hidden sm:block truncate">
+            <p className="text-[10px] sm:text-[11px] text-slate-500 hidden md:block whitespace-nowrap">
               {subtitleText}
             </p>
           </div>
         </div>
 
         {/* Live Status Summary Badges (Desktop/Tablet) */}
-        <div className="hidden lg:flex items-center gap-2 text-xs">
+        <div className="hidden lg:flex items-center gap-2 text-xs flex-shrink-0">
           {criticalCount > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-700 border border-red-200 animate-pulse font-semibold">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-700 border border-red-200 font-bold shadow-2xs">
               <span className="w-2 h-2 rounded-full bg-red-500"></span>
               <span>ล้นตลิ่ง {criticalCount} สถานี</span>
             </div>
           )}
           {warningCount > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 text-orange-800 border border-orange-200 font-semibold">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 text-orange-800 border border-orange-200 font-bold shadow-2xs">
               <span className="w-2 h-2 rounded-full bg-orange-500"></span>
               <span>จ่อล้น {warningCount} จุด</span>
             </div>
           )}
           {impassableRoads > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-300 font-semibold">
-              <span>🚧 ทางขาด/ท่วมทาง {impassableRoads} จุด</span>
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-900 border border-amber-300 font-bold shadow-2xs">
+              <span>🚧 ทางท่วม/ขาด {impassableRoads} จุด</span>
             </div>
           )}
         </div>

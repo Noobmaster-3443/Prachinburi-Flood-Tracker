@@ -162,18 +162,18 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
         )}
 
         {/* Search Input */}
-        <div className="relative flex-1 min-w-[120px]">
+        <div className="relative flex-1 min-w-[140px]">
           <Search className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
           <input
             type="text"
             placeholder={
               activeProvince === 'all'
-                ? 'ค้นหาลุ่มน้ำ, เขื่อน, สถานี C.2, C.13 ทั่วประเทศ...'
-                : `ค้นหาสถานี, คลอง, จุดวัดน้ำใน จ.${currentProvinceObj?.name_th || 'นี้'}...`
+                ? 'ค้นหาลุ่มน้ำ, เขื่อน, สถานี C.2...'
+                : `ค้นหาสถานี, คลอง, จุดวัดน้ำ...`
             }
             value={filter.searchQuery}
             onChange={(e) => onFilterChange({ ...filter, searchQuery: e.target.value })}
-            className="w-full pl-8 sm:pl-9 pr-7 sm:pr-8 py-1.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-100/80 focus:bg-white text-xs sm:text-sm text-slate-900 placeholder-slate-400 border border-transparent focus:border-blue-500 focus:outline-none transition-all font-medium"
+            className="w-full pl-8 sm:pl-9 pr-7 sm:pr-8 py-1.5 sm:py-2 rounded-xl bg-slate-100/90 hover:bg-slate-100 focus:bg-white text-xs sm:text-sm text-slate-900 placeholder-slate-400 border border-slate-200/60 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 focus:outline-none transition-all font-medium"
           />
           {filter.searchQuery && (
             <button
@@ -190,9 +190,9 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
           <select
             value={filter.severity}
             onChange={(e) => onFilterChange({ ...filter, severity: e.target.value as any })}
-            className={`px-2.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold border outline-none cursor-pointer transition-colors ${
+            className={`px-2.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold border outline-none cursor-pointer transition-colors ${
               filter.severity !== 'all'
-                ? 'bg-blue-50 text-blue-800 border-blue-300 ring-1 ring-blue-300'
+                ? 'bg-blue-50 text-blue-900 border-blue-300 ring-1 ring-blue-300'
                 : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
             }`}
           >
@@ -207,7 +207,7 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
         {/* Expand / Filter Details Toggle Button */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className={`p-1.5 sm:p-2 rounded-xl border flex items-center gap-1 text-xs font-semibold transition-all ${
+          className={`p-1.5 sm:p-2 rounded-xl border flex items-center gap-1.5 text-xs font-bold transition-all ${
             isExpanded || (filter.severity !== 'all' && !isExpanded)
               ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
               : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
@@ -222,7 +222,7 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
         {/* Auto Refresh Toggle */}
         <button
           onClick={onToggleAutoRefresh}
-          className={`hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold border transition-all ${
+          className={`hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-bold border transition-all ${
             isAutoRefresh
               ? 'bg-emerald-50 text-emerald-800 border-emerald-300 ring-1 ring-emerald-200'
               : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200'

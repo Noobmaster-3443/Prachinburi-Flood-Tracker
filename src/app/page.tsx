@@ -336,8 +336,8 @@ export default function HomePage() {
       {currentView === 'map' ? (
         <>
           {/* Floating Filter Bar (Map View Only) */}
-          <div className="fixed top-[58px] sm:top-[72px] left-0 right-0 z-20 px-2 sm:px-4 pointer-events-none">
-            <div className="pointer-events-auto max-w-xl sm:max-w-2xl mx-auto space-y-1.5">
+          <div className="fixed top-[62px] sm:top-[76px] left-0 right-0 z-20 px-2 sm:px-4 pointer-events-none">
+            <div className="pointer-events-auto max-w-2xl sm:max-w-4xl mx-auto space-y-1.5">
               <TelemetryFilterBar
                 filter={filter}
                 onFilterChange={setFilter}
