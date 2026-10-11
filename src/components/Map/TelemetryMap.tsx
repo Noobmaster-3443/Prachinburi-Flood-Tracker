@@ -126,9 +126,19 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
+    const initialCenter: [number, number] = selectedProvince === 'bangkok'
+      ? [13.7563, 100.5018]
+      : selectedProvince === 'all'
+      ? [THAILAND_CENTER.lat, THAILAND_CENTER.lng]
+      : (() => {
+          const prov = THAILAND_PROVINCES.find((p) => p.id === selectedProvince);
+          return prov ? [prov.lat, prov.lng] : [13.7563, 100.5018];
+        })();
+    const initialZoom = selectedProvince === 'bangkok' ? 11 : selectedProvince === 'all' ? THAILAND_CENTER.zoom : 11;
+
     const map = L.map(mapContainerRef.current, {
-      center: [THAILAND_CENTER.lat, THAILAND_CENTER.lng],
-      zoom: THAILAND_CENTER.zoom,
+      center: initialCenter,
+      zoom: initialZoom,
       zoomControl: false,
       attributionControl: true,
     });
@@ -983,29 +993,29 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
   // Reset View to current province or nationwide center
   const handleResetCenter = () => {
     if (!mapInstanceRef.current) return;
-    if (selectedProvince === 'all') {
+    if (selectedProvince === 'bangkok') {
+      mapInstanceRef.current.flyTo([13.7563, 100.5018], 11, { duration: 1 });
+    } else if (selectedProvince === 'all') {
       mapInstanceRef.current.flyTo([THAILAND_CENTER.lat, THAILAND_CENTER.lng], THAILAND_CENTER.zoom, {
         duration: 1,
       });
-    } else if (selectedProvince && selectedProvince !== 'prachinburi') {
+    } else {
       const prov = THAILAND_PROVINCES.find((p) => p.id === selectedProvince);
       if (prov) {
         mapInstanceRef.current.flyTo([prov.lat, prov.lng], prov.zoom, { duration: 1 });
       } else {
-        mapInstanceRef.current.flyTo([PRACHINBURI_CENTER.lat, PRACHINBURI_CENTER.lng], PRACHINBURI_CENTER.zoom, { duration: 1 });
+        mapInstanceRef.current.flyTo([13.7563, 100.5018], 11, { duration: 1 });
       }
-    } else {
-      mapInstanceRef.current.flyTo([PRACHINBURI_CENTER.lat, PRACHINBURI_CENTER.lng], PRACHINBURI_CENTER.zoom, {
-        duration: 1,
-      });
     }
   };
 
   const currentProvObj = THAILAND_PROVINCES.find((p) => p.id === selectedProvince);
   const resetCenterTitle =
-    selectedProvince === 'all'
+    selectedProvince === 'bangkok'
+      ? 'จัดมุมมองศูนย์กลางกรุงเทพมหานคร (เมืองหลวง)'
+      : selectedProvince === 'all'
       ? 'จัดมุมมองศูนย์กลางประเทศไทย'
-      : `จัดมุมมองศูนย์กลาง จ.${currentProvObj?.name_th || 'ปราจีนบุรี'}`;
+      : `จัดมุมมองศูนย์กลาง จ.${currentProvObj?.name_th || 'กรุงเทพมหานคร'}`;
 
   return (
     <div className="w-full h-full relative font-sans">
@@ -1219,6 +1229,36 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
                 </span>
                 {showBoundaries ? <Eye className="w-3.5 h-3.5 text-blue-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
               </button>
+            )}
+
+            {/* Quick Links for Bangkok (DDS Radar & Flood) */}
+            {selectedProvince === 'bangkok' && (
+              <div className="space-y-1.5 pt-1.5 border-t border-slate-100">
+                <a
+                  href="https://weather.bangkok.go.th/radar"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 font-bold text-[11px] transition-all cursor-pointer"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <CloudLightning className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>เรดาร์ตรวจฝน กทม. (DDS)</span>
+                  </span>
+                  <span className="text-indigo-600 font-bold">↗</span>
+                </a>
+                <a
+                  href="https://floodbangkok.bangkok.go.th"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-cyan-50 hover:bg-cyan-100 text-cyan-900 border border-cyan-200 font-bold text-[11px] transition-all cursor-pointer"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Waves className="w-3.5 h-3.5 text-cyan-600" />
+                    <span>ระบบน้ำท่วมถนน กทม. (BMA)</span>
+                  </span>
+                  <span className="text-cyan-600 font-bold">↗</span>
+                </a>
+              </div>
             )}
           </div>
         )}

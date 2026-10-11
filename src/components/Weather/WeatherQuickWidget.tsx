@@ -21,7 +21,7 @@ export const WeatherQuickWidget: React.FC<WeatherQuickWidgetProps> = ({
   const [current, setCurrent] = useState<CurrentWeather | null>(null);
 
   const provObj = THAILAND_PROVINCES.find((p) => p.id === selectedProvince);
-  const provName = selectedProvince === 'all' ? 'ประเทศไทย' : provObj ? `จ.${provObj.name_th}` : 'ประเทศไทย';
+  const provName = selectedProvince === 'bangkok' ? 'กทม.' : selectedProvince === 'all' ? 'ประเทศไทย' : provObj ? `จ.${provObj.name_th}` : 'กทม.';
 
   useEffect(() => {
     let isMounted = true;

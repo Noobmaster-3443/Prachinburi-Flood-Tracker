@@ -64,9 +64,9 @@ export default function HomePage() {
     setSelectedHighTide(null);
   }, []);
 
-  // Filter state - Defaults to nationwide ('all') across Thailand 77 provinces
+  // Filter state - Defaults to Bangkok ('bangkok') as the primary capital focus
   const [filter, setFilter] = useState<DashboardFilterState>({
-    province: 'all',
+    province: 'bangkok',
     district: 'all',
     stationType: 'all',
     severity: 'all',
@@ -308,7 +308,7 @@ export default function HomePage() {
     return provinceStatuses.find((p) => p.provinceId === filter.province);
   }, [provinceStatuses, filter.province]);
 
-  const activeProvince = filter.province || 'all';
+  const activeProvince = filter.province || 'bangkok';
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-50 font-sans">
@@ -353,7 +353,7 @@ export default function HomePage() {
               {/* Compact Floating Alert Badges (High Tide & Critical Flash Floods) */}
               {(highTide || flashFloodAlerts.some((f) => f.severity === 'red')) && (
                 <div className="flex items-center justify-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-                  {highTide && (activeProvince === 'all' || activeProvince === 'prachinburi' || activeProvince === 'bangkok') && (
+                  {highTide && (
                     <button
                       type="button"
                       onClick={() => {
@@ -363,7 +363,9 @@ export default function HomePage() {
                       className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-600/95 hover:bg-blue-700 text-white shadow-md backdrop-blur-md transition-all active:scale-95 cursor-pointer whitespace-nowrap"
                     >
                       <span>🌊</span>
-                      <span>น้ำทะเลหนุนสูง (+{highTide.morning_peak_m_msl}ม.)</span>
+                      <span>
+                        {activeProvince === 'bangkok' ? 'หนุนเจ้าพระยา กทม.' : 'น้ำทะเลหนุน'} (+{highTide.morning_peak_m_msl}ม.)
+                      </span>
                       <span className="text-blue-200 text-xs ml-0.5 font-bold">›</span>
                     </button>
                   )}

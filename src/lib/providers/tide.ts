@@ -1,12 +1,6 @@
-/**
- * Hydrographic Department / Royal Thai Navy (กรมอุทกศาสตร์ กองทัพเรือ) Provider
- * Tide and estuarine water level tables.
- * Preserves publication/observation date, marked STATIC for coastal provinces, UNAVAILABLE for inland provinces.
- */
-
 import { HighTideAlert } from '@/types/telemetry';
 import { DataResult, DataStatus } from './types';
-import { OFFICIAL_HIGH_TIDE } from '@/data/open-data-telemetry';
+import { OFFICIAL_HIGH_TIDE, BANGKOK_HIGH_TIDE } from '@/data/open-data-telemetry';
 
 const COASTAL_PROVINCES = new Set([
   'all', 'bangkok', 'samutprakan', 'samutsakhon', 'samutsongkhram',
@@ -16,7 +10,7 @@ const COASTAL_PROVINCES = new Set([
   'narathiwat', 'ranong', 'phangnga', 'phuket', 'krabi', 'trang', 'satun'
 ]);
 
-export async function fetchNavyTide(provinceId: string = 'all'): Promise<DataResult<HighTideAlert>> {
+export async function fetchNavyTide(provinceId: string = 'bangkok'): Promise<DataResult<HighTideAlert>> {
   const fetchedAt = new Date().toISOString();
 
   // If inland province, water tide does not apply
@@ -32,18 +26,21 @@ export async function fetchNavyTide(provinceId: string = 'all'): Promise<DataRes
     };
   }
 
-  // Coastal / Estuarine tide data from Navy Hydrographic Department publication
+  // Bangkok and Chao Phraya downstream provinces use Bangkok Navy Hydrographic station (Pak Khlong Talat)
+  const isChaoPhraya = provinceId === 'bangkok' || provinceId === 'all' || provinceId === 'nonthaburi' || provinceId === 'samutprakan' || provinceId === 'pathumthani';
   const tideData: HighTideAlert = {
-    ...OFFICIAL_HIGH_TIDE,
+    ...(isChaoPhraya ? BANGKOK_HIGH_TIDE : OFFICIAL_HIGH_TIDE),
     data_status: 'STATIC' as DataStatus,
   };
 
   return {
     data: tideData,
-    source: 'กรมอุทกศาสตร์ กองทัพเรือ (ตารางน้ำขึ้น-น้ำลง ประจำสถานีปากแม่น้ำ)',
+    source: isChaoPhraya
+      ? 'กรมอุทกศาสตร์ กองทัพเรือ (ตารางน้ำทำนายแม่น้ำเจ้าพระยา ปากคลองตลาด-กองทัพเรือ)'
+      : 'กรมอุทกศาสตร์ กองทัพเรือ (ตารางน้ำขึ้น-น้ำลง ประจำสถานีปากแม่น้ำ)',
     sourceAgency: 'Royal Thai Navy',
     status: 'STATIC',
     fetchedAt,
-    observedAt: '2026-10-08T06:00:00Z', // Actual publication observation date
+    observedAt: '2024-10-08T06:00:00Z',
   };
 }

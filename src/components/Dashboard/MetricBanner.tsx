@@ -57,8 +57,11 @@ export const MetricBanner: React.FC<MetricBannerProps> = ({
   const criticalFlash = flashFloodAlerts.find((f) => f.severity === 'red');
   
   // Dynamically select dam based on province or highest % nationwide
+  // If Bangkok is selected, show Chao Phraya Barrage Dam (which regulates upstream flow entering Bangkok)
   const activeDam = 
-    selectedProvince && selectedProvince !== 'all'
+    selectedProvince === 'bangkok'
+      ? dams.find((d) => d.id === 'dam-chaophraya') || dams.find((d) => d.province === 'chainat') || dams[0]
+      : selectedProvince && selectedProvince !== 'all'
       ? dams.find((d) => d.province === selectedProvince)
       : [...dams].sort((a, b) => b.capacity_percentage - a.capacity_percentage)[0];
 
@@ -83,7 +86,7 @@ export const MetricBanner: React.FC<MetricBannerProps> = ({
             <span className="text-[11px] sm:text-xs font-bold flex items-center gap-1.5 truncate">
               <Waves className="w-3.5 h-3.5 text-cyan-300 flex-shrink-0" />
               <span className="truncate">
-                น้ำทะเลหนุนสูง: +{highTide.morning_peak_m_msl} ม.รทก. ({highTide.morning_peak_time}) เฝ้าระวังน้ำดันย้อนตลิ่งพื้นที่ลุ่มต่ำริมแม่น้ำ
+                {selectedProvince === 'bangkok' ? 'น้ำหนุนเจ้าพระยา (ปากคลองตลาด กทม.)' : 'น้ำทะเลหนุนสูง'}: +{highTide.morning_peak_m_msl} ม.รทก. ({highTide.morning_peak_time}) {selectedProvince === 'bangkok' ? 'เฝ้าระวังชุมชนนอกคันกั้นน้ำแม่น้ำเจ้าพระยา' : 'เฝ้าระวังน้ำดันย้อนตลิ่งริมน้ำ'}
               </span>
             </span>
           </div>

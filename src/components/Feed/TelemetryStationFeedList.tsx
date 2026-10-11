@@ -90,7 +90,7 @@ export const TelemetryStationFeedList: React.FC<TelemetryStationFeedListProps> =
   onSelectHighTide,
 }) => {
   const provObj = THAILAND_PROVINCES.find((p) => p.id === selectedProvince);
-  const activeProvName = selectedProvince === 'all' ? 'ทั่วประเทศ' : provObj ? `จ.${provObj.name_th}` : 'ปราจีนบุรี';
+  const activeProvName = selectedProvince === 'bangkok' ? 'กรุงเทพมหานคร (เมืองหลวง)' : selectedProvince === 'all' ? 'ทั่วประเทศ' : provObj ? `จ.${provObj.name_th}` : 'กรุงเทพมหานคร';
 
   const formatTimeThai = (isoDate: string) => {
     try {

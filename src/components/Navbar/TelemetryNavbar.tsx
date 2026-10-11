@@ -44,11 +44,15 @@ export const TelemetryNavbar: React.FC<TelemetryNavbarProps> = ({
 
   const currentProvinceObj = THAILAND_PROVINCES.find((p) => p.id === selectedProvince);
   const titleText =
-    selectedProvince === 'all'
+    selectedProvince === 'bangkok'
+      ? 'ข้อมูลน้ำและอุทกภัย กรุงเทพมหานคร (เมืองหลวง)'
+      : selectedProvince === 'all'
       ? 'ข้อมูลน้ำและอุทกภัยทั่วประเทศ'
-      : `ข้อมูลน้ำและอุทกภัย จ.${currentProvinceObj?.name_th || 'ปราจีนบุรี'}`;
+      : `ข้อมูลน้ำและอุทกภัย จ.${currentProvinceObj?.name_th || 'กรุงเทพมหานคร'}`;
   const subtitleText =
-    selectedProvince === 'all'
+    selectedProvince === 'bangkok'
+      ? 'ศูนย์ควบคุมระบบระบายน้ำ กทม. (DDS) • สสน. ThaiWater • กรมอุทกศาสตร์ กองทัพเรือ'
+      : selectedProvince === 'all'
       ? 'ครอบคลุม 77 จังหวัด • สสน. ThaiWater • กรมชลประทาน • กรมทางหลวง'
       : `${currentProvinceObj?.region_th || 'ลุ่มน้ำ'} • สสน. ThaiWater • กรมชลประทาน • TMD`;
 
@@ -133,6 +137,22 @@ export const TelemetryNavbar: React.FC<TelemetryNavbarProps> = ({
               onOpenModal={onOpenWeatherModal} 
               selectedProvince={selectedProvince}
             />
+          )}
+
+          {/* Bangkok DDS Live Radar Quick Link */}
+          {selectedProvince === 'bangkok' && (
+            <a
+              href="https://weather.bangkok.go.th/radar"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-2 border-indigo-300 hover:border-indigo-400 shadow-xs transition-all active:scale-95"
+              title="เรดาร์ตรวจฝน กทม. สด (สำนักการระบายน้ำ หนองจอก/หนองแขม)"
+            >
+              <Radio className="w-3.5 h-3.5 text-indigo-600 animate-pulse flex-shrink-0" />
+              <span className="hidden sm:inline">เรดาร์ กทม. (DDS)</span>
+              <span className="sm:hidden font-black">เรดาร์</span>
+              <ExternalLink className="w-3 h-3 text-indigo-400 hidden sm:inline" />
+            </a>
           )}
 
           {/* Area Overview Page - Only for Prachinburi (M-3) */}

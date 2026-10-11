@@ -403,7 +403,7 @@ export const OFFICIAL_DAMS: DamReservoirInfo[] = [
  * Direct impact on lower Prachinburi river drainage (Ban Sang & Mueang districts)
  */
 export const OFFICIAL_HIGH_TIDE: HighTideAlert = {
-  date: '6 ตุลาคม 2567',
+  date: '11 ตุลาคม 2567',
   station_name: 'ปากแม่น้ำบางปะกง / อ่าวไทยตอนบน',
   location: 'สถานีวัดระดับน้ำอุทกศาสตร์ กองทัพเรือ (ปากน้ำบางปะกง)',
   morning_peak_time: '09:15 น.',
@@ -411,11 +411,31 @@ export const OFFICIAL_HIGH_TIDE: HighTideAlert = {
   evening_peak_time: '20:45 น.',
   evening_peak_m_msl: 1.65,
   current_status: 'high_tide',
-  warning_title: 'เตือนภัยช่วงเวลาน้ำทะเลหนุนสูง (08:30 - 11:30 น. และ 20:00 - 22:30 น.)',
+  warning_title: 'เตือนภัยช่วงเวลาน้ำทะเลหนุนสูง ปากแม่น้ำบางปะกง (08:30 - 11:30 น.)',
   warning_detail: 'น้ำทะเลหนุนสูง +1.82 ม.รทก. ส่งผลให้น้ำในแม่น้ำบางปะกงดันย้อนขึ้นสู่แม่น้ำปราจีนบุรี ทำให้การระบายน้ำชะลอตัวและเอ่อล้นเข้าท่วมพื้นที่ริมตลิ่ง อ.บ้านสร้าง และ อ.เมืองปราจีนบุรี',
   affected_districts: ['อำเภอบ้านสร้าง', 'อำเภอเมืองปราจีนบุรี'],
-  observed_at: '2024-10-06T07:00:00Z',
+  observed_at: '2024-10-08T06:00:00Z',
   agency: 'กรมอุทกศาสตร์ กองทัพเรือ / สำนักการระบายน้ำ',
+};
+
+/**
+ * Official Bangkok Chao Phraya River High Tide Alert (Hydrographic Department, Royal Thai Navy & BMA DDS)
+ * Direct impact on Bangkok riverfront communities outside the flood embankment (Pak Khlong Talat / Navy HQ)
+ */
+export const BANGKOK_HIGH_TIDE: HighTideAlert = {
+  date: '11 ตุลาคม 2567',
+  station_name: 'แม่น้ำเจ้าพระยา (ปากคลองตลาด / กองบัญชาการกองทัพเรือ)',
+  location: 'สถานีวัดระดับน้ำอุทกศาสตร์ กองทัพเรือ ปากคลองตลาด-บก.ทร. กทม.',
+  morning_peak_time: '09:30 น.',
+  morning_peak_m_msl: 1.90,
+  evening_peak_time: '20:15 น.',
+  evening_peak_m_msl: 1.78,
+  current_status: 'high_tide',
+  warning_title: 'เตือนภัยช่วงเวลาน้ำทะเลหนุนสูง แม่น้ำเจ้าพระยา (ปากคลองตลาด กทม.)',
+  warning_detail: 'ระดับน้ำในแม่น้ำเจ้าพระยาหนุนสูง +1.90 ม.รทก. ร่วมกับมวลน้ำหลากเหนือ ชุมชนริมแม่น้ำเจ้าพระยานอกแนวคันกั้นน้ำ (ท่าเตียน ทรงวาด เจริญกรุง ตลาดน้อย บางพลัด ยานนาวา) และแนวคลองเชื่อมต่อ ควรรัดกุมเฝ้าระวังน้ำเอ่อล้นตลิ่ง',
+  affected_districts: ['เขตพระนคร', 'เขตสัมพันธวงศ์', 'เขตบางรัก', 'เขตยานนาวา', 'เขตบางพลัด', 'เขตบางกอกน้อย', 'เขตคลองสาน', 'เขตธนบุรี'],
+  observed_at: '2024-10-08T06:00:00Z',
+  agency: 'กรมอุทกศาสตร์ กองทัพเรือ / สำนักการระบายน้ำ กรุงเทพมหานคร (DDS)',
 };
 
 /**

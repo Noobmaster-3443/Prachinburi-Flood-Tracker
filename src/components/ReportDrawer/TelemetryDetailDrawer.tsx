@@ -751,7 +751,7 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
           <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
             <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
               <AlertTriangle className="w-4 h-4 text-amber-600" />
-              <span>ผลกระทบต่อพื้นที่ลุ่มน้ำปราจีนบุรี</span>
+              <span>ผลกระทบต่อระดับน้ำและการระบายน้ำในพื้นที่</span>
             </span>
             <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
               {highTide.warning_detail}

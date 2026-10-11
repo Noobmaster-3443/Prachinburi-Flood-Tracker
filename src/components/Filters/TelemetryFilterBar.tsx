@@ -66,11 +66,16 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
             value={activeProvince}
             onChange={(e) => handleProvinceChange(e.target.value)}
             className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold border outline-none cursor-pointer transition-all ${
-              activeProvince === 'all'
-                ? 'bg-gradient-to-r from-blue-700 to-indigo-700 text-white border-blue-700 shadow-xs'
+              activeProvince === 'bangkok'
+                ? 'bg-gradient-to-r from-blue-700 via-indigo-700 to-cyan-700 text-white border-blue-700 shadow-xs'
+                : activeProvince === 'all'
+                ? 'bg-gradient-to-r from-slate-800 to-slate-900 text-white border-slate-700 shadow-xs'
                 : 'bg-blue-50 hover:bg-blue-100/80 text-blue-900 border-blue-200'
             }`}
           >
+            <option value="bangkok" className="bg-blue-600 text-white font-bold">
+              🏙️ กรุงเทพมหานคร (เมืองหลวง)
+            </option>
             <option value="all" className="bg-slate-900 text-white font-bold">
               🇹🇭 ทั่วประเทศ (77 จังหวัด)
             </option>

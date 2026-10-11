@@ -31,8 +31,8 @@ interface WeatherForecastModalProps {
 export const WeatherForecastModal: React.FC<WeatherForecastModalProps> = ({
   isOpen,
   onClose,
-  initialDistrict = 'ปราจีนบุรี (ภาพรวมทั้งจังหวัด)',
-  initialProvince = 'prachinburi',
+  initialDistrict = 'กรุงเทพมหานคร (เมืองหลวง)',
+  initialProvince = 'bangkok',
 }) => {
   const getInitialTarget = () => {
     if (initialProvince && initialProvince !== 'prachinburi') {
