@@ -39,7 +39,7 @@ export default function HomePage() {
 
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<string>('');
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [isAutoRefresh, setIsAutoRefresh] = useState<boolean>(true);
 
   const [currentView, setCurrentView] = useState<'map' | 'list'>('map');
@@ -350,6 +350,7 @@ export default function HomePage() {
                 onManualRefresh={() => fetchData(true)}
                 isRefreshing={isRefreshing}
                 lastUpdated={lastUpdated}
+                thaiWaterStatus={coverage?.providers?.thaiwater}
                 availableDistricts={availableDistricts}
               />
 
@@ -486,6 +487,7 @@ export default function HomePage() {
               onManualRefresh={() => fetchData(true)}
               isRefreshing={isRefreshing}
               lastUpdated={lastUpdated}
+              thaiWaterStatus={coverage?.providers?.thaiwater}
               availableDistricts={availableDistricts}
             />
 

@@ -29,7 +29,7 @@ export interface NationwideAggregatedData {
   tmdWarnings: TmdWarningAlert[];
   provinceStatuses: ProvinceStatusReport[];
   coverage: NationwideCoverageSummary;
-  lastUpdated: string;
+  lastUpdated: string | null;
 }
 
 export async function getAggregatedNationwideData(): Promise<NationwideAggregatedData> {
@@ -211,6 +211,6 @@ export async function getAggregatedNationwideData(): Promise<NationwideAggregate
     tmdWarnings,
     provinceStatuses,
     coverage,
-    lastUpdated: wlData?.observedAt || damsData?.observedAt || '2024-10-06T07:00:00Z',
+    lastUpdated: wlData?.observedAt || damsData?.observedAt || null,
   };
 }
