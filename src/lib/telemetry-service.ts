@@ -29,7 +29,7 @@ export interface TelemetryDashboardData {
   shelters: EvacuationShelter[];
   provinceStatuses?: ProvinceStatusReport[];
   coverage?: NationwideCoverageSummary;
-  lastUpdated: string;
+  lastUpdated: string | null;
   sourceAttribution: string;
 }
 
@@ -57,7 +57,7 @@ export async function getAutomatedTelemetryData(): Promise<TelemetryDashboardDat
           shelters: json.shelters || [],
           provinceStatuses: json.provinceStatuses || [],
           coverage: json.coverage,
-          lastUpdated: json.lastUpdated || '',
+          lastUpdated: json.lastUpdated ?? null,
           sourceAttribution: 'สถาบันสารสนเทศทรัพยากรน้ำ (สสน.) • กรมชลประทาน (RID) • กรมอุทกศาสตร์ กองทัพเรือ • กรมทางหลวง • GISTDA • ปภ.',
         };
       }
