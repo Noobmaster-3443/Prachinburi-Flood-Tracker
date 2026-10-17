@@ -15,7 +15,8 @@ import {
   HighwayDisasterAlert, 
   HighTideAlert, 
   FlashFloodAlert, 
-  DamReservoirInfo 
+  DamReservoirInfo,
+  SHOW_STATIC_FLASH_FLOOD_ALERTS
 } from '@/types/telemetry';
 
 interface MetricBannerProps {
@@ -54,7 +55,7 @@ export const MetricBanner: React.FC<MetricBannerProps> = ({
     (a, b) => (b.rain_24h_mm || 0) - (a.rain_24h_mm || 0)
   )[0];
 
-  const criticalFlash = flashFloodAlerts.find((f) => f.severity === 'red');
+  const criticalFlash = SHOW_STATIC_FLASH_FLOOD_ALERTS ? flashFloodAlerts.find((f) => f.severity === 'red') : undefined;
   
   // Dynamically select dam based on province or highest % nationwide
   // If Bangkok is selected, show Chao Phraya Barrage Dam (which regulates upstream flow entering Bangkok)

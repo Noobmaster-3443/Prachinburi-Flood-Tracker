@@ -32,6 +32,7 @@ import {
   HighTideAlert,
   FlashFloodAlert,
   EvacuationShelter,
+  SHOW_STATIC_FLASH_FLOOD_ALERTS,
 } from '@/types/telemetry';
 
 interface TelemetryDetailDrawerProps {
@@ -89,7 +90,8 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
   onClose,
   onOpenEmergency,
 }) => {
-  if (!station && !highwayAlert && !dam && !flashFlood && !shelter && !highTide) return null;
+  const activeFlashFlood = SHOW_STATIC_FLASH_FLOOD_ALERTS ? flashFlood : null;
+  if (!station && !highwayAlert && !dam && !activeFlashFlood && !shelter && !highTide) return null;
 
   // 1. Render Telemetry Station details
   if (station) {
@@ -528,8 +530,8 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
   }
 
   // 4. Render Flash Flood & Mountain Runoff details
-  if (flashFlood) {
-    const isCriticalFlash = flashFlood.severity === 'red';
+  if (activeFlashFlood) {
+    const isCriticalFlash = activeFlashFlood.severity === 'red';
 
     return (
       <div className="fixed inset-y-0 right-0 z-[1000] w-full sm:w-[460px] bg-white shadow-2xl flex flex-col font-sans animate-in slide-in-from-right duration-300 border-l border-slate-200">
@@ -543,15 +545,15 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
               <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold text-white ${
                 isCriticalFlash ? 'bg-red-600' : 'bg-amber-500'
               }`}>
-                {flashFlood.severity_label}
+                {activeFlashFlood.severity_label}
               </span>
             </div>
             <h3 className="font-bold text-base sm:text-lg text-slate-900 leading-snug">
-              {flashFlood.location_name}
+              {activeFlashFlood.location_name}
             </h3>
             <p className="text-xs text-slate-500 flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5 text-slate-400" />
-              <span>ต.{flashFlood.subdistrict} อ.{flashFlood.district} • {flashFlood.mountain_range}</span>
+              <span>ต.{activeFlashFlood.subdistrict} อ.{activeFlashFlood.district} • {activeFlashFlood.mountain_range}</span>
             </p>
           </div>
 
@@ -567,10 +569,10 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
           <div className="p-4 bg-rose-50/80 rounded-2xl border border-rose-200 text-center">
             <span className="text-xs text-rose-800 block font-semibold">ปริมาณฝนสะสมบนยอดเขา (24 ชม.)</span>
             <span className="text-3xl font-black text-rose-950 mt-1 block">
-              {flashFlood.rain_mountain_24h_mm} <span className="text-sm font-normal text-slate-600">มม.</span>
+              {activeFlashFlood.rain_mountain_24h_mm} <span className="text-sm font-normal text-slate-600">มม.</span>
             </span>
             <span className="text-xs font-bold text-rose-700 mt-1 inline-block bg-white px-2.5 py-0.5 rounded-full border border-rose-200">
-              ⏱️ คาดการณ์มวลน้ำหลากลงสู่ชุมชนล่างใน {flashFlood.time_to_flood_hours}
+              ⏱️ คาดการณ์มวลน้ำหลากลงสู่ชุมชนล่างใน {activeFlashFlood.time_to_flood_hours}
             </span>
           </div>
 
@@ -580,11 +582,11 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
               <span>คำแนะนำการเฝ้าระวัง & อพยพฉุกเฉิน</span>
             </span>
             <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-              {flashFlood.advisory}
+              {activeFlashFlood.advisory}
             </p>
             <div className="pt-2 text-[11px] text-slate-400 flex items-center gap-1">
               <Clock className="w-3 h-3" />
-              <span>รายงานโดย: {flashFlood.agency}</span>
+              <span>รายงานโดย: {activeFlashFlood.agency}</span>
             </div>
           </div>
         </div>
@@ -598,7 +600,7 @@ export const TelemetryDetailDrawer: React.FC<TelemetryDetailDrawerProps> = ({
             <span>ขอความช่วยเหลือฉุกเฉิน</span>
           </button>
           <a
-            href={`https://www.google.com/maps/dir/?api=1&destination=${flashFlood.latitude},${flashFlood.longitude}`}
+            href={`https://www.google.com/maps/dir/?api=1&destination=${activeFlashFlood.latitude},${activeFlashFlood.longitude}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm transition-colors text-center"

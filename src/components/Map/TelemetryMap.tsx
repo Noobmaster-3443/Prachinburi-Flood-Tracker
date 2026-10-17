@@ -9,6 +9,7 @@ import {
   DamReservoirInfo,
   FlashFloodAlert,
   EvacuationShelter,
+  SHOW_STATIC_FLASH_FLOOD_ALERTS,
 } from '@/types/telemetry';
 import { PRACHINBURI_CENTER, PRACHINBURI_DISTRICTS } from '@/data/prachinburi-locations';
 import { THAILAND_PROVINCES, THAILAND_CENTER } from '@/data/thailand-provinces';
@@ -825,7 +826,7 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
 
     flashFloodsLayerRef.current.clearLayers();
 
-    if (!showFlashFloods) return;
+    if (!showFlashFloods || !SHOW_STATIC_FLASH_FLOOD_ALERTS) return;
 
     flashFloodAlerts.forEach((alert) => {
       const isSelected = selectedFlashFlood?.id === alert.id;
@@ -1142,20 +1143,22 @@ export const TelemetryMap: React.FC<TelemetryMapProps> = ({
             </button>
 
             {/* Toggle Flash Floods */}
-            <button
-              onClick={() => setShowFlashFloods(!showFlashFloods)}
-              className={`w-full flex items-center justify-between px-2 py-1.5 rounded-xl transition-all ${
-                showFlashFloods
-                  ? 'bg-rose-50 text-rose-900 font-semibold border border-rose-200'
-                  : 'hover:bg-slate-100 text-slate-600'
-              }`}
-            >
-              <span className="flex items-center gap-1.5">
-                <Mountain className="w-3.5 h-3.5 text-rose-600" />
-                <span>เตือนน้ำป่าไหลหลาก ({flashFloodAlerts.length})</span>
-              </span>
-              {showFlashFloods ? <Eye className="w-3.5 h-3.5 text-rose-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
-            </button>
+            {SHOW_STATIC_FLASH_FLOOD_ALERTS && (
+              <button
+                onClick={() => setShowFlashFloods(!showFlashFloods)}
+                className={`w-full flex items-center justify-between px-2 py-1.5 rounded-xl transition-all ${
+                  showFlashFloods
+                    ? 'bg-rose-50 text-rose-900 font-semibold border border-rose-200'
+                    : 'hover:bg-slate-100 text-slate-600'
+                }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  <Mountain className="w-3.5 h-3.5 text-rose-600" />
+                  <span>เตือนน้ำป่าไหลหลาก ({flashFloodAlerts.length})</span>
+                </span>
+                {showFlashFloods ? <Eye className="w-3.5 h-3.5 text-rose-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
+              </button>
+            )}
 
             {/* Toggle Shelters */}
             <button
