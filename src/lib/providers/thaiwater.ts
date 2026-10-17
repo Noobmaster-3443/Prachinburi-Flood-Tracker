@@ -36,11 +36,12 @@ function determineSeverity(level?: number, diffText?: string, storagePercent?: n
 }
 
 function determineRainSeverity(rain24h?: number): { severity: SeverityLevel; label: string } {
-  if (!rain24h || rain24h < 10) return { severity: 'green', label: 'ฝนเล็กน้อย/ปกติ' };
-  if (rain24h >= 90) return { severity: 'red', label: 'วิกฤต (ฝนตกหนักมาก >90 มม.)' };
-  if (rain24h >= 50) return { severity: 'orange', label: 'เตือนภัย (ฝนตกหนัก >50 มม.)' };
-  if (rain24h >= 25) return { severity: 'yellow', label: 'เฝ้าระวัง (ฝนปานกลาง)' };
-  return { severity: 'green', label: 'ระดับน้ำปกติ' };
+  const val = rain24h ?? 0;
+  const valStr = val.toFixed(1);
+  if (val >= 90) return { severity: 'orange', label: `ฝนหนักมาก (${valStr} มม.)` };
+  if (val >= 35) return { severity: 'yellow', label: `ฝนหนัก (${valStr} มม.)` };
+  if (val >= 10) return { severity: 'green', label: `ฝนปานกลาง (${valStr} มม.)` };
+  return { severity: 'green', label: `ฝนเล็กน้อย (${valStr} มม.)` };
 }
 
 /**
