@@ -55,10 +55,10 @@ export function calculateProvinceStatus(input: StatusInput): ProvinceStatusRepor
   const maxRain24h = allRainValues.length > 0 ? Math.max(...allRainValues) : 0;
 
   if (maxRain24h >= 90) {
-    evidence.push(`ฝนตกหนักมากใน 24 ชม. สูงสุด ${maxRain24h.toFixed(1)} มม. (เกณฑ์สีแดง)`);
-  } else if (maxRain24h >= 50) {
-    evidence.push(`ฝนตกหนักใน 24 ชม. สูงสุด ${maxRain24h.toFixed(1)} มม. (เกณฑ์สีส้ม)`);
-  } else if (maxRain24h >= 25) {
+    evidence.push(`ฝนตกหนักมากใน 24 ชม. สูงสุด ${maxRain24h.toFixed(1)} มม.`);
+  } else if (maxRain24h >= 35) {
+    evidence.push(`ฝนตกหนักใน 24 ชม. สูงสุด ${maxRain24h.toFixed(1)} มม.`);
+  } else if (maxRain24h >= 10) {
     evidence.push(`ฝนปานกลางใน 24 ชม. สูงสุด ${maxRain24h.toFixed(1)} มม.`);
   }
 
@@ -112,13 +112,13 @@ export function calculateProvinceStatus(input: StatusInput): ProvinceStatusRepor
   if (overflowStations.length > 0 || impassableHighways.length > 0) {
     status = 'CRITICAL';
     statusLabelTh = 'วิกฤต / ล้นตลิ่ง';
-  } else if (warningStations.length > 0 || maxRain24h >= 90 || maxDamPercent >= 95) {
+  } else if (warningStations.length > 0 || maxDamPercent >= 95) {
     status = 'FLOODING';
     statusLabelTh = 'เสี่ยงภัยน้ำท่วมสูง';
-  } else if (watchStations.length > 0 || maxRain24h >= 50 || maxDamPercent >= 85) {
+  } else if (watchStations.length > 0 || maxDamPercent >= 85) {
     status = 'WARNING';
     statusLabelTh = 'เตือนภัย / จ่อล้น';
-  } else if (maxRain24h >= 25 || provHighways.length > 0) {
+  } else if (maxRain24h >= 35 || provHighways.length > 0) {
     status = 'WATCH';
     statusLabelTh = 'เฝ้าระวัง';
   } else if (provStations.length === 0 && provRainStations.length === 0 && provDams.length === 0) {
