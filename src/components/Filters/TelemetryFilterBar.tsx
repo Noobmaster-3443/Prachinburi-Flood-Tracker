@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Search, X, Check, Filter, RefreshCw, Radio, SlidersHorizontal, ChevronDown, Globe } from 'lucide-react';
 import { DashboardFilterState, SeverityLevel } from '@/types/telemetry';
+import { DataStatus } from '@/lib/providers/types';
 import { PRACHINBURI_DISTRICTS } from '@/data/prachinburi-locations';
 import { THAILAND_PROVINCES } from '@/data/thailand-provinces';
 
@@ -14,7 +15,8 @@ interface TelemetryFilterBarProps {
   onToggleAutoRefresh: () => void;
   onManualRefresh: () => void;
   isRefreshing: boolean;
-  lastUpdated: string;
+  lastUpdated: string | null;
+  thaiWaterStatus?: DataStatus;
   availableDistricts?: string[];
 }
 
@@ -27,6 +29,7 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
   onManualRefresh,
   isRefreshing,
   lastUpdated,
+  thaiWaterStatus,
   availableDistricts = [],
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -388,7 +391,12 @@ export const TelemetryFilterBar: React.FC<TelemetryFilterBarProps> = ({
             </div>
 
             <div className="text-[11px] text-slate-400 w-full sm:w-auto text-right">
-              ข้อมูลสด สสน. • อัปเดต {lastUpdated ? new Date(lastUpdated).toLocaleTimeString('th-TH') : '-'} น.
+              {thaiWaterStatus === 'LIVE'
+                ? 'ข้อมูลสด สสน.'
+                : thaiWaterStatus === 'STALE'
+                ? 'ข้อมูลล่าช้า สสน.'
+                : 'ข้อมูลอ้างอิง สสน.'}{' '}
+              • {lastUpdated ? `อัปเดต ${new Date(lastUpdated).toLocaleTimeString('th-TH')} น.` : 'ไม่พบเวลาตรวจวัด'}
             </div>
           </div>
         </div>
